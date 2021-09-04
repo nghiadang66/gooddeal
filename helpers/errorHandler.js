@@ -1,6 +1,3 @@
-/**
- * Get unique error field name
- */
 const uniqueMessage = (error) => {
     let output;
     try {
@@ -19,9 +16,6 @@ const uniqueMessage = (error) => {
     return output;
 };
 
-/**
- * Get the erroror message from error object
- */
 exports.errorHandler = (error) => {
     let message = '';
 
