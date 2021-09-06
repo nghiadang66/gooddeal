@@ -7,17 +7,16 @@ require('dotenv').config();
 
 //import routes
 const testRoutes = require('./routes/testRoute');
-const authRoutes = require('./routes/authRoute')
+const authRoutes = require('./routes/authRoute');
 
 //app
 const app = express();
- 
+
 //db
-mongoose.connect(process.env.DATABASE,
-    error => {
-        if (error) throw error;
-        console.log('DB connected!')
-    });
+mongoose.connect(process.env.DATABASE, (error) => {
+    if (error) throw error;
+    console.log('DB connected!');
+});
 
 //middlewares
 app.use(morgan('dev'));
@@ -29,7 +28,7 @@ app.use(cors());
 //routes middlewares
 app.use('/api', testRoutes);
 app.use('/api', authRoutes);
- 
+
 //port
 const port = process.env.PORT || 8000;
 app.listen(port, () => {

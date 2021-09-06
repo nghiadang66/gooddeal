@@ -5,6 +5,7 @@
   "main": "app.js",
   "scripts": {
     "start": "nodemon app.js",
+    "prettier": "prettier --single-quote --trailing-comma all --tab-width 4 --write app.js {controllers,models,routes,helpers,validators}/*.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -17,10 +18,12 @@
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
     "express-validator": "^6.12.1",
+    "jsonwebtoken": "^8.5.1",
     "mongoose": "^6.0.4",
     "mongoose-slug-generator": "^1.0.4",
     "morgan": "^1.10.0",
     "nodemon": "^2.0.12",
+    "prettier": "^2.3.2",
     "uuidv4": "^6.2.12"
   }
 }

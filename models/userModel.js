@@ -49,15 +49,16 @@ const userSchema = new mongoose.Schema(
         },
         role: {
             type: String,
-            default: "customer",
-            enum: ["customer", "vendor", "admin"],
+            default: 'customer',
+            enum: ['customer', 'vendor', 'admin'],
         },
     },
-    { timestamps: true }
+    { timestamps: true },
 );
 
 //virtual field
-userSchema.virtual('password')
+userSchema
+    .virtual('password')
     .set(function (password) {
         this._password = password;
         this.salt = uuid_v4();
@@ -73,9 +74,10 @@ userSchema.methods = {
         if (!password) return '';
 
         try {
-            return crypto.createHmac('sha1', salt)
-                    .update(password)
-                    .digest('hex');
+            return crypto
+                .createHmac('sha1', salt)
+                .update(password)
+                .digest('hex');
         } catch (err) {
             return '';
         }

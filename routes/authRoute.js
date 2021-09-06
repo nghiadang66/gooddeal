@@ -9,6 +9,17 @@ const { validateHandler } = require('../helpers/validateHandler');
 const authController = require('../controllers/authController');
 
 //routes
-router.post('/signup', authValidator.signup(), validateHandler, authController.signup);
+router.post(
+    '/signup',
+    authValidator.signup(),
+    validateHandler,
+    authController.signup,
+);
+router.post(
+    '/signin',
+    authValidator.signin(),
+    validateHandler,
+    authController.signin,
+);
 
 module.exports = router;
