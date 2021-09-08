@@ -28,6 +28,11 @@ router.put(
     authController.isAuth,
     userController.addAddress,
 );
+router.put(
+    '/address/:userId/:addressIndex',
+    authController.isAuth,
+    userController.updateAddress,
+);
 router.delete(
     '/address/:userId/:addressIndex',
     authController.isAuth,

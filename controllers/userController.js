@@ -106,8 +106,44 @@ const addAddress = (req, res) => {
 };
 
 const addressByIndex = (req, res, next, id) => {
+    if (req.user.addresses.length <= id) {
+        return res.status(400).json({
+            error: 'Address not found',
+        });
+    }
+
     req.addressIndex = id;
     next();
+};
+
+const updateAddress = (req, res) => {
+    let addresses = req.user.addresses;
+
+    const index = addresses.indexOf(req.body.address.trim());
+    if (index != -1 && index != req.addressIndex) {
+        return res.status(400).json({
+            error: 'Address already exists',
+        });
+    }
+
+    addresses.splice(req.addressIndex, 1, req.body.address.trim());
+    User.findOneAndUpdate(
+        { _id: req.user._id },
+        { $set: { addresses: addresses } },
+        { new: true },
+    )
+        .exec()
+        .then((user) => {
+            return res.json({
+                success: 'Update address successfully',
+                user,
+            });
+        })
+        .catch((error) => {
+            return res.status(400).json({
+                error: 'Update address failed',
+            });
+        });
 };
 
 const removeAddress = (req, res) => {
@@ -139,6 +175,7 @@ module.exports = {
     userUpdate,
     addAddress,
     listAddress,
-    removeAddress,
     addressByIndex,
+    updateAddress,
+    removeAddress,
 };
