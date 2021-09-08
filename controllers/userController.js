@@ -78,17 +78,18 @@ const listAddress = (req, res) => {
 };
 
 const addAddress = (req, res) => {
-    let addresses = [];
-    req.body.addresses.forEach((address) => {
-        let index = req.user.addresses.indexOf(address.trim());
-        if (index == -1) {
-            addresses.push(address);
-        }
-    });
+    let addresses = req.user.addresses;
+
+    const index = addresses.indexOf(req.body.address.trim());
+    if (index != -1) {
+        return res.status(400).json({
+            error: 'Address already exists',
+        });
+    }
 
     User.findOneAndUpdate(
         { _id: req.user._id },
-        { $push: { addresses: addresses } },
+        { $push: { addresses: req.body.address.trim() } },
         { new: true },
     )
         .exec()
