@@ -2,50 +2,41 @@ const { check, oneOf } = require('express-validator');
 
 const signup = () => [
     check('firstname')
-        .not()
-        .isEmpty()
+        .not().isEmpty()
         .withMessage('Firstname is required')
-        .matches(/^(?=.*[a-zA-Z])[A-Za-z\d\s_'-]{1,32}$/)
+        .isLength({ max: 32 })
+        .withMessage('Firstname can contain up to 32 characters')
+        .matches(/^(?=.*[a-zA-Z])[A-Za-z\d\s_'-]*$/)
         .withMessage(
-            "Firstname must contain at least one letter, can contain numbers, some special characters such as _, ', - and space.",
+            "Firstname must contain at least one letter, can contain numbers, some special characters such as _, ', - and space",
         ),
 
     check('lastname')
-        .not()
-        .isEmpty()
+        .not().isEmpty()
         .withMessage('Lastname is required')
-        .matches(/^(?=.*[a-zA-Z])[A-Za-z\d\s_'-]{1,32}$/)
+        .isLength({ max: 32 })
+        .withMessage('Lastname can contain up to 32 characters')
+        .matches(/^(?=.*[a-zA-Z])[A-Za-z\d\s_'-]*$/)
         .withMessage(
-            "Lastname must contain at least one letter, can contain numbers, some special characters such as _, ', - and space.",
+            "Lastname must contain at least one letter, can contain numbers, some special characters such as _, ', - and space",
         ),
 
     oneOf(
         [
             [
                 check('email')
-                    .not()
-                    .isEmpty()
-                    .matches(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/),
+                    .not().exists(),
 
                 check('phone')
-                    .not()
-                    .isEmpty()
-                    .matches(/(^\d{10,11}$)/),
+                    .not().isEmpty()
+                    .matches(/^\d{10,11}$/),
             ],
             [
-                check('email').not().exists(),
-
                 check('phone')
-                    .not()
-                    .isEmpty()
-                    .matches(/(^\d{10,11}$)/),
-            ],
-            [
-                check('phone').not().exists(),
+                    .not().exists(),
 
                 check('email')
-                    .not()
-                    .isEmpty()
+                    .not().isEmpty()
                     .matches(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/),
             ],
         ],
@@ -53,8 +44,7 @@ const signup = () => [
     ),
 
     check('password')
-        .not()
-        .isEmpty()
+        .not().isEmpty()
         .withMessage('Password is required')
         .matches(
             /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/,
@@ -69,29 +59,18 @@ const signin = () => [
         [
             [
                 check('email')
-                    .not()
-                    .isEmpty()
-                    .matches(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/),
+                    .not().exists(),
 
                 check('phone')
-                    .not()
-                    .isEmpty()
-                    .matches(/(^\d{10,11}$)/),
+                    .not().isEmpty()
+                    .matches(/^\d{10,11}$/),
             ],
             [
-                check('email').not().exists(),
-
                 check('phone')
-                    .not()
-                    .isEmpty()
-                    .matches(/(^\d{10,11}$)/),
-            ],
-            [
-                check('phone').not().exists(),
+                    .not().exists(),
 
                 check('email')
-                    .not()
-                    .isEmpty()
+                    .not().isEmpty()
                     .matches(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/),
             ],
         ],
@@ -99,8 +78,7 @@ const signin = () => [
     ),
 
     check('password')
-        .not()
-        .isEmpty()
+        .not().isEmpty()
         .withMessage('Password is required')
         .matches(/^[A-Za-z\d@$!%*?&]+$/)
         .withMessage('Password contains some invalid characters'),
