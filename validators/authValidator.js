@@ -2,7 +2,8 @@ const { check, oneOf } = require('express-validator');
 
 const signup = () => [
     check('firstname')
-        .not().isEmpty()
+        .not()
+        .isEmpty()
         .withMessage('Firstname is required')
         .isLength({ max: 32 })
         .withMessage('Firstname can contain up to 32 characters')
@@ -12,7 +13,8 @@ const signup = () => [
         ),
 
     check('lastname')
-        .not().isEmpty()
+        .not()
+        .isEmpty()
         .withMessage('Lastname is required')
         .isLength({ max: 32 })
         .withMessage('Lastname can contain up to 32 characters')
@@ -24,19 +26,19 @@ const signup = () => [
     oneOf(
         [
             [
-                check('email')
-                    .not().exists(),
+                check('email').not().exists(),
 
                 check('phone')
-                    .not().isEmpty()
+                    .not()
+                    .isEmpty()
                     .matches(/^\d{10,11}$/),
             ],
             [
-                check('phone')
-                    .not().exists(),
+                check('phone').not().exists(),
 
                 check('email')
-                    .not().isEmpty()
+                    .not()
+                    .isEmpty()
                     .matches(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/),
             ],
         ],
@@ -44,7 +46,8 @@ const signup = () => [
     ),
 
     check('password')
-        .not().isEmpty()
+        .not()
+        .isEmpty()
         .withMessage('Password is required')
         .matches(
             /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/,
@@ -58,19 +61,19 @@ const signin = () => [
     oneOf(
         [
             [
-                check('email')
-                    .not().exists(),
+                check('email').not().exists(),
 
                 check('phone')
-                    .not().isEmpty()
+                    .not()
+                    .isEmpty()
                     .matches(/^\d{10,11}$/),
             ],
             [
-                check('phone')
-                    .not().exists(),
+                check('phone').not().exists(),
 
                 check('email')
-                    .not().isEmpty()
+                    .not()
+                    .isEmpty()
                     .matches(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/),
             ],
         ],
@@ -78,7 +81,8 @@ const signin = () => [
     ),
 
     check('password')
-        .not().isEmpty()
+        .not()
+        .isEmpty()
         .withMessage('Password is required')
         .matches(/^[A-Za-z\d@$!%*?&]+$/)
         .withMessage('Password contains some invalid characters'),
