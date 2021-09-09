@@ -1,6 +1,6 @@
 const User = require('../models/userModel');
 
-const userById = (req, res, next, id) => {
+exports.userById = (req, res, next, id) => {
     User.findById(id, (error, user) => {
         if (error || !user) {
             return res.status(400).json({
@@ -13,7 +13,7 @@ const userById = (req, res, next, id) => {
     });
 };
 
-const userRead = (req, res) => {
+exports.userRead = (req, res) => {
     req.user.hashed_password = undefined;
     req.user.salt = undefined;
 
@@ -24,7 +24,7 @@ const userRead = (req, res) => {
     });
 };
 
-const userUpdate = (req, res) => {
+exports.userUpdate = (req, res) => {
     // console.log('---REQUEST BODY---: ', req.body);
     User.findOneAndUpdate(
         { _id: req.user._id },
@@ -68,7 +68,7 @@ const userUpdate = (req, res) => {
         });
 };
 
-const listAddress = (req, res) => {
+exports.listAddress = (req, res) => {
     // console.log('---REQUEST USER---: ', req.user);
     const addresses = req.user.addresses;
     return res.json({
@@ -77,7 +77,7 @@ const listAddress = (req, res) => {
     });
 };
 
-const addAddress = (req, res) => {
+exports.addAddress = (req, res) => {
     let addresses = req.user.addresses;
 
     const index = addresses.indexOf(req.body.address.trim());
@@ -106,7 +106,7 @@ const addAddress = (req, res) => {
         });
 };
 
-const addressByIndex = (req, res, next, id) => {
+exports.addressByIndex = (req, res, next, id) => {
     if (req.user.addresses.length <= id) {
         return res.status(400).json({
             error: 'Address not found',
@@ -117,7 +117,7 @@ const addressByIndex = (req, res, next, id) => {
     next();
 };
 
-const updateAddress = (req, res) => {
+exports.updateAddress = (req, res) => {
     let addresses = req.user.addresses;
 
     const index = addresses.indexOf(req.body.address.trim());
@@ -147,7 +147,7 @@ const updateAddress = (req, res) => {
         });
 };
 
-const removeAddress = (req, res) => {
+exports.removeAddress = (req, res) => {
     let addresses = req.user.addresses;
     addresses.splice(req.addressIndex, 1);
 
@@ -168,15 +168,4 @@ const removeAddress = (req, res) => {
                 error: 'Remove address failed',
             });
         });
-};
-
-module.exports = {
-    userById,
-    userRead,
-    userUpdate,
-    addAddress,
-    listAddress,
-    addressByIndex,
-    updateAddress,
-    removeAddress,
 };

@@ -6,41 +6,34 @@ const userValidator = require('../validators/userValidator');
 const { validateHandler } = require('../helpers/validateHandler');
 
 //import controllers
-const authController = require('../controllers/authController');
-const userController = require('../controllers/userController');
+const { isAuth } = require('../controllers/authController');
+const {
+    userById,
+    userRead,
+    userUpdate,
+    addressByIndex,
+    listAddress,
+    addAddress,
+    updateAddress,
+    removeAddress,
+} = require('../controllers/userController');
 
 //routes
-router.get('/user/:userId', authController.isAuth, userController.userRead);
+router.get('/user/:userId', isAuth, userRead);
 router.put(
     '/update/user/:userId',
-    authController.isAuth,
+    isAuth,
     userValidator.userUpdate(),
     validateHandler,
-    userController.userUpdate,
+    userUpdate,
 );
-router.get(
-    '/address/:userId',
-    authController.isAuth,
-    userController.listAddress,
-);
-router.put(
-    '/address/:userId',
-    authController.isAuth,
-    userController.addAddress,
-);
-router.put(
-    '/address/:userId/:addressIndex',
-    authController.isAuth,
-    userController.updateAddress,
-);
-router.delete(
-    '/address/:userId/:addressIndex',
-    authController.isAuth,
-    userController.removeAddress,
-);
+router.get('/address/:userId', isAuth, listAddress);
+router.put('/address/:userId', isAuth, addAddress);
+router.put('/address/:userId/:addressIndex', isAuth, updateAddress);
+router.delete('/address/:userId/:addressIndex', isAuth, removeAddress);
 
 //router params
-router.param('userId', userController.userById);
-router.param('addressIndex', userController.addressByIndex);
+router.param('userId', userById);
+router.param('addressIndex', addressByIndex);
 
 module.exports = router;

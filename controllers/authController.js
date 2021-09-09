@@ -2,7 +2,7 @@ const User = require('../models/userModel');
 var jwt = require('jsonwebtoken');
 const { errorHandler } = require('../helpers/errorHandler');
 
-const signup = (req, res) => {
+exports.signup = (req, res) => {
     // console.log('---REQUEST BODY---: ', req.body);
     const user = new User(req.body);
     user.save((error, user) => {
@@ -21,7 +21,7 @@ const signup = (req, res) => {
     });
 };
 
-const signin = (req, res) => {
+exports.signin = (req, res) => {
     //authentication
     // console.log('---REQUEST BODY---: ', req.body);
     const { email, phone, password } = req.body;
@@ -67,7 +67,7 @@ const signin = (req, res) => {
         });
 };
 
-const isAuth = (req, res, next) => {
+exports.isAuth = (req, res, next) => {
     // console.log('---REQUEST HEADERS---: ', req.headers);
     if (
         req.headers &&
@@ -100,7 +100,7 @@ const isAuth = (req, res, next) => {
     }
 };
 
-const isVendor = (req, res, next) => {
+exports.isVendor = (req, res, next) => {
     if (req.user.role === 'customer') {
         return res.status(403).json({
             error: 'Vendor resource! Access denied',
@@ -109,19 +109,11 @@ const isVendor = (req, res, next) => {
     next();
 };
 
-const isAdmin = (req, res, next) => {
+exports.isAdmin = (req, res, next) => {
     if (req.user.role !== 'admin') {
         return res.status(403).json({
             error: 'Admin resource! Access denied',
         });
     }
     next();
-};
-
-module.exports = {
-    signup,
-    signin,
-    isAuth,
-    isVendor,
-    isAdmin,
 };
