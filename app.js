@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const morgan = require('morgan');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
+const path = require('path')
 require('dotenv').config();
 
 //import routes
@@ -25,6 +26,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors());
+app.use('/static', express.static(path.join(__dirname, 'public')))
 
 //routes middlewares
 app.use('/api', testRoutes);

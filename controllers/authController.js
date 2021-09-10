@@ -49,15 +49,13 @@ exports.signin = (req, res) => {
                 },
                 process.env.JWT_SECRET,
                 {
-                    expiresIn: '1h',
+                    expiresIn: '42h',
                 },
             );
 
-            const { _id, firstname, lastname, role, slug } = user;
             res.json({
                 success: 'Sign in successfully',
                 token,
-                user: { _id, firstname, lastname, role, slug },
             });
         })
         .catch((error) => {

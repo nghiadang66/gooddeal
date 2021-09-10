@@ -16,6 +16,8 @@ const {
     addAddress,
     updateAddress,
     removeAddress,
+    getAvatar,
+    updateAvatar,
 } = require('../controllers/userController');
 
 //routes
@@ -31,6 +33,8 @@ router.get('/address/:userId', isAuth, listAddress);
 router.put('/address/:userId', isAuth, addAddress);
 router.put('/address/:userId/:addressIndex', isAuth, updateAddress);
 router.delete('/address/:userId/:addressIndex', isAuth, removeAddress);
+router.get('/avatar/:userId', isAuth, getAvatar);
+router.put('/avatar/:userId', isAuth, updateAvatar);
 
 //router params
 router.param('userId', userById);
