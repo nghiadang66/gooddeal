@@ -12,11 +12,11 @@ exports.signup = (req, res) => {
             });
         }
 
-        user.salt = undefined;
-        user.hashed_password = undefined;
+        // user.salt = undefined;
+        // user.hashed_password = undefined;
         res.status(200).json({
             success: 'Sign up successfully',
-            user,
+            // user,
         });
     });
 };
@@ -53,9 +53,13 @@ exports.signin = (req, res) => {
                 },
             );
 
+            // user.salt = undefined;
+            // user.hashed_password = undefined;
+            const { _id } = user;
             res.json({
                 success: 'Sign in successfully',
                 token,
+                user_id: _id,
             });
         })
         .catch((error) => {
