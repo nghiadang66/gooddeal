@@ -57,8 +57,8 @@ const userSchema = new mongoose.Schema(
                 {
                     type: String,
                     trim: true,
-                    unique: true,
-                    sparse: true,
+                    maxLength: 200,
+                    validate: [addressesLimit, 'The limit is 5 addresses'],
                 },
             ],
             default: [],
@@ -66,6 +66,15 @@ const userSchema = new mongoose.Schema(
         avatar: {
             type: String,
             default: '/uploads/user/default.jpg',
+        },
+        e_wallet: {
+            type: mongoose.Decimal128,
+            min: 0,
+            default: 0,
+        },
+        point: {
+            type: Number,
+            default: 0,
         },
     },
     { timestamps: true },
@@ -101,5 +110,10 @@ userSchema.methods = {
         return this.encryptPassword(plaintext) === this.hashed_password;
     },
 };
+
+//validators
+function addressesLimit(val) {
+    return val.length <= 5;
+}
 
 module.exports = mongoose.model('User', userSchema);

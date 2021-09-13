@@ -24,7 +24,7 @@ exports.getUser = (req, res) => {
 
     let user = req.user;
     res.json({
-        success: 'Read user successfully',
+        success: 'Get user successfully',
         user,
     });
 };
@@ -98,6 +98,12 @@ exports.listAddress = (req, res) => {
 
 exports.addAddress = (req, res) => {
     let addresses = req.user.addresses;
+
+    if (addresses.length >= 5) {
+        return res.status(400).json({
+            error: 'The limit is 5 addresses',
+        });
+    }
 
     addresses.push(req.body.address.trim());
     addresses = [...new Set(addresses)];
@@ -289,19 +295,19 @@ exports.getRole = (req, res) => {
     });
 };
 
-exports.upgradeRoleVendor = (req, res, next) => {
-    if (req.user.role != 'customer') {
-        next();
-    }
+// exports.upgradeRoleVendor = (req, res, next) => {
+//     if (req.user.role != 'customer') {
+//         next();
+//     }
 
-    User.findOneAndUpdate({ _id: req.user._id }, { $set: { role: 'vendor' } })
-        .exec()
-        .then((user) => {
-            next();
-        })
-        .catch((error) => {
-            return res.status(400).json({
-                error: 'Upgrade role to vendor failed',
-            });
-        });
-};
+//     User.findOneAndUpdate({ _id: req.user._id }, { $set: { role: 'vendor' } })
+//         .exec()
+//         .then((user) => {
+//             next();
+//         })
+//         .catch((error) => {
+//             return res.status(400).json({
+//                 error: 'Upgrade role to vendor failed',
+//             });
+//         });
+// };

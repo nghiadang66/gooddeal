@@ -19,7 +19,6 @@ const {
     getAvatar,
     updateAvatar,
     getRole,
-    // upgradeRoleVendor,
 } = require('../controllers/userController');
 
 //routes
@@ -27,22 +26,32 @@ router.get('/user/:userId', isAuth, getUser);
 router.put(
     '/update/user/:userId',
     isAuth,
-    userValidator.userUpdate(),
+    userValidator.updateUser(),
     validateHandler,
     updateUser,
 );
+
 router.get('/address/:userId', isAuth, listAddress);
-router.put('/address/:userId', isAuth, addAddress);
-router.put('/address/:userId/:addressIndex', isAuth, updateAddress);
+router.put(
+    '/address/:userId',
+    isAuth,
+    userValidator.userAddress(),
+    validateHandler,
+    addAddress,
+);
+router.put(
+    '/address/:userId/:addressIndex',
+    isAuth,
+    userValidator.userAddress(),
+    validateHandler,
+    updateAddress,
+);
 router.delete('/address/:userId/:addressIndex', isAuth, removeAddress);
+
 router.get('/avatar/:userId', isAuth, getAvatar);
 router.put('/avatar/:userId', isAuth, updateAvatar);
+
 router.get('/role/:userId', isAuth, getRole);
-// router.get('/test/upgrade/role/:userId', isAuth, upgradeRoleVendor, (req, res) => {
-//     return res.json({
-//         success: 'Upgrade role to vendor successfully',
-//     });
-// });
 
 //router params
 router.param('userId', userById);

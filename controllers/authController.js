@@ -111,6 +111,15 @@ exports.isVendor = (req, res, next) => {
     next();
 };
 
+exports.isManager = (req, res, next) => {
+    if (req.user._id != req.store.managerId) {
+        return res.status(403).json({
+            error: 'Manager resource! Access denied',
+        });
+    }
+    next();
+};
+
 exports.isAdmin = (req, res, next) => {
     if (req.user.role !== 'admin') {
         return res.status(403).json({
