@@ -76,6 +76,15 @@ const userSchema = new mongoose.Schema(
             type: Number,
             default: 0,
         },
+        isActive: {
+            type: Boolean,
+            default: false,
+        },
+        email_code: {
+            type: String,
+            unique: true,
+            sparse: true,
+        },
     },
     { timestamps: true },
 );

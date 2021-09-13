@@ -55,6 +55,5 @@ router.get('/role/:userId', isAuth, getRole);
 
 //router params
 router.param('userId', userById);
-router.param('addressIndex', addressByIndex);
 
 module.exports = router;

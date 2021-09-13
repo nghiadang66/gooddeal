@@ -85,6 +85,8 @@ const updateUser = () => [
     check('avatar').not().exists(),
     check('e_wallet').not().exists(),
     check('point').not().exists(),
+    check('email_code').not().exists(),
+    check('isActive').not().exists(),
 ];
 
 const userAddress = () => [

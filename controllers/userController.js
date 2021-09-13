@@ -8,7 +8,7 @@ const formidable = require('formidable');
 exports.userById = (req, res, next, id) => {
     User.findById(id, (error, user) => {
         if (error || !user) {
-            return res.status(400).json({
+            return res.status(404).json({
                 error: 'User not found',
             });
         }
@@ -76,17 +76,6 @@ exports.updateUser = (req, res) => {
 /*------
   ADDRESS
   ------*/
-exports.addressByIndex = (req, res, next, id) => {
-    if (req.user.addresses.length <= id) {
-        return res.status(400).json({
-            error: 'Address not found',
-        });
-    }
-
-    req.addressIndex = id;
-    next();
-};
-
 exports.listAddress = (req, res) => {
     // console.log('---REQUEST USER---: ', req.user);
     const addresses = req.user.addresses;
@@ -98,7 +87,6 @@ exports.listAddress = (req, res) => {
 
 exports.addAddress = (req, res) => {
     let addresses = req.user.addresses;
-
     if (addresses.length >= 5) {
         return res.status(400).json({
             error: 'The limit is 5 addresses',
@@ -130,16 +118,23 @@ exports.addAddress = (req, res) => {
 };
 
 exports.updateAddress = (req, res) => {
+    const addressIndex = req.params.addressIndex;
     let addresses = req.user.addresses;
 
+    if (addresses.length <= addressIndex) {
+        return res.status(404).json({
+            error: 'Address not found',
+        });
+    }
+
     const index = addresses.indexOf(req.body.address.trim());
-    if (index != -1 && index != req.addressIndex) {
+    if (index != -1 && index != addressIndex) {
         return res.status(400).json({
             error: 'Address already exists',
         });
     }
 
-    addresses.splice(req.addressIndex, 1, req.body.address.trim());
+    addresses.splice(addressIndex, 1, req.body.address.trim());
     User.findOneAndUpdate(
         { _id: req.user._id },
         { $set: { addresses: addresses } },
@@ -162,9 +157,16 @@ exports.updateAddress = (req, res) => {
 };
 
 exports.removeAddress = (req, res) => {
+    const addressIndex = req.params.addressIndex;
     let addresses = req.user.addresses;
-    addresses.splice(req.addressIndex, 1);
 
+    if (addresses.length <= addressIndex) {
+        return res.status(404).json({
+            error: 'Address not found',
+        });
+    }
+
+    addresses.splice(addressIndex, 1);
     User.findOneAndUpdate(
         { _id: req.user._id },
         { $set: { addresses: addresses } },
@@ -219,7 +221,7 @@ exports.updateAvatar = (req, res) => {
                 type !== 'image/gif'
             ) {
                 return res.status(400).json({
-                    error: `Invalid type. Photo type must be png, jpg, jpeg or gif.`,
+                    error: 'Invalid type. Photo type must be png, jpg, jpeg or gif.',
                 });
             }
 
@@ -294,20 +296,3 @@ exports.getRole = (req, res) => {
         role,
     });
 };
-
-// exports.upgradeRoleVendor = (req, res, next) => {
-//     if (req.user.role != 'customer') {
-//         next();
-//     }
-
-//     User.findOneAndUpdate({ _id: req.user._id }, { $set: { role: 'vendor' } })
-//         .exec()
-//         .then((user) => {
-//             next();
-//         })
-//         .catch((error) => {
-//             return res.status(400).json({
-//                 error: 'Upgrade role to vendor failed',
-//             });
-//         });
-// };

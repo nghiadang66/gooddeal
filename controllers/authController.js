@@ -1,15 +1,34 @@
 const User = require('../models/userModel');
-var jwt = require('jsonwebtoken');
+const jwt = require('jsonwebtoken');
+const { sendConfirmationEmail } = require('../sendEmail/sendConfirmationEmail');
 const { errorHandler } = require('../helpers/errorHandler');
 
 exports.signup = (req, res) => {
     // console.log('---REQUEST BODY---: ', req.body);
     const user = new User(req.body);
+    if (req.body.email) {
+        const token = jwt.sign(
+            { email: req.body.email },
+            process.env.JWT_EMAIL_CONFIRM_SECRET,
+        );
+        user.email_code = token;
+    } else {
+        //send SMS
+    }
+
     user.save((error, user) => {
         if (error) {
-            return res.status(400).json({
+            return res.status(500).json({
                 error: errorHandler(error),
             });
+        }
+
+        if (user.email_code) {
+            sendConfirmationEmail(
+                user.firstname + ' ' + user.lastname,
+                user.email,
+                user.email_code,
+            );
         }
 
         // user.salt = undefined;
@@ -19,6 +38,34 @@ exports.signup = (req, res) => {
             // user,
         });
     });
+};
+
+exports.verifyUser = (req, res, next) => {
+    User.findOne({
+        email_code: req.params.emailCode,
+    })
+        .then((user) => {
+            if (!user) {
+                return res.status(404).json({ error: 'User not found' });
+            }
+
+            user.status = 'Active';
+            user.email_code = '';
+            user.save((err, user) => {
+                if (err) {
+                    res.status(500).json({ error: err });
+                    return;
+                }
+
+                // user.salt = undefined;
+                // user.hashed_password = undefined;
+                res.status(200).json({
+                    success: 'Confirm email successfully',
+                    // user,
+                });
+            });
+        })
+        .catch((e) => console.log('error', e));
 };
 
 exports.signin = (req, res) => {
@@ -63,7 +110,7 @@ exports.signin = (req, res) => {
             });
         })
         .catch((error) => {
-            res.status(400).json({
+            res.status(404).json({
                 error: 'User with that email or that phone does not exist.',
             });
         });

@@ -23,3 +23,7 @@ exports.getStore = (req, res) => {
         store,
     });
 };
+
+exports.listStores = (req, res) => {};
+
+exports.createStore = (req, res) => {};
