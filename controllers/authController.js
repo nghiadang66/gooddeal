@@ -4,7 +4,8 @@ const { errorHandler } = require('../helpers/errorHandler');
 
 exports.signup = (req, res) => {
     // console.log('---REQUEST BODY---: ', req.body);
-    const user = new User(req.body);
+    const { firstname, lastname, email, phone, password } = req.body;
+    const user = new User({ firstname, lastname, email, phone, password });
     user.save((error, user) => {
         if (error) {
             return res.status(500).json({

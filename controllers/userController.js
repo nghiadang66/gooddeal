@@ -31,18 +31,27 @@ exports.getUser = (req, res) => {
 
 exports.updateUser = (req, res) => {
     // console.log('---REQUEST BODY---: ', req.body);
+    const { firstname, lastname, email, phone, id_card, password } = req.body;
+
     User.findOneAndUpdate(
         { _id: req.user._id },
-        { $set: req.body },
+        { $set: { firstname, lastname, email, phone, id_card } },
         { new: true },
     )
         .exec()
         .then((user) => {
-            if (req.body.password) {
+            if (!user) {
+                res.status(404).json({
+                    error: 'User not found',
+                });
+            }
+
+            if (password) {
                 user.hashed_password = user.encryptPassword(
                     password,
                     user.salt,
                 );
+
                 user.save((e, u) => {
                     if (e) {
                         return res.status(400).json({
@@ -103,6 +112,12 @@ exports.addAddress = (req, res) => {
     )
         .exec()
         .then((user) => {
+            if (!user) {
+                res.status(404).json({
+                    error: 'User not found',
+                });
+            }
+
             // user.hashed_password = undefined;
             // user.salt = undefined;
             return res.json({
@@ -142,6 +157,12 @@ exports.updateAddress = (req, res) => {
     )
         .exec()
         .then((user) => {
+            if (!user) {
+                res.status(404).json({
+                    error: 'User not found',
+                });
+            }
+
             // user.hashed_password = undefined;
             // user.salt = undefined;
             return res.json({
@@ -174,6 +195,12 @@ exports.removeAddress = (req, res) => {
     )
         .exec()
         .then((user) => {
+            if (!user) {
+                res.status(404).json({
+                    error: 'User not found',
+                });
+            }
+
             // user.hashed_password = undefined;
             // user.salt = undefined;
             return res.json({
@@ -264,6 +291,12 @@ exports.updateAvatar = (req, res) => {
                     )
                         .exec()
                         .then((user) => {
+                            if (!user) {
+                                res.status(404).json({
+                                    error: 'User not found',
+                                });
+                            }
+
                             // user.hashed_password = undefined;
                             // user.salt = undefined;
                             return res.json({

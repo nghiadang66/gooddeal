@@ -55,17 +55,6 @@ const signup = () => [
         .withMessage(
             'Password must contain at least 6 characters, at least 1 uppercase letter, 1 lowercase letter, 1 number and 1 special character such as @, $, !, %, *, ?, &',
         ),
-
-    check('slug').not().exists(),
-    check('salt').not().exists(),
-    check('hashed_password').not().exists(),
-    check('role').not().exists(),
-    check('addresses').not().exists(),
-    check('avatar').not().exists(),
-    check('e_wallet').not().exists(),
-    check('point').not().exists(),
-    check('email_code').not().exists(),
-    check('isActive').not().exists(),
 ];
 
 const signin = () => [

@@ -87,10 +87,6 @@ const userSchema = new mongoose.Schema(
             type: Boolean,
             default: false,
         },
-        phone_check: {
-            type: Number,
-            min: 0,
-        },
         phone_code: {
             type: String,
         },

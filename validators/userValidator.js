@@ -76,17 +76,6 @@ const updateUser = () => [
         ],
         'Id_card is required, Id_card must contain 9 or 12 numbers',
     ),
-
-    check('slug').not().exists(),
-    check('salt').not().exists(),
-    check('hashed_password').not().exists(),
-    check('role').not().exists(),
-    check('addresses').not().exists(),
-    check('avatar').not().exists(),
-    check('e_wallet').not().exists(),
-    check('point').not().exists(),
-    check('email_code').not().exists(),
-    check('isActive').not().exists(),
 ];
 
 const userAddress = () => [
