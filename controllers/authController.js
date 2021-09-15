@@ -1,21 +1,10 @@
 const User = require('../models/userModel');
 const jwt = require('jsonwebtoken');
-const { sendConfirmationEmail } = require('../sendEmail/sendConfirmationEmail');
 const { errorHandler } = require('../helpers/errorHandler');
 
 exports.signup = (req, res) => {
     // console.log('---REQUEST BODY---: ', req.body);
     const user = new User(req.body);
-    if (req.body.email) {
-        const token = jwt.sign(
-            { email: req.body.email },
-            process.env.JWT_EMAIL_CONFIRM_SECRET,
-        );
-        user.email_code = token;
-    } else {
-        //send SMS
-    }
-
     user.save((error, user) => {
         if (error) {
             return res.status(500).json({
@@ -23,53 +12,16 @@ exports.signup = (req, res) => {
             });
         }
 
-        if (user.email_code) {
-            sendConfirmationEmail(
-                user.firstname + ' ' + user.lastname,
-                user.email,
-                user.email_code,
-            );
-        }
-
         // user.salt = undefined;
         // user.hashed_password = undefined;
-        res.status(200).json({
+        return res.json({
             success: 'Sign up successfully',
             // user,
         });
     });
 };
 
-exports.verifyUser = (req, res, next) => {
-    User.findOne({
-        email_code: req.params.emailCode,
-    })
-        .then((user) => {
-            if (!user) {
-                return res.status(404).json({ error: 'User not found' });
-            }
-
-            user.status = 'Active';
-            user.email_code = '';
-            user.save((err, user) => {
-                if (err) {
-                    res.status(500).json({ error: err });
-                    return;
-                }
-
-                // user.salt = undefined;
-                // user.hashed_password = undefined;
-                res.status(200).json({
-                    success: 'Confirm email successfully',
-                    // user,
-                });
-            });
-        })
-        .catch((e) => console.log('error', e));
-};
-
 exports.signin = (req, res) => {
-    //authentication
     // console.log('---REQUEST BODY---: ', req.body);
     const { email, phone, password } = req.body;
 
@@ -82,6 +34,12 @@ exports.signin = (req, res) => {
         .exec()
         .then((user) => {
             // console.log('---USER---: ', user);
+            if (!user) {
+                res.status(404).json({
+                    error: 'User not found',
+                });
+            }
+
             if (!user.authenticate(password)) {
                 return res.status(401).json({
                     error: "Password doesn't match",
@@ -100,18 +58,16 @@ exports.signin = (req, res) => {
                 },
             );
 
-            // user.salt = undefined;
-            // user.hashed_password = undefined;
-            const { _id } = user;
-            res.json({
+            const { _id, firstname, lastname, role } = user;
+            return res.json({
                 success: 'Sign in successfully',
                 token,
-                user_id: _id,
+                user: { _id, firstname, lastname, role },
             });
         })
         .catch((error) => {
             res.status(404).json({
-                error: 'User with that email or that phone does not exist.',
+                error: 'User not found',
             });
         });
 };

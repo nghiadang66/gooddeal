@@ -76,14 +76,23 @@ const userSchema = new mongoose.Schema(
             type: Number,
             default: 0,
         },
-        isActive: {
+        isEmailActive: {
             type: Boolean,
             default: false,
         },
         email_code: {
             type: String,
-            unique: true,
-            sparse: true,
+        },
+        isPhoneActive: {
+            type: Boolean,
+            default: false,
+        },
+        phone_check: {
+            type: Number,
+            min: 0,
+        },
+        phone_code: {
+            type: String,
         },
     },
     { timestamps: true },
