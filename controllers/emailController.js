@@ -10,10 +10,56 @@ const transport = nodemailer.createTransport({
     },
 });
 
+const sendEmail = (email, name, title, text, code = null) => {
+    return transport.sendMail({
+        from: process.env.ADMIN_EMAIL,
+        to: email,
+        subject: `GoodDeal Ecommerce - ${title}`,
+        html: `<div>
+                    <h2>GOODDEAL</h2>
+                    <h1>${title}</h1>
+                    <p>Hi ${name},</p>
+                    <p>Thank you for choosing GoodDeal.</p>
+                    <p>${text}</p>
+                    ${code ? `<p>Your CODE: ${code}</p>` : ''}
+                </div>`,
+    });
+};
+
+exports.sendNotificationEmail = (req, res, next) => {
+    const { email, phone, name, title, text, code } = req.msg;
+    if (!email && phone) {
+        next();
+    } else if (!email && !phone) {
+        return res.status(400).json({
+            error: 'No email provided!',
+        });
+    } else {
+        // console.log('---EMAIL---: ', email);
+        sendEmail(email, name, title, text, code)
+            .then(() => {
+                return res.json({
+                    success: 'Send email successfully',
+                });
+            })
+            .catch((error) => {
+                return res.status(400).json({
+                    error: 'Send email failed',
+                });
+            });
+    }
+};
+
 // Allow less secure apps to access account
 // Change tag a for front-end
 exports.sendConfirmationEmail = (req, res) => {
     if (req.user.email) {
+        if (req.user.isEmailActive) {
+            return res.status(400).json({
+                error: 'User email is confirmed',
+            });
+        }
+
         const email_code = jwt.sign(
             { email: req.body.email },
             process.env.JWT_EMAIL_CONFIRM_SECRET,
@@ -21,7 +67,7 @@ exports.sendConfirmationEmail = (req, res) => {
 
         User.findOneAndUpdate(
             { _id: req.user._id },
-            { $set: { email_code: email_code, isEmailActive: false } },
+            { $set: { email_code: email_code } },
             { new: true },
         )
             .exec()
@@ -32,23 +78,12 @@ exports.sendConfirmationEmail = (req, res) => {
                     });
                 }
 
-                transport
-                    .sendMail({
-                        from: process.env.ADMIN_EMAIL,
-                        to: user.email,
-                        subject:
-                            'GoodDeal Ecommerce - Verify your email address',
-                        html: `<div>
-                                <h2>GOODDEAL</h2>
-                                <h1>Verify your email address</h1>
-                                <p>Hi ${
-                                    user.firstname + ' ' + user.lastname
-                                },</p>
-                                <p>Thank you for registration.</p>
-                                <p>To get access to your account please verify your email address by clicking the link below.</p>
-                                <p>Your REQUEST_CODE: ${user.email_code}</p>
-                            </div>`,
-                    })
+                const title = 'Verify your email address';
+                const text =
+                    'To get access to your account please verify your email address by clicking the link below.';
+                const name = user.firstname + ' ' + user.lastname;
+
+                sendEmail(user.email, name, title, text, user.email_code)
                     .then(() => {
                         return res.json({
                             success: 'Send email successfully',

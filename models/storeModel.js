@@ -12,7 +12,7 @@ const storeSchema = new mongoose.Schema(
             required: true,
             unique: true,
             maxLength: 100,
-            validate: [nameAvailable, 'Name is invalid'],
+            validate: [nameAvailable, 'Store name is invalid'],
         },
         slug: {
             type: String,
@@ -39,10 +39,14 @@ const storeSchema = new mongoose.Schema(
             ],
             default: [],
         },
+        isActive: {
+            type: Boolean,
+            default: false,
+        },
         status: {
             type: String,
-            default: 'pending',
-            enum: ['pending', 'open', 'close', 'banned'],
+            default: 'close',
+            enum: ['open', 'close'],
         },
         avatar: {
             type: String,
@@ -54,7 +58,7 @@ const storeSchema = new mongoose.Schema(
         },
         featured_images: {
             type: [String],
-            validate: [featured_imagesLimit, 'The limit is 10 images'],
+            validate: [featured_imagesLimit, 'The limit is 6 images'],
         },
         e_wallet: {
             type: mongoose.Decimal128,
@@ -71,7 +75,7 @@ const storeSchema = new mongoose.Schema(
 
 //validators
 function featured_imagesLimit(val) {
-    return val.length <= 10;
+    return val.length <= 6;
 }
 
 function nameAvailable(val) {

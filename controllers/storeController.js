@@ -6,7 +6,7 @@ const Store = require('../models/storeModel');
 exports.storeById = (req, res, next, id) => {
     Store.findById(id, (error, store) => {
         if (error || !store) {
-            return res.status(400).json({
+            return res.status(404).json({
                 error: 'Store not found',
             });
         }

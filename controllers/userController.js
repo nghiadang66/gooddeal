@@ -33,15 +33,30 @@ exports.updateUser = (req, res) => {
     // console.log('---REQUEST BODY---: ', req.body);
     const { firstname, lastname, email, phone, id_card, password } = req.body;
 
+    const isEmailActive =
+        email && req.user.email != email ? false : req.user.isEmailActive;
+    const isPhoneActive =
+        phone && req.user.phone != phone ? false : req.user.isPhoneActive;
+
     User.findOneAndUpdate(
         { _id: req.user._id },
-        { $set: { firstname, lastname, email, phone, id_card } },
+        {
+            $set: {
+                firstname,
+                lastname,
+                email,
+                phone,
+                id_card,
+                isEmailActive,
+                isPhoneActive,
+            },
+        },
         { new: true },
     )
         .exec()
         .then((user) => {
             if (!user) {
-                res.status(404).json({
+                return res.status(404).json({
                     error: 'User not found',
                 });
             }
@@ -96,9 +111,9 @@ exports.listAddress = (req, res) => {
 
 exports.addAddress = (req, res) => {
     let addresses = req.user.addresses;
-    if (addresses.length >= 5) {
+    if (addresses.length >= 6) {
         return res.status(400).json({
-            error: 'The limit is 5 addresses',
+            error: 'The limit is 6 addresses',
         });
     }
 
@@ -113,7 +128,7 @@ exports.addAddress = (req, res) => {
         .exec()
         .then((user) => {
             if (!user) {
-                res.status(404).json({
+                return res.status(404).json({
                     error: 'User not found',
                 });
             }
@@ -158,7 +173,7 @@ exports.updateAddress = (req, res) => {
         .exec()
         .then((user) => {
             if (!user) {
-                res.status(404).json({
+                return res.status(404).json({
                     error: 'User not found',
                 });
             }
@@ -196,7 +211,7 @@ exports.removeAddress = (req, res) => {
         .exec()
         .then((user) => {
             if (!user) {
-                res.status(404).json({
+                return res.status(404).json({
                     error: 'User not found',
                 });
             }
@@ -292,7 +307,7 @@ exports.updateAvatar = (req, res) => {
                         .exec()
                         .then((user) => {
                             if (!user) {
-                                res.status(404).json({
+                                return res.status(404).json({
                                     error: 'User not found',
                                 });
                             }

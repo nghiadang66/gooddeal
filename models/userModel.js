@@ -58,7 +58,7 @@ const userSchema = new mongoose.Schema(
                     type: String,
                     trim: true,
                     maxLength: 200,
-                    validate: [addressesLimit, 'The limit is 5 addresses'],
+                    validate: [addressesLimit, 'The limit is 6 addresses'],
                 },
             ],
             default: [],
@@ -88,6 +88,9 @@ const userSchema = new mongoose.Schema(
             default: false,
         },
         phone_code: {
+            type: String,
+        },
+        forgot_password_code: {
             type: String,
         },
     },
@@ -127,7 +130,7 @@ userSchema.methods = {
 
 //validators
 function addressesLimit(val) {
-    return val.length <= 5;
+    return val.length <= 6;
 }
 
 module.exports = mongoose.model('User', userSchema);

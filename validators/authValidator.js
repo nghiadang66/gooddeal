@@ -88,7 +88,46 @@ const signin = () => [
         .withMessage('Password contains some invalid characters'),
 ];
 
+const forgotPassword = () => [
+    oneOf(
+        [
+            [
+                check('email').not().exists(),
+
+                check('phone')
+                    .not()
+                    .isEmpty()
+                    .matches(/^\d{10,11}$/),
+            ],
+            [
+                check('phone').not().exists(),
+
+                check('email')
+                    .not()
+                    .isEmpty()
+                    .matches(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/),
+            ],
+        ],
+        'Email or phone number must be provided at least one, email must contain @ and phone number must contain 10 or 11 numbers',
+    ),
+];
+
+const changePassword = () => [
+    check('password')
+        .not()
+        .isEmpty()
+        .withMessage('Password is required')
+        .matches(
+            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/,
+        )
+        .withMessage(
+            'Password must contain at least 6 characters, at least 1 uppercase letter, 1 lowercase letter, 1 number and 1 special character such as @, $, !, %, *, ?, &',
+        ),
+];
+
 module.exports = {
     signup,
     signin,
+    forgotPassword,
+    changePassword,
 };

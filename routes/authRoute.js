@@ -6,13 +6,21 @@ const authValidator = require('../validators/authValidator');
 const { validateHandler } = require('../helpers/validateHandler');
 
 //import controllers
-const { signup, signin, isAuth } = require('../controllers/authController');
+const {
+    signup,
+    signin,
+    forgotPassword,
+    changePassword,
+    isAuth,
+} = require('../controllers/authController');
 const { userById } = require('../controllers/userController');
 const {
+    sendNotificationEmail,
     sendConfirmationEmail,
     verifyEmail,
 } = require('../controllers/emailController');
 const {
+    sendNotificationSMS,
     sendConfirmationSMS,
     verifySMS,
 } = require('../controllers/smsController');
@@ -20,6 +28,20 @@ const {
 //routes
 router.post('/signup', authValidator.signup(), validateHandler, signup);
 router.post('/signin', authValidator.signin(), validateHandler, signin);
+router.post(
+    '/forgot/password',
+    authValidator.forgotPassword(),
+    validateHandler,
+    forgotPassword,
+    sendNotificationEmail,
+    sendNotificationSMS,
+);
+router.post(
+    '/change/password/:forgotPasswordCode',
+    authValidator.changePassword(),
+    validateHandler,
+    changePassword,
+);
 
 router.get('/confirm/email/:userId', isAuth, sendConfirmationEmail);
 router.get('/verify/email/:userId/:emailCode', verifyEmail);

@@ -36,7 +36,7 @@ exports.signin = (req, res) => {
         .then((user) => {
             // console.log('---USER---: ', user);
             if (!user) {
-                res.status(404).json({
+                return res.status(404).json({
                     error: 'User not found',
                 });
             }
@@ -68,6 +68,92 @@ exports.signin = (req, res) => {
         })
         .catch((error) => {
             res.status(404).json({
+                error: 'User not found',
+            });
+        });
+};
+
+exports.forgotPassword = (req, res, next) => {
+    const { email, phone } = req.body;
+
+    const forgot_password_code = jwt.sign(
+        { email, phone },
+        process.env.JWT_FORGOT_PASSWORD_SECRET,
+    );
+
+    User.findOneAndUpdate(
+        {
+            $or: [
+                { email: { $exists: true, $ne: null, $eq: email } },
+                { phone: { $exists: true, $ne: null, $eq: phone } },
+            ],
+        },
+        { $set: { forgot_password_code } },
+        { new: true },
+    )
+        .exec()
+        .then((user) => {
+            // console.log('---USER---: ', user);
+            if (!user) {
+                return res.status(404).json({
+                    error: 'User not found',
+                });
+            }
+
+            const msg = {
+                email: email ? email : '',
+                phone: phone ? phone : '',
+                name: user.firstname + ' ' + user.lastname,
+                title: 'Request to change password',
+                text: 'Please click on the following link to change your password.',
+                code: forgot_password_code,
+            };
+
+            req.msg = msg;
+            // console.log('---REQUEST MSG---: ', req.msg);
+            next();
+        })
+        .catch((error) => {
+            return res.status(404).json({
+                error: 'User not found',
+            });
+        });
+};
+
+exports.changePassword = (req, res) => {
+    const forgot_password_code = req.params.forgotPasswordCode;
+    const { password } = req.body;
+
+    User.findOneAndUpdate(
+        { forgot_password_code: forgot_password_code },
+        { $unset: { forgot_password_code: '' } },
+    )
+        .then((user) => {
+            if (!user) {
+                return res.status(404).json({
+                    error: 'User not found',
+                });
+            }
+
+            user.hashed_password = user.encryptPassword(password, user.salt);
+
+            user.save((e, u) => {
+                if (e) {
+                    return res.status(400).json({
+                        error: 'Update password failed, Please request to resend mail/sms',
+                    });
+                }
+
+                // u.hashed_password = undefined;
+                // u.salt = undefined;
+                return res.json({
+                    success: 'Update password successfully',
+                    // user: u,
+                });
+            });
+        })
+        .catch((error) => {
+            return res.status(404).json({
                 error: 'User not found',
             });
         });
@@ -107,7 +193,7 @@ exports.isAuth = (req, res, next) => {
 };
 
 exports.isVendor = (req, res, next) => {
-    if (req.user.role === 'customer') {
+    if (req.user.role !== 'customer') {
         return res.status(403).json({
             error: 'Vendor resource! Access denied',
         });

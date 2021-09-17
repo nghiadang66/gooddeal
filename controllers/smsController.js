@@ -6,8 +6,49 @@ const vonage = new Vonage({
     apiSecret: '6NuYHGafS4oI65OR',
 });
 
+exports.sendNotificationSMS = (req, res) => {
+    let { phone, title, text, code } = req.msg;
+    if (!phone) {
+        return res.status(400).json({
+            error: 'No phone provided!',
+        });
+    }
+
+    const from = 'GoodDeal';
+    const to = '84' + phone.slice(1);
+    text = code ? ` Your CODE: ${code}` : '';
+
+    vonage.message.sendSms(from, to, text, (err, responseData) => {
+        if (err) {
+            console.log(err);
+            return res.status(400).json({
+                error: 'Send SMS failed',
+            });
+        } else {
+            if (responseData.messages[0]['status'] === '0') {
+                return res.json({
+                    success: 'Send SMS successfully',
+                });
+            } else {
+                console.log(
+                    `---SEND SMS FAILED---: ${responseData.messages[0]['status']}`,
+                );
+                return res.status(400).json({
+                    error: 'Send SMS failed',
+                });
+            }
+        }
+    });
+};
+
 exports.sendConfirmationSMS = (req, res) => {
     if (req.user.phone) {
+        if (req.user.isPhoneActive) {
+            return res.status(400).json({
+                error: 'User phone number is confirmed',
+            });
+        }
+
         vonage.verify.request(
             {
                 number: '84' + req.user.phone.slice(1),
@@ -20,16 +61,11 @@ exports.sendConfirmationSMS = (req, res) => {
                         error: 'Send SMS failed',
                     });
                 } else {
-                    console.log('---RESULT---: ', result);
+                    console.log('---RESULT SEND SMS---: ', result);
 
                     User.findOneAndUpdate(
                         { _id: req.user._id },
-                        {
-                            $set: {
-                                phone_code: result.request_id,
-                                isPhoneActive: false,
-                            },
-                        },
+                        { $set: { phone_code: result.request_id } },
                         { new: true },
                     )
                         .exec()
@@ -73,7 +109,7 @@ exports.verifySMS = (req, res) => {
                         error: 'Send SMS failed',
                     });
                 } else {
-                    console.log('---RESULT---: ', result);
+                    console.log('---RESULT VERIFY SMS---: ', result);
 
                     User.findOneAndUpdate(
                         { _id: req.user._id },
