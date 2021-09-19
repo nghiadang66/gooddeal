@@ -1,6 +1,7 @@
 const User = require('../models/userModel');
 const nodemailer = require('nodemailer');
 const jwt = require('jsonwebtoken');
+const { errorHandler } = require('../helpers/errorHandler');
 
 const transport = nodemailer.createTransport({
     service: 'Gmail',
@@ -43,7 +44,7 @@ exports.sendNotificationEmail = (req, res, next) => {
                 });
             })
             .catch((error) => {
-                return res.status(400).json({
+                return res.status(500).json({
                     error: 'Send email failed',
                 });
             });
@@ -73,7 +74,7 @@ exports.sendConfirmationEmail = (req, res) => {
             .exec()
             .then((user) => {
                 if (!user) {
-                    return res.status(404).json({
+                    return res.status(500).json({
                         error: 'User not found',
                     });
                 }
@@ -83,17 +84,17 @@ exports.sendConfirmationEmail = (req, res) => {
                     'To get access to your account please verify your email address by clicking the link below.';
                 const name = user.firstname + ' ' + user.lastname;
 
-                sendEmail(user.email, name, title, text, user.email_code)
-                    .then(() => {
-                        return res.json({
-                            success: 'Send email successfully',
-                        });
-                    })
-                    .catch((error) => {
-                        return res.status(400).json({
-                            error: 'Send email failed',
-                        });
-                    });
+                sendEmail(user.email, name, title, text, user.email_code);
+            })
+            .then(() => {
+                return res.json({
+                    success: 'Send email successfully',
+                });
+            })
+            .catch((error) => {
+                return res.status(500).json({
+                    error: 'Send email failed',
+                });
             });
     } else {
         return res.status(400).json({
@@ -111,7 +112,7 @@ exports.verifyEmail = (req, res) => {
             .exec()
             .then((user) => {
                 if (!user) {
-                    return res.status(404).json({
+                    return res.status(500).json({
                         error: 'User not found',
                     });
                 }
@@ -121,8 +122,8 @@ exports.verifyEmail = (req, res) => {
                 });
             })
             .catch((error) => {
-                return res.status(404).json({
-                    error: 'User not found',
+                return res.status(500).json({
+                    error: errorHandler(error),
                 });
             });
     } else {

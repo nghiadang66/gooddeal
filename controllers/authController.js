@@ -8,7 +8,7 @@ exports.signup = (req, res) => {
     const user = new User({ firstname, lastname, email, phone, password });
     user.save((error, user) => {
         if (error) {
-            return res.status(500).json({
+            return res.status(400).json({
                 error: errorHandler(error),
             });
         }
@@ -136,10 +136,9 @@ exports.changePassword = (req, res) => {
             }
 
             user.hashed_password = user.encryptPassword(password, user.salt);
-
             user.save((e, u) => {
                 if (e) {
-                    return res.status(400).json({
+                    return res.status(500).json({
                         error: 'Update password failed, Please request to resend mail/sms',
                     });
                 }
@@ -193,7 +192,7 @@ exports.isAuth = (req, res, next) => {
 };
 
 exports.isVendor = (req, res, next) => {
-    if (req.user.role !== 'customer') {
+    if (req.user.role == 'customer') {
         return res.status(403).json({
             error: 'Vendor resource! Access denied',
         });
@@ -202,9 +201,21 @@ exports.isVendor = (req, res, next) => {
 };
 
 exports.isManager = (req, res, next) => {
-    if (req.user._id != req.store.managerId) {
+    if (
+        req.user._id != req.store.ownerId &&
+        req.store.staffIds.indexOf(req.user._id) == -1
+    ) {
         return res.status(403).json({
             error: 'Manager resource! Access denied',
+        });
+    }
+    next();
+};
+
+exports.isOwner = (req, res, next) => {
+    if (req.user._id != req.store.ownerId) {
+        return res.status(403).json({
+            error: 'Owner resource! Access denied',
         });
     }
     next();

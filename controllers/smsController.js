@@ -1,5 +1,6 @@
 const User = require('../models/userModel');
 const Vonage = require('@vonage/server-sdk');
+const { errorHandler } = require('../helpers/errorHandler');
 
 const vonage = new Vonage({
     apiKey: '628eebed',
@@ -21,7 +22,7 @@ exports.sendNotificationSMS = (req, res) => {
     vonage.message.sendSms(from, to, text, (err, responseData) => {
         if (err) {
             console.log(err);
-            return res.status(400).json({
+            return res.status(500).json({
                 error: 'Send SMS failed',
             });
         } else {
@@ -33,7 +34,7 @@ exports.sendNotificationSMS = (req, res) => {
                 console.log(
                     `---SEND SMS FAILED---: ${responseData.messages[0]['status']}`,
                 );
-                return res.status(400).json({
+                return res.status(500).json({
                     error: 'Send SMS failed',
                 });
             }
@@ -57,7 +58,7 @@ exports.sendConfirmationSMS = (req, res) => {
             (err, result) => {
                 if (err) {
                     console.error(err);
-                    return res.status(400).json({
+                    return res.status(500).json({
                         error: 'Send SMS failed',
                     });
                 } else {
@@ -71,7 +72,7 @@ exports.sendConfirmationSMS = (req, res) => {
                         .exec()
                         .then((user) => {
                             if (!user) {
-                                return res.status(404).json({
+                                return res.status(500).json({
                                     error: 'User not found',
                                 });
                             }
@@ -81,8 +82,8 @@ exports.sendConfirmationSMS = (req, res) => {
                             });
                         })
                         .catch((error) => {
-                            return res.status(404).json({
-                                error: 'User not found',
+                            return res.status(500).json({
+                                error: errorHandler(error),
                             });
                         });
                 }
@@ -105,7 +106,7 @@ exports.verifySMS = (req, res) => {
             (err, result) => {
                 if (err) {
                     console.error(err);
-                    return res.status(400).json({
+                    return res.status(500).json({
                         error: 'Send SMS failed',
                     });
                 } else {
@@ -121,7 +122,7 @@ exports.verifySMS = (req, res) => {
                         .exec()
                         .then((user) => {
                             if (!user) {
-                                return res.status(404).json({
+                                return res.status(500).json({
                                     error: 'User not found',
                                 });
                             }
@@ -131,8 +132,8 @@ exports.verifySMS = (req, res) => {
                             });
                         })
                         .catch((error) => {
-                            return res.status(404).json({
-                                error: 'User not found',
+                            return res.status(500).json({
+                                error: errorHandler(error),
                             });
                         });
                 }

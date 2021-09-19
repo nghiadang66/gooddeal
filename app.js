@@ -10,6 +10,7 @@ require('dotenv').config();
 const testRoutes = require('./routes/testRoute');
 const authRoutes = require('./routes/authRoute');
 const userRoutes = require('./routes/userRoute');
+const storeRoutes = require('./routes/storeRoute');
 
 //app
 const app = express();
@@ -32,6 +33,7 @@ app.use('/static', express.static(path.join(__dirname, 'public')));
 app.use('/api', testRoutes);
 app.use('/api', authRoutes);
 app.use('/api', userRoutes);
+app.use('/api', storeRoutes);
 
 //port
 const port = process.env.PORT || 8000;

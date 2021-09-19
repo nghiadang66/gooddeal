@@ -80,12 +80,7 @@ const signin = () => [
         'Email or phone number must be provided at least one, email must contain @ and phone number must contain 10 or 11 numbers',
     ),
 
-    check('password')
-        .not()
-        .isEmpty()
-        .withMessage('Password is required')
-        .matches(/^[A-Za-z\d@$!%*?&]+$/)
-        .withMessage('Password contains some invalid characters'),
+    check('password').not().isEmpty().withMessage('Password is required'),
 ];
 
 const forgotPassword = () => [

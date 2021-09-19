@@ -84,11 +84,7 @@ const userAddress = () => [
         .isEmpty()
         .withMessage('Address is required')
         .isLength({ max: 200 })
-        .withMessage('Address can contain up to 200 characters')
-        .matches(/^(?=.*[a-zA-Z])[A-Za-z\d\s,_'-]*$/)
-        .withMessage(
-            'must contain at least one letter, can contain numbers, some special characters such as _, \', -, "," and space',
-        ),
+        .withMessage('Address can contain up to 200 characters'),
 ];
 
 module.exports = {

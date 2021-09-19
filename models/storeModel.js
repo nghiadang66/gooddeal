@@ -21,16 +21,17 @@ const storeSchema = new mongoose.Schema(
         },
         bio: {
             type: String,
+            trim: true,
             required: true,
             maxLength: 1000,
         },
-        managerId: {
+        ownerId: {
             type: ObjectId,
             ref: 'User',
             required: true,
             unique: true,
         },
-        staffId: {
+        staffIds: {
             type: [
                 {
                     type: ObjectId,
@@ -79,7 +80,13 @@ function featured_imagesLimit(val) {
 }
 
 function nameAvailable(val) {
-    const defaultName = ['gooddeal', 'good deal', 'good-deal'];
+    const defaultName = [
+        'gooddeal',
+        'good deal',
+        'good-deal',
+        "good'deal",
+        'good_deal',
+    ];
     let flag = true;
     defaultName.forEach((name) => {
         if (val.toLowerCase().includes(name)) {

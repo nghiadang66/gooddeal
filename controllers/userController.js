@@ -1,6 +1,7 @@
 const User = require('../models/userModel');
 const fs = require('fs');
 const formidable = require('formidable');
+const { errorHandler } = require('../helpers/errorHandler');
 
 /*------
   USER
@@ -56,7 +57,7 @@ exports.updateUser = (req, res) => {
         .exec()
         .then((user) => {
             if (!user) {
-                return res.status(404).json({
+                return res.status(500).json({
                     error: 'User not found',
                 });
             }
@@ -69,7 +70,7 @@ exports.updateUser = (req, res) => {
 
                 user.save((e, u) => {
                     if (e) {
-                        return res.status(400).json({
+                        return res.status(500).json({
                             error: 'Update user successfully but password failed',
                         });
                     }
@@ -85,14 +86,14 @@ exports.updateUser = (req, res) => {
                 // user.hashed_password = undefined;
                 // user.salt = undefined;
                 return res.json({
-                    success: 'Update user successfully',
+                    success: 'Update user without password successfully',
                     // user,
                 });
             }
         })
         .catch((error) => {
             return res.status(400).json({
-                error: 'Update user failed, the cause may be because email, phone or id_card already exists',
+                error: errorHandler(error),
             });
         });
 };
@@ -128,7 +129,7 @@ exports.addAddress = (req, res) => {
         .exec()
         .then((user) => {
             if (!user) {
-                return res.status(404).json({
+                return res.status(500).json({
                     error: 'User not found',
                 });
             }
@@ -142,7 +143,7 @@ exports.addAddress = (req, res) => {
         })
         .catch((error) => {
             return res.status(400).json({
-                error: 'Add address failed',
+                error: errorHandler(error),
             });
         });
 };
@@ -173,7 +174,7 @@ exports.updateAddress = (req, res) => {
         .exec()
         .then((user) => {
             if (!user) {
-                return res.status(404).json({
+                return res.status(500).json({
                     error: 'User not found',
                 });
             }
@@ -187,7 +188,7 @@ exports.updateAddress = (req, res) => {
         })
         .catch((error) => {
             return res.status(400).json({
-                error: 'Update address failed',
+                error: errorHandler(error),
             });
         });
 };
@@ -211,7 +212,7 @@ exports.removeAddress = (req, res) => {
         .exec()
         .then((user) => {
             if (!user) {
-                return res.status(404).json({
+                return res.status(500).json({
                     error: 'User not found',
                 });
             }
@@ -225,7 +226,7 @@ exports.removeAddress = (req, res) => {
         })
         .catch((error) => {
             return res.status(400).json({
-                error: 'Remove address failed',
+                error: errorHandler(error),
             });
         });
 };
@@ -255,6 +256,7 @@ exports.updateAvatar = (req, res) => {
 
         // console.log('---FILES---: ', files.photo);
         if (files.photo) {
+            //check type
             const type = files.photo.type;
             if (
                 type !== 'image/png' &&
@@ -267,6 +269,7 @@ exports.updateAvatar = (req, res) => {
                 });
             }
 
+            //check size
             const size = files.photo.size;
             if (size > 1000000) {
                 return res.status(400).json({
@@ -277,7 +280,7 @@ exports.updateAvatar = (req, res) => {
             const path = files.photo.path;
             fs.readFile(path, function (error, data) {
                 if (error) {
-                    return res.status(400).json({
+                    return res.status(500).json({
                         error: 'Can not read photo file',
                     });
                 }
@@ -294,7 +297,7 @@ exports.updateAvatar = (req, res) => {
                 newpath = newpath + '.' + type.replace('image/', '');
                 fs.writeFile(newpath, data, function (error) {
                     if (error) {
-                        return res.status(400).json({
+                        return res.status(500).json({
                             error: 'Photo could not be up load',
                         });
                     }
@@ -307,7 +310,7 @@ exports.updateAvatar = (req, res) => {
                         .exec()
                         .then((user) => {
                             if (!user) {
-                                return res.status(404).json({
+                                return res.status(500).json({
                                     error: 'User not found',
                                 });
                             }
@@ -320,8 +323,8 @@ exports.updateAvatar = (req, res) => {
                             });
                         })
                         .catch((error) => {
-                            return res.status(400).json({
-                                error: 'Update avatar failed',
+                            return res.status(500).json({
+                                error: errorHandler(error),
                             });
                         });
                 });
