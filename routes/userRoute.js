@@ -7,6 +7,7 @@ const { validateHandler } = require('../helpers/validateHandler');
 
 //import controllers
 const { isAuth } = require('../controllers/authController');
+const { upload } = require('../controllers/uploadController');
 const {
     userById,
     getUser,
@@ -19,6 +20,7 @@ const {
     getAvatar,
     updateAvatar,
     getRole,
+    listSearch,
 } = require('../controllers/userController');
 
 //routes
@@ -32,7 +34,7 @@ router.put(
 );
 
 router.get('/addresses/:userId', isAuth, listAddress);
-router.put(
+router.post(
     '/address/:userId',
     isAuth,
     userValidator.userAddress(),
@@ -40,18 +42,20 @@ router.put(
     addAddress,
 );
 router.put(
-    '/address/:userId/:addressIndex',
+    '/address/:userId',
     isAuth,
     userValidator.userAddress(),
     validateHandler,
     updateAddress,
 );
-router.delete('/address/:userId/:addressIndex', isAuth, removeAddress);
+router.delete('/address/:userId', isAuth, removeAddress);
 
-router.get('/avatar/:userId', isAuth, getAvatar);
-router.put('/avatar/:userId', isAuth, updateAvatar);
+router.get('/avatar/:userId', getAvatar);
+router.put('/avatar/:userId', isAuth, upload, updateAvatar);
 
-router.get('/role/:userId', isAuth, getRole);
+router.get('/role/:userId', getRole);
+
+router.get('/users/search', listSearch);
 
 //router params
 router.param('userId', userById);

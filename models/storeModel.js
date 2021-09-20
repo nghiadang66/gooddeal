@@ -51,11 +51,11 @@ const storeSchema = new mongoose.Schema(
         },
         avatar: {
             type: String,
-            default: '/uploads/store/default.jpg',
+            default: '/uploads/default.jpg',
         },
         cover: {
             type: String,
-            default: '/uploads/store/default.jpg',
+            default: '/uploads/default.jpg',
         },
         featured_images: {
             type: [String],

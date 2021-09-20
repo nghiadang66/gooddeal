@@ -65,7 +65,7 @@ const userSchema = new mongoose.Schema(
         },
         avatar: {
             type: String,
-            default: '/uploads/user/default.jpg',
+            default: '/uploads/default.jpg',
         },
         e_wallet: {
             type: mongoose.Decimal128,
@@ -108,6 +108,8 @@ const userSchema = new mongoose.Schema(
     },
     { timestamps: true },
 );
+
+// userSchema.index({ '$**': 'text' });
 
 //virtual field
 userSchema

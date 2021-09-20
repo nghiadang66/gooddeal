@@ -1,7 +1,6 @@
 const Store = require('../models/storeModel');
 const User = require('../models/userModel');
 const fs = require('fs');
-const formidable = require('formidable');
 const { errorHandler } = require('../helpers/errorHandler');
 
 /*------
@@ -188,98 +187,45 @@ exports.getAvatar = (req, res) => {
 };
 
 exports.updateAvatar = (req, res) => {
-    const form = new formidable.IncomingForm();
-    form.keepExtensions = true;
+    const oldpath = req.store.avatar;
 
-    form.parse(req, (error, fields, files) => {
-        if (error) {
-            return res.status(400).json({
-                error: 'Photo could not be up load',
-            });
-        }
-
-        if (files.photo) {
-            //check type
-            const type = files.photo.type;
-            if (
-                type !== 'image/png' &&
-                type !== 'image/jpg' &&
-                type !== 'image/jpeg' &&
-                type !== 'image/gif'
-            ) {
-                return res.status(400).json({
-                    error: 'Invalid type. Photo type must be png, jpg, jpeg or gif.',
-                });
-            }
-
-            //check size
-            const size = files.photo.size;
-            if (size > 1000000) {
-                return res.status(400).json({
-                    error: 'Image should be less than 1mb in size',
-                });
-            }
-
-            const path = files.photo.path;
-            let data;
-            try {
-                data = fs.readFileSync(path);
-            } catch (e) {
-                return res.status(500).json({
-                    error: 'Can not read photo file',
-                });
-            }
-
-            let newpath = 'public/uploads/store/' + 'avatar-' + req.store.slug;
-
-            //unlink
-            const types = ['.png', '.jpg', '.jpeg', '.gif'];
-            types.forEach((type) => {
+    Store.findOneAndUpdate(
+        { _id: req.store._id },
+        { $set: { avatar: req.filepath } },
+        { new: true },
+    )
+        .exec()
+        .then((store) => {
+            if (!store) {
                 try {
-                    fs.unlinkSync(newpath + type);
+                    fs.unlinkSync('public' + req.filepath);
                 } catch {}
-            });
 
-            //write file
-            newpath = newpath + '.' + type.replace('image/', '');
-            try {
-                fs.writeFileSync(newpath, data);
-            } catch (e) {
                 return res.status(500).json({
-                    error: 'Photo could not be up load',
+                    error: 'Store not found',
                 });
             }
 
-            //save path
-            Store.findOneAndUpdate(
-                { _id: req.store._id },
-                { $set: { avatar: newpath.replace('public', '') } },
-                { new: true },
-            )
-                .exec()
-                .then((store) => {
-                    if (!store) {
-                        return res.status(500).json({
-                            error: 'Store not found',
-                        });
-                    }
+            if (oldpath != '/uploads/default.jpg') {
+                try {
+                    fs.unlinkSync('public' + oldpath);
+                } catch {}
+            }
 
-                    return res.json({
-                        success: 'Update avatar successfully',
-                        // store,
-                    });
-                })
-                .catch((error) => {
-                    return res.status(500).json({
-                        error: errorHandler(error),
-                    });
-                });
-        } else {
-            return res.status(400).json({
-                error: 'Photo file is not exists',
+            return res.json({
+                success: 'Update avatar successfully',
+                // store,
             });
-        }
-    });
+        })
+        .catch((error) => {
+            try {
+                fs.unlinkSync('public' + req.filepath);
+            } catch {}
+
+            return res.status(500).json({
+                error: errorHandler(error),
+            });
+        });
 };
 
 /*------
@@ -294,100 +240,45 @@ exports.getCover = (req, res) => {
 };
 
 exports.updateCover = (req, res) => {
-    const form = new formidable.IncomingForm();
-    form.keepExtensions = true;
-    // form.uploadDir = 'public/uploads/user/';
+    const oldpath = req.store.cover;
 
-    form.parse(req, (error, fields, files) => {
-        if (error) {
-            return res.status(400).json({
-                error: 'Photo could not be up load',
-            });
-        }
-
-        // console.log('---FILES---: ', files.photo);
-        if (files.photo) {
-            //check type
-            const type = files.photo.type;
-            if (
-                type !== 'image/png' &&
-                type !== 'image/jpg' &&
-                type !== 'image/jpeg' &&
-                type !== 'image/gif'
-            ) {
-                return res.status(400).json({
-                    error: 'Invalid type. Photo type must be png, jpg, jpeg or gif.',
-                });
-            }
-
-            //check size
-            const size = files.photo.size;
-            if (size > 1000000) {
-                return res.status(400).json({
-                    error: 'Image should be less than 1mb in size',
-                });
-            }
-
-            const path = files.photo.path;
-            let data;
-            try {
-                data = fs.readFileSync(path);
-            } catch (e) {
-                return res.status(500).json({
-                    error: 'Can not read photo file',
-                });
-            }
-
-            let newpath = 'public/uploads/store/' + 'cover-' + req.store.slug;
-
-            //unlink
-            const types = ['.png', '.jpg', '.jpeg', '.gif'];
-            types.forEach((type) => {
+    Store.findOneAndUpdate(
+        { _id: req.store._id },
+        { $set: { cover: req.filepath } },
+        { new: true },
+    )
+        .exec()
+        .then((store) => {
+            if (!store) {
                 try {
-                    fs.unlinkSync(newpath + type);
+                    fs.unlinkSync('public' + req.filepath);
                 } catch {}
-            });
 
-            //write file
-            newpath = newpath + '.' + type.replace('image/', '');
-            try {
-                fs.writeFileSync(newpath, data);
-            } catch (e) {
                 return res.status(500).json({
-                    error: 'Photo could not be up load',
+                    error: 'Store not found',
                 });
             }
 
-            //save path
-            Store.findOneAndUpdate(
-                { _id: req.store._id },
-                { $set: { cover: newpath.replace('public', '') } },
-                { new: true },
-            )
-                .exec()
-                .then((store) => {
-                    if (!store) {
-                        return res.status(500).json({
-                            error: 'Store not found',
-                        });
-                    }
+            if (oldpath != '/uploads/default.jpg') {
+                try {
+                    fs.unlinkSync('public' + oldpath);
+                } catch {}
+            }
 
-                    return res.json({
-                        success: 'Update cover successfully',
-                        // store,
-                    });
-                })
-                .catch((error) => {
-                    return res.status(500).json({
-                        error: errorHandler(error),
-                    });
-                });
-        } else {
-            return res.status(400).json({
-                error: 'Photo file is not exists',
+            return res.json({
+                success: 'Update cover successfully',
+                // store,
             });
-        }
-    });
+        })
+        .catch((error) => {
+            try {
+                fs.unlinkSync('public' + req.filepath);
+            } catch {}
+
+            return res.status(500).json({
+                error: errorHandler(error),
+            });
+        });
 };
 
 /*------
@@ -406,244 +297,141 @@ exports.addFeatureImage = (req, res) => {
 
     const index = featured_images.length;
     if (index >= 6) {
+        try {
+            fs.unlinkSync('public' + req.filepath);
+        } catch {}
+
         return res.status(400).json({
             error: 'The limit is 6 images',
         });
     }
 
-    const form = new formidable.IncomingForm();
-    form.keepExtensions = true;
+    Store.findOneAndUpdate(
+        { _id: req.store._id },
+        { $push: { featured_images: req.filepath } },
+        { new: true },
+    )
+        .exec()
+        .then((store) => {
+            if (!store) {
+                try {
+                    fs.unlinkSync('public' + req.filepath);
+                } catch {}
 
-    form.parse(req, (error, fields, files) => {
-        if (error) {
-            return res.status(400).json({
-                error: 'Photo could not be up load',
-            });
-        }
-
-        // console.log('---FILES---: ', files.photo);
-        if (files.photo) {
-            //check type
-            const type = files.photo.type;
-            if (
-                type !== 'image/png' &&
-                type !== 'image/jpg' &&
-                type !== 'image/jpeg' &&
-                type !== 'image/gif'
-            ) {
-                return res.status(400).json({
-                    error: 'Invalid type. Photo type must be png, jpg, jpeg or gif.',
-                });
-            }
-
-            //check size
-            const size = files.photo.size;
-            if (size > 1000000) {
-                return res.status(400).json({
-                    error: 'Image should be less than 1mb in size',
-                });
-            }
-
-            const path = files.photo.path;
-            let data;
-            try {
-                data = fs.readFileSync(path);
-            } catch (e) {
                 return res.status(500).json({
-                    error: 'Can not read photo file',
+                    error: 'Store not found',
                 });
             }
 
-            //write file
-            let newpath =
-                'public/uploads/store/' +
-                `feature-${index}-` +
-                req.store.slug +
-                '.' +
-                type.replace('image/', '');
-
-            try {
-                fs.writeFileSync(newpath, data);
-            } catch (e) {
-                return res.status(500).json({
-                    error: 'Photo could not be up load',
-                });
-            }
-
-            //save path
-            Store.findOneAndUpdate(
-                { _id: req.store._id },
-                { $push: { featured_images: newpath.replace('public', '') } },
-                { new: true },
-            )
-                .exec()
-                .then((store) => {
-                    if (!store) {
-                        return res.status(500).json({
-                            error: 'Store not found',
-                        });
-                    }
-
-                    return res.json({
-                        success: 'Add featured image successfully',
-                        // store,
-                    });
-                })
-                .catch((error) => {
-                    return res.status(500).json({
-                        error: errorHandler(error),
-                    });
-                });
-        } else {
-            return res.status(400).json({
-                error: 'Photo file is not exists',
+            return res.json({
+                success: 'Add featured image successfully',
+                // store,
             });
-        }
-    });
+        })
+        .catch((error) => {
+            try {
+                fs.unlinkSync('public' + req.filepath);
+            } catch {}
+
+            return res.status(500).json({
+                error: errorHandler(error),
+            });
+        });
 };
 
 exports.updateFeatureImage = (req, res) => {
+    let index;
+    if (!req.query.index) {
+        try {
+            fs.unlinkSync('public' + req.filepath);
+        } catch {}
+
+        return res.status(400).json({
+            error: 'Index not found',
+        });
+    } else {
+        index = req.query.index;
+    }
+
     let featured_images = req.store.featured_images;
-    const index = req.params.imageIndex;
     if (index >= featured_images.length) {
+        try {
+            fs.unlinkSync('public' + req.filepath);
+        } catch {}
+
         return res.status(404).json({
             error: 'Feature image not found',
         });
     }
 
-    const form = new formidable.IncomingForm();
-    form.keepExtensions = true;
-    // form.uploadDir = 'public/uploads/user/';
+    const oldpath = featured_images[index];
+    featured_images[index] = req.filepath;
+    Store.findOneAndUpdate(
+        { _id: req.store._id },
+        { $set: { featured_images } },
+        { new: true },
+    )
+        .exec()
+        .then((store) => {
+            if (!store) {
+                try {
+                    fs.unlinkSync('public' + req.filepath);
+                } catch {}
 
-    form.parse(req, (error, fields, files) => {
-        if (error) {
-            return res.status(400).json({
-                error: 'Photo could not be up load',
-            });
-        }
-
-        // console.log('---FILES---: ', files.photo);
-        if (files.photo) {
-            //check type
-            const type = files.photo.type;
-            if (
-                type !== 'image/png' &&
-                type !== 'image/jpg' &&
-                type !== 'image/jpeg' &&
-                type !== 'image/gif'
-            ) {
-                return res.status(400).json({
-                    error: 'Invalid type. Photo type must be png, jpg, jpeg or gif.',
-                });
-            }
-
-            //check size
-            const size = files.photo.size;
-            if (size > 1000000) {
-                return res.status(400).json({
-                    error: 'Image should be less than 1mb in size',
-                });
-            }
-
-            const path = files.photo.path;
-            let data;
-            try {
-                data = fs.readFileSync(path);
-            } catch (e) {
                 return res.status(500).json({
-                    error: 'Can not read photo file',
+                    error: 'Store not found',
                 });
             }
 
-            //unlink
-            const oldpath = featured_images[index];
+            if (oldpath != '/uploads/default.jpg') {
+                try {
+                    fs.unlinkSync('public' + oldpath);
+                } catch {}
+            }
+
+            return res.json({
+                success: 'Update feature image successfully',
+                // store,
+            });
+        })
+        .catch((error) => {
             try {
-                fs.unlinkSync('public' + oldpath);
+                fs.unlinkSync('public' + req.filepath);
             } catch {}
 
-            //write file
-            let newpath =
-                'public/uploads/store/' +
-                `feature-${index}-` +
-                req.store.slug +
-                '.' +
-                type.replace('image/', '');
-            try {
-                fs.writeFileSync(newpath, data);
-            } catch (e) {
-                return res.status(500).json({
-                    error: 'Photo could not be up load',
-                });
-            }
-
-            featured_images[index] = newpath.replace('public', '');
-
-            //save path
-            Store.findOneAndUpdate(
-                { _id: req.store._id },
-                { $set: { featured_images } },
-                { new: true },
-            )
-                .exec()
-                .then((store) => {
-                    if (!store) {
-                        return res.status(500).json({
-                            error: 'Store not found',
-                        });
-                    }
-
-                    return res.json({
-                        success: 'Update feature image successfully',
-                        // store,
-                    });
-                })
-                .catch((error) => {
-                    return res.status(500).json({
-                        error: errorHandler(error),
-                    });
-                });
-        } else {
-            return res.status(400).json({
-                error: 'Photo file is not exists',
+            return res.status(500).json({
+                error: errorHandler(error),
             });
-        }
-    });
+        });
 };
 
 exports.removeFeaturedImage = (req, res) => {
+    let index;
+    if (!req.query.index) {
+        return res.status(400).json({
+            error: 'Index not found',
+        });
+    } else {
+        index = req.query.index;
+    }
+
     let featured_images = req.store.featured_images;
-    const index = req.params.imageIndex;
     if (index >= featured_images.length) {
         return res.status(404).json({
             error: 'Feature image not found',
         });
     }
 
-    if (index == featured_images.length - 1) {
-        try {
-            fs.unlinkSync('public' + featured_images[index]);
-        } catch (e) {
-            return res.status(500).json({
-                error: 'Remove featured image failed',
-            });
-        }
-    } else {
-        for (let i = index - 1; i < featured_images.length - 2; i++) {
-            try {
-                fs.renameSync(
-                    'public' + featured_images[i + 2],
-                    'public' + featured_images[i + 1],
-                );
-            } catch (e) {
-                return res.status(500).json({
-                    error: 'Remove featured image failed',
-                });
-            }
-        }
+    try {
+        fs.unlinkSync('public' + featured_images[index]);
+    } catch (e) {
+        return res.status(500).json({
+            error: 'Remove featured image failed',
+        });
     }
 
     //update db
-    featured_images.pop();
+    featured_images.splice(index, 1);
     Store.findOneAndUpdate(
         { _id: req.store._id },
         { $set: { featured_images } },

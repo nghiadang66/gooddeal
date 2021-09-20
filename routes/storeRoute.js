@@ -15,6 +15,7 @@ const {
     isCustomer,
 } = require('../controllers/authController');
 const { userById } = require('../controllers/userController');
+const { upload } = require('../controllers/uploadController');
 const {
     storeById,
     getStore,
@@ -75,26 +76,40 @@ router.put(
 );
 
 router.get('/store/avatar/:storeId', getAvatar);
-router.put('/store/avatar/:storeId/:userId', isAuth, isManager, updateAvatar);
+router.put(
+    '/store/avatar/:storeId/:userId',
+    isAuth,
+    isManager,
+    upload,
+    updateAvatar,
+);
 
 router.get('/store/cover/:storeId', getCover);
-router.put('/store/cover/:storeId/:userId', isAuth, isManager, updateCover);
+router.put(
+    '/store/cover/:storeId/:userId',
+    isAuth,
+    isManager,
+    upload,
+    updateCover,
+);
 
 router.get('/store/featured/images/:storeId', getFeatureImages);
+router.post(
+    '/store/featured/image/:storeId/:userId',
+    isAuth,
+    isManager,
+    upload,
+    addFeatureImage,
+);
 router.put(
     '/store/featured/image/:storeId/:userId',
     isAuth,
     isManager,
-    addFeatureImage,
-);
-router.put(
-    '/store/featured/image/:storeId/:userId/:imageIndex',
-    isAuth,
-    isManager,
+    upload,
     updateFeatureImage,
 );
 router.delete(
-    '/store/featured/image/:storeId/:userId/:imageIndex',
+    '/store/featured/image/:storeId/:userId',
     isAuth,
     isManager,
     removeFeaturedImage,

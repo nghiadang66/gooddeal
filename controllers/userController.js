@@ -1,6 +1,5 @@
 const User = require('../models/userModel');
 const fs = require('fs');
-const formidable = require('formidable');
 const { errorHandler } = require('../helpers/errorHandler');
 
 /*------
@@ -149,9 +148,16 @@ exports.addAddress = (req, res) => {
 };
 
 exports.updateAddress = (req, res) => {
-    const addressIndex = req.params.addressIndex;
-    let addresses = req.user.addresses;
+    let addressIndex;
+    if (!req.query.index) {
+        return res.status(400).json({
+            error: 'index not found',
+        });
+    } else {
+        addressIndex = req.query.index;
+    }
 
+    let addresses = req.user.addresses;
     if (addresses.length <= addressIndex) {
         return res.status(404).json({
             error: 'Address not found',
@@ -194,9 +200,16 @@ exports.updateAddress = (req, res) => {
 };
 
 exports.removeAddress = (req, res) => {
-    const addressIndex = req.params.addressIndex;
-    let addresses = req.user.addresses;
+    let addressIndex;
+    if (!req.query.index) {
+        return res.status(400).json({
+            error: 'index not found',
+        });
+    } else {
+        addressIndex = req.query.index;
+    }
 
+    let addresses = req.user.addresses;
     if (addresses.length <= addressIndex) {
         return res.status(404).json({
             error: 'Address not found',
@@ -243,98 +256,47 @@ exports.getAvatar = (req, res) => {
 };
 
 exports.updateAvatar = (req, res) => {
-    const form = new formidable.IncomingForm();
-    form.keepExtensions = true;
-    // form.uploadDir = 'public/uploads/user/';
+    const oldpath = req.user.avatar;
 
-    form.parse(req, (error, fields, files) => {
-        if (error) {
-            return res.status(400).json({
-                error: 'Photo could not be up load',
-            });
-        }
+    User.findOneAndUpdate(
+        { _id: req.user._id },
+        { $set: { avatar: req.filepath } },
+        { new: true },
+    )
+        .exec()
+        .then((user) => {
+            if (!user) {
+                try {
+                    fs.unlinkSync('public' + req.filepath);
+                } catch {}
 
-        // console.log('---FILES---: ', files.photo);
-        if (files.photo) {
-            //check type
-            const type = files.photo.type;
-            if (
-                type !== 'image/png' &&
-                type !== 'image/jpg' &&
-                type !== 'image/jpeg' &&
-                type !== 'image/gif'
-            ) {
-                return res.status(400).json({
-                    error: 'Invalid type. Photo type must be png, jpg, jpeg or gif.',
+                return res.status(500).json({
+                    error: 'User not found',
                 });
             }
 
-            //check size
-            const size = files.photo.size;
-            if (size > 1000000) {
-                return res.status(400).json({
-                    error: 'Image should be less than 1mb in size',
-                });
+            if (oldpath != '/uploads/default.jpg') {
+                try {
+                    fs.unlinkSync('public' + oldpath);
+                } catch {}
             }
 
-            const path = files.photo.path;
-            fs.readFile(path, function (error, data) {
-                if (error) {
-                    return res.status(500).json({
-                        error: 'Can not read photo file',
-                    });
-                }
-
-                let newpath =
-                    'public/uploads/user/' + 'avatar-' + req.user.slug;
-                const types = ['.png', '.jpg', '.jpeg', '.gif'];
-                types.forEach((type) => {
-                    try {
-                        fs.unlinkSync(newpath + type);
-                    } catch {}
-                });
-
-                newpath = newpath + '.' + type.replace('image/', '');
-                fs.writeFile(newpath, data, function (error) {
-                    if (error) {
-                        return res.status(500).json({
-                            error: 'Photo could not be up load',
-                        });
-                    }
-
-                    User.findOneAndUpdate(
-                        { _id: req.user._id },
-                        { $set: { avatar: newpath.replace('public', '') } },
-                        { new: true },
-                    )
-                        .exec()
-                        .then((user) => {
-                            if (!user) {
-                                return res.status(500).json({
-                                    error: 'User not found',
-                                });
-                            }
-
-                            // user.hashed_password = undefined;
-                            // user.salt = undefined;
-                            return res.json({
-                                success: 'Update avatar successfully',
-                                // user,
-                            });
-                        })
-                        .catch((error) => {
-                            return res.status(500).json({
-                                error: errorHandler(error),
-                            });
-                        });
-                });
+            // user.hashed_password = undefined;
+            // user.salt = undefined;
+            return res.json({
+                success: 'Update avatar successfully',
+                // user,
             });
-        } else {
-            return res.status(400).json({
-                error: 'Photo file is not exists',
+        })
+        .catch((error) => {
+            try {
+                fs.unlinkSync('public' + req.filepath);
+            } catch {}
+
+            return res.status(500).json({
+                error: errorHandler(error),
             });
-        }
-    });
+        });
 };
 
 /*------
@@ -346,4 +308,42 @@ exports.getRole = (req, res) => {
         success: 'Get role successfully',
         role,
     });
+};
+
+/*------
+  LIST SEARCH
+  ------*/
+// listsearch = /users/search?q=...&r=...&l=...
+exports.listSearch = (req, res) => {
+    const query = req.query.q ? req.query.q : '';
+    if (req.query.r == 'admin') {
+        req.query.r = '';
+    }
+    const role = req.query.r ? [req.query.r] : ['customer', 'vendor'];
+    const limit = req.query.l ? parseInt(req.query.l) : 6;
+
+    User.find({
+        $or: [
+            { firstname: { $regex: query, $options: 'i' } },
+            { lastname: { $regex: query, $options: 'i' } },
+            { email: { $regex: query, $options: 'i' } },
+            { phone: { $regex: query, $options: 'i' } },
+        ],
+        $ne: { role: 'admin' },
+        role: { $in: role },
+    })
+        .select('_id firstname lastname email phone')
+        .limit(limit)
+        .exec()
+        .then((users) => {
+            return res.json({
+                success: 'Search users successfully',
+                users,
+            });
+        })
+        .catch((error) => {
+            return res.status(500).json({
+                error: 'Search users failed',
+            });
+        });
 };
