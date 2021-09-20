@@ -24,14 +24,14 @@ const {
 //routes
 router.get('/user/:userId', isAuth, getUser);
 router.put(
-    '/update/user/:userId',
+    '/user/:userId',
     isAuth,
     userValidator.updateUser(),
     validateHandler,
     updateUser,
 );
 
-router.get('/address/:userId', isAuth, listAddress);
+router.get('/addresses/:userId', isAuth, listAddress);
 router.put(
     '/address/:userId',
     isAuth,

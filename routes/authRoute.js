@@ -36,7 +36,7 @@ router.post(
     sendNotificationEmail,
     sendNotificationSMS,
 );
-router.post(
+router.put(
     '/change/password/:forgotPasswordCode',
     authValidator.changePassword(),
     validateHandler,

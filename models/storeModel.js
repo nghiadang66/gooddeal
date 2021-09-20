@@ -68,7 +68,19 @@ const storeSchema = new mongoose.Schema(
         },
         point: {
             type: Number,
+            default: function () {
+                return this.amount_order + Math.floor(this.amount_spent / 100);
+            },
+        },
+        amount_order: {
+            type: Number,
             default: 0,
+            min: 0,
+        },
+        amount_spent: {
+            type: mongoose.Decimal128,
+            default: 0,
+            min: 0,
         },
     },
     { timestamps: true },

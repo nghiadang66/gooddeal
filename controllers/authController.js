@@ -191,6 +191,15 @@ exports.isAuth = (req, res, next) => {
     }
 };
 
+exports.isCustomer = (req, res, next) => {
+    if (req.user.role != 'customer') {
+        return res.status(403).json({
+            error: 'User role is not a customer',
+        });
+    }
+    next();
+};
+
 exports.isVendor = (req, res, next) => {
     if (req.user.role == 'customer') {
         return res.status(403).json({
@@ -202,7 +211,7 @@ exports.isVendor = (req, res, next) => {
 
 exports.isManager = (req, res, next) => {
     if (
-        req.user._id != req.store.ownerId &&
+        !req.user._id.equals(req.store.ownerId) &&
         req.store.staffIds.indexOf(req.user._id) == -1
     ) {
         return res.status(403).json({

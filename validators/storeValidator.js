@@ -1,6 +1,6 @@
 const { check, oneOf } = require('express-validator');
 
-const createStore = () => [
+const storeProfile = () => [
     check('name')
         .not()
         .isEmpty()
@@ -19,6 +19,24 @@ const createStore = () => [
         .withMessage('Store bio can contain up to 1000 characters'),
 ];
 
+const activeStore = () => [
+    check('isActive')
+        .not()
+        .isEmpty()
+        .withMessage('isActive is required')
+        .isBoolean()
+        .withMessage('isActive type is boolean'),
+];
+
+const updateStatus = () => [
+    check('status')
+        .not()
+        .isEmpty()
+        .withMessage('status is required')
+        .custom(checkStatus),
+];
+
+//custom validator
 const checkStoreName = (val) => {
     const regex = /g[o0][o0]d[^\w]*deal/i;
 
@@ -34,6 +52,17 @@ const checkStoreName = (val) => {
     return true;
 };
 
+const checkStatus = (val) => {
+    const stt = ['open', 'close'];
+    if (stt.indexOf(val) == -1) {
+        return Promise.reject('status is invalid');
+    }
+
+    return true;
+};
+
 module.exports = {
-    createStore,
+    storeProfile,
+    activeStore,
+    updateStatus,
 };
