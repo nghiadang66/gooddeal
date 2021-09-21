@@ -59,11 +59,11 @@ exports.signin = (req, res) => {
                 },
             );
 
-            const { _id, firstname, lastname, role } = user;
+            const { _id, firstname, lastname, slug, avatar, role } = user;
             return res.json({
                 success: 'Sign in successfully',
                 token,
-                user: { _id, firstname, lastname, role },
+                user: { _id, firstname, lastname, slug, avatar, role },
             });
         })
         .catch((error) => {
@@ -222,7 +222,7 @@ exports.isManager = (req, res, next) => {
 };
 
 exports.isOwner = (req, res, next) => {
-    if (req.user._id != req.store.ownerId) {
+    if (!req.user._id.equals(req.store.ownerId)) {
         return res.status(403).json({
             error: 'Owner resource! Access denied',
         });

@@ -26,7 +26,7 @@ exports.getStore = (req, res) => {
     store.e_wallet = undefined;
     store.amount_spent = undefined;
 
-    res.json({
+    return res.json({
         success: 'Get store successfully',
         store,
     });
@@ -36,6 +36,14 @@ exports.getStoreByUser = (req, res) => {
     Store.findOne({
         $or: [{ ownerId: req.user._id }, { staffIds: req.user._id }],
     })
+        .populate(
+            'ownerId',
+            '_id firstname lastname slug email phone id_card point avatar',
+        )
+        .populate(
+            'staffIds',
+            '_id firstname lastname slug email phone id_card point avatar',
+        )
         .exec()
         .then((store) => {
             if (!store) {
@@ -43,6 +51,21 @@ exports.getStoreByUser = (req, res) => {
                     error: 'Store not found',
                 });
             }
+
+            if (store.ownerId.email)
+                store.ownerId.email =
+                    store.ownerId.email.slice(0, 6) + '******';
+            if (store.ownerId.phone)
+                store.ownerId.phone = store.ownerId.phone.slice(0, 6) + '****';
+            if (store.ownerId.id_card)
+                store.ownerId.id_card =
+                    store.ownerId.id_card.slice(0, 6) + '***';
+
+            store.staffIds.forEach((s) => {
+                if (s.email) s.email = s.email.slice(0, 6) + '******';
+                if (s.phone) s.phone = s.phone.slice(0, 6) + '****';
+                if (s.id_card) s.id_card = s.id_card.slice(0, 6) + '***';
+            });
 
             return res.json({
                 success: 'Get store by user successfully',
@@ -453,6 +476,187 @@ exports.removeFeaturedImage = (req, res) => {
         .catch((error) => {
             return res.status(500).json({
                 error: errorHandler(error),
+            });
+        });
+};
+
+/*------
+  OWNER
+  ------*/
+exports.getOwner = (req, res) => {
+    Store.findOne({ _id: req.store._id })
+        .select('ownerId')
+        .populate(
+            'ownerId',
+            '_id firstname lastname slug email phone id_card point avatar',
+        )
+        .exec()
+        .then((store) => {
+            if (!store) {
+                return res.status(500).json({
+                    error: 'Store not found',
+                });
+            }
+
+            if (store.ownerId.email)
+                store.ownerId.email =
+                    store.ownerId.email.slice(0, 6) + '******';
+            if (store.ownerId.phone)
+                store.ownerId.phone = store.ownerId.phone.slice(0, 6) + '****';
+            if (store.ownerId.id_card)
+                store.ownerId.id_card =
+                    store.ownerId.id_card.slice(0, 6) + '***';
+
+            return res.json({
+                success: 'Get owner successfully',
+                owner: store.ownerId,
+            });
+        })
+        .catch((error) => {
+            return res.status(500).json({
+                error: 'Get owner failed',
+            });
+        });
+};
+
+/*------
+  STAFFS
+  ------*/
+exports.listStaffs = (req, res) => {
+    Store.findOne({ _id: req.store._id })
+        .select('staffIds')
+        .populate(
+            'staffIds',
+            '_id firstname lastname slug email phone id_card point avatar',
+        )
+        .exec()
+        .then((store) => {
+            if (!store) {
+                return res.status(500).json({
+                    error: 'Store not found',
+                });
+            }
+
+            store.staffIds.forEach((s) => {
+                if (s.email) s.email = s.email.slice(0, 6) + '******';
+                if (s.phone) s.phone = s.phone.slice(0, 6) + '****';
+                if (s.id_card) s.id_card = s.id_card.slice(0, 6) + '***';
+            });
+
+            return res.json({
+                success: 'Load list staffs successfully',
+                staffs: store.staffIds,
+            });
+        })
+        .catch((error) => {
+            return res.status(500).json({
+                error: 'Load list staffs failed',
+            });
+        });
+};
+
+exports.addStaffs = (req, res) => {
+    const { staffs } = req.body;
+
+    User.find({
+        _id: { $in: staffs },
+        role: 'customer',
+    })
+        .select('_id')
+        .exec()
+        .then((users) => {
+            if (users.length != staffs.length) {
+                return res.status(400).json({
+                    error: 'Some users not found or they already have their own stores',
+                });
+            } else {
+                let staffIds = req.store.staffIds;
+                staffIds.push(...staffs);
+                staffIds = [...new Set(staffIds)];
+
+                Store.findOneAndUpdate(
+                    { _id: req.store._id },
+                    { $set: { staffIds: staffIds } },
+                )
+                    .exec()
+                    .then((store) => {
+                        if (!store) {
+                            return res.status(500).json({
+                                error: 'Store not found',
+                            });
+                        } else {
+                            User.updateMany(
+                                { _id: { $in: staffs } },
+                                { $set: { role: 'vendor' } },
+                            )
+                                .exec()
+                                .then(() => {
+                                    return res.json({
+                                        success: 'Add staffs successfully',
+                                    });
+                                })
+                                .catch((error) => {
+                                    return res.status(500).json({
+                                        error: 'Add staffs successfully but update role failed',
+                                    });
+                                });
+                        }
+                    })
+                    .catch((error) => {
+                        return res.status(500).json({
+                            error: 'Add staffs failed',
+                        });
+                    });
+            }
+        })
+        .catch((error) => {
+            return res.status(500).json({
+                error: 'Add staffs failed',
+            });
+        });
+};
+
+exports.cancelStaff = (req, res) => {
+    const userId = req.user._id;
+    let staffIds = req.store.staffIds;
+
+    const index = staffIds.indexOf(userId);
+    console.log(index);
+    if (index == -1) {
+        return res.status(400).json({
+            error: 'User is not staff of store',
+        });
+    }
+
+    staffIds.splice(index, 1);
+    Store.findOneAndUpdate(
+        { _id: req.store._id },
+        { $set: { staffIds: staffIds } },
+    )
+        .exec()
+        .then((store) => {
+            if (!store) {
+                return res.status(500).json({
+                    error: 'Store not found',
+                });
+            } else {
+                User.updateOne({ _id: userId }, { $set: { role: 'customer' } })
+                    .exec()
+                    .then(() => {
+                        return res.json({
+                            success: 'Cancel staff successfully',
+                        });
+                    })
+                    .catch((error) => {
+                        return res.status(500).json({
+                            error: 'Cancel staff successfully but update role failed',
+                        });
+                    });
+            }
+        })
+        .catch((error) => {
+            return res.status(500).json({
+                error: 'Cancel staff failed',
             });
         });
 };

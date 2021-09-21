@@ -33,12 +33,15 @@ const {
     addFeatureImage,
     updateFeatureImage,
     removeFeaturedImage,
+    addStaffs,
+    cancelStaff,
+    listStaffs,
+    getOwner,
 } = require('../controllers/storeController');
 
 //routes
 router.get('/store/:storeId', getStore);
 router.get('/store/by/user/:userId', isAuth, isVendor, getStoreByUser);
-// router.get('/stores/:userId', isAuth, isAdmin, listStores);
 router.post(
     '/store/create/:userId',
     isAuth,
@@ -113,6 +116,17 @@ router.delete(
     isAuth,
     isManager,
     removeFeaturedImage,
+);
+
+router.get('/store/owner/:storeId/:userId', isAuth, isManager, getOwner);
+
+router.get('/store/staffs/:storeId/:userId', isAuth, isManager, listStaffs);
+router.post('/store/staffs/:storeId/:userId', isAuth, isOwner, addStaffs);
+router.get(
+    '/store/staff/cancel/:storeId/:userId',
+    isAuth,
+    isManager,
+    cancelStaff,
 );
 
 //router params

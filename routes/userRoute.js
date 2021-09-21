@@ -20,11 +20,14 @@ const {
     getAvatar,
     updateAvatar,
     getRole,
-    listSearch,
+    listUser,
+    getUserProfile,
 } = require('../controllers/userController');
 
 //routes
-router.get('/user/:userId', isAuth, getUser);
+router.get('/user/:userId', getUser);
+router.get('/user/profile/:userId', isAuth, getUserProfile);
+router.get('/users', listUser);
 router.put(
     '/user/:userId',
     isAuth,
@@ -54,8 +57,6 @@ router.get('/avatar/:userId', getAvatar);
 router.put('/avatar/:userId', isAuth, upload, updateAvatar);
 
 router.get('/role/:userId', getRole);
-
-router.get('/users/search', listSearch);
 
 //router params
 router.param('userId', userById);

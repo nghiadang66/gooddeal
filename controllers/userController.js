@@ -19,13 +19,51 @@ exports.userById = (req, res, next, id) => {
 };
 
 exports.getUser = (req, res) => {
+    let {
+        firstname,
+        lastname,
+        slug,
+        avatar,
+        point,
+        email,
+        phone,
+        id_card,
+        role,
+    } = req.user;
+    if (role == 'admin') {
+        return res.status(403).json({
+            error: 'Admin resource! Access denied',
+        });
+    }
+    if (email) email = email.slice(0, 6) + '******';
+    if (phone) phone = phone.slice(0, 6) + '****';
+    if (id_card) id_card = id_card.slice(0, 6) + '***';
+
+    return res.json({
+        success: 'Get user successfully',
+        user: {
+            firstname,
+            lastname,
+            slug,
+            avatar,
+            point,
+            email,
+            phone,
+            id_card,
+        },
+    });
+};
+
+exports.getUserProfile = (req, res) => {
     req.user.hashed_password = undefined;
     req.user.salt = undefined;
+    req.user.email_code = undefined;
+    req.user.phone_code = undefined;
+    req.user.forgot_password_code = undefined;
 
-    let user = req.user;
-    res.json({
-        success: 'Get user successfully',
-        user,
+    return res.json({
+        success: 'Get user profile successfully',
+        user: req.user,
     });
 };
 
@@ -104,7 +142,7 @@ exports.listAddress = (req, res) => {
     // console.log('---REQUEST USER---: ', req.user);
     const addresses = req.user.addresses;
     return res.json({
-        success: 'load list address successfully',
+        success: 'Load list address successfully',
         addresses: addresses,
     });
 };
@@ -311,39 +349,79 @@ exports.getRole = (req, res) => {
 };
 
 /*------
-  LIST SEARCH
+  LIST USERS
   ------*/
-// listsearch = /users/search?q=...&r=...&l=...
-exports.listSearch = (req, res) => {
-    const query = req.query.q ? req.query.q : '';
-    if (req.query.r == 'admin') {
-        req.query.r = '';
-    }
-    const role = req.query.r ? [req.query.r] : ['customer', 'vendor'];
-    const limit = req.query.l ? parseInt(req.query.l) : 6;
+// users?search=...&role=...&sortBy=...&order=...&limit=...&page=...
+exports.listUser = (req, res) => {
+    const search = req.query.search ? req.query.search : '';
+    const role =
+        req.query.role && req.query.role != 'admin'
+            ? [req.query.role]
+            : ['customer', 'vendor'];
+    const sortBy = req.query.sortBy ? req.query.sortBy : '_id';
+    const order = req.query.order ? req.query.order : 'asc'; //desc
+    const limit = req.query.limit ? parseInt(req.query.limit) : 6;
+    const page =
+        req.query.page && req.query.page > 0 ? parseInt(req.query.page) : 1;
+    const skip = (page - 1) * limit;
 
-    User.find({
+    const filter = {
+        search,
+        role,
+        sortBy,
+        order,
+        limit,
+        pageCurrent: page,
+    };
+
+    const filterArgs = {
         $or: [
-            { firstname: { $regex: query, $options: 'i' } },
-            { lastname: { $regex: query, $options: 'i' } },
-            { email: { $regex: query, $options: 'i' } },
-            { phone: { $regex: query, $options: 'i' } },
+            { firstname: { $regex: search, $options: 'i' } },
+            { lastname: { $regex: search, $options: 'i' } },
+            { email: { $regex: search, $options: 'i' } },
+            { phone: { $regex: search, $options: 'i' } },
         ],
-        $ne: { role: 'admin' },
+        role: { $ne: 'admin' },
         role: { $in: role },
-    })
-        .select('_id firstname lastname email phone')
-        .limit(limit)
-        .exec()
-        .then((users) => {
-            return res.json({
-                success: 'Search users successfully',
-                users,
+    };
+
+    User.countDocuments(filterArgs, (error, count) => {
+        if (error) {
+            return res.status(404).json({
+                error: 'Products not found',
             });
-        })
-        .catch((error) => {
-            return res.status(500).json({
-                error: 'Search users failed',
+        }
+
+        const size = count;
+        const pageCount = Math.ceil(size / limit);
+        filter.pageCount = pageCount;
+
+        User.find(filterArgs)
+            .select(
+                '_id firstname lastname email phone id_card point avatar role creatAt',
+            )
+            .sort([[sortBy, order]])
+            .skip(skip)
+            .limit(limit)
+            .exec()
+            .then((users) => {
+                users.forEach((u) => {
+                    if (u.email) u.email = u.email.slice(0, 6) + '******';
+                    if (u.phone) u.phone = u.phone.slice(0, 6) + '****';
+                    if (u.id_card) u.id_card = u.id_card.slice(0, 6) + '***';
+                });
+
+                return res.json({
+                    success: 'Search users successfully',
+                    filter,
+                    size,
+                    users,
+                });
+            })
+            .catch((error) => {
+                return res.status(500).json({
+                    error: 'Search users failed',
+                });
             });
-        });
+    });
 };
