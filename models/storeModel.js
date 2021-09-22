@@ -92,19 +92,13 @@ function featured_imagesLimit(val) {
 }
 
 function nameAvailable(val) {
-    const defaultName = [
-        'gooddeal',
-        'good deal',
-        'good-deal',
-        "good'deal",
-        'good_deal',
-    ];
+    const regex = /g[o0][o0]d[^\w]*deal/i;
+
     let flag = true;
-    defaultName.forEach((name) => {
-        if (val.toLowerCase().includes(name)) {
-            flag = false;
-        }
-    });
+    if (regex.test(val)) {
+        flag = false;
+    }
+
     return flag;
 }
 
