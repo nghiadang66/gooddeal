@@ -11,6 +11,7 @@ const testRoutes = require('./routes/testRoute');
 const authRoutes = require('./routes/authRoute');
 const userRoutes = require('./routes/userRoute');
 const storeRoutes = require('./routes/storeRoute');
+const levelRoutes = require('./routes/levelRoute');
 
 //app
 const app = express();
@@ -34,6 +35,7 @@ app.use('/api', testRoutes);
 app.use('/api', authRoutes);
 app.use('/api', userRoutes);
 app.use('/api', storeRoutes);
+app.use('/api', levelRoutes);
 
 //port
 const port = process.env.PORT || 8000;

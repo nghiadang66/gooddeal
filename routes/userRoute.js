@@ -36,27 +36,27 @@ router.put(
     updateUser,
 );
 
-router.get('/addresses/:userId', isAuth, listAddress);
+router.get('/user/addresses/:userId', isAuth, listAddress);
 router.post(
-    '/address/:userId',
+    '/user/address/:userId',
     isAuth,
     userValidator.userAddress(),
     validateHandler,
     addAddress,
 );
 router.put(
-    '/address/:userId',
+    '/user/address/:userId',
     isAuth,
     userValidator.userAddress(),
     validateHandler,
     updateAddress,
 );
-router.delete('/address/:userId', isAuth, removeAddress);
+router.delete('/user/address/:userId', isAuth, removeAddress);
 
-router.get('/avatar/:userId', getAvatar);
-router.put('/avatar/:userId', isAuth, upload, updateAvatar);
+router.get('/user/avatar/:userId', getAvatar);
+router.put('/user/avatar/:userId', isAuth, upload, updateAvatar);
 
-router.get('/role/:userId', getRole);
+router.get('/user/role/:userId', getRole);
 
 //router params
 router.param('userId', userById);

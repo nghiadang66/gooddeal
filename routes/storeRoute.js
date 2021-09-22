@@ -141,7 +141,7 @@ router.get(
     cancelStaff,
     downgradeRole,
 );
-router.put(
+router.delete(
     '/store/staff/remove/:storeId/:userId',
     isAuth,
     isOwner,

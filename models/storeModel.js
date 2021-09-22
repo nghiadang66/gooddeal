@@ -69,7 +69,7 @@ const storeSchema = new mongoose.Schema(
         point: {
             type: Number,
             default: function () {
-                return this.amount_order + Math.floor(this.amount_spent / 100);
+                return this.amount_order + Math.floor(this.proceeds / 100000);
             },
         },
         amount_order: {
@@ -77,7 +77,7 @@ const storeSchema = new mongoose.Schema(
             default: 0,
             min: 0,
         },
-        amount_spent: {
+        proceeds: {
             type: mongoose.Decimal128,
             default: 0,
             min: 0,

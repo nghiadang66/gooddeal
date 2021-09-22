@@ -75,7 +75,9 @@ const userSchema = new mongoose.Schema(
         point: {
             type: Number,
             default: function () {
-                return this.amount_order + Math.floor(this.amount_spent / 100);
+                return (
+                    this.amount_order + Math.floor(this.amount_spent / 100000)
+                );
             },
         },
         amount_order: {
