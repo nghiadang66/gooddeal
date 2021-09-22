@@ -30,11 +30,13 @@ exports.getUser = (req, res) => {
         id_card,
         role,
     } = req.user;
+
     if (role == 'admin') {
         return res.status(403).json({
             error: 'Admin resource! Access denied',
         });
     }
+
     if (email) email = email.slice(0, 6) + '******';
     if (phone) phone = phone.slice(0, 6) + '****';
     if (id_card) id_card = id_card.slice(0, 6) + '***';
@@ -115,7 +117,7 @@ exports.updateUser = (req, res) => {
                     // u.hashed_password = undefined;
                     // u.salt = undefined;
                     return res.json({
-                        success: 'Update user and password successfully',
+                        success: 'Update user (with password) successfully',
                         // user: u,
                     });
                 });
@@ -123,7 +125,7 @@ exports.updateUser = (req, res) => {
                 // user.hashed_password = undefined;
                 // user.salt = undefined;
                 return res.json({
-                    success: 'Update user without password successfully',
+                    success: 'Update user (without password) successfully',
                     // user,
                 });
             }
@@ -331,7 +333,7 @@ exports.updateAvatar = (req, res) => {
                 fs.unlinkSync('public' + req.filepath);
             } catch {}
 
-            return res.status(500).json({
+            return res.status(400).json({
                 error: errorHandler(error),
             });
         });
@@ -346,6 +348,39 @@ exports.getRole = (req, res) => {
         success: 'Get role successfully',
         role,
     });
+};
+
+exports.upgradeRole = (req, res) => {
+    const userIds = req.users;
+    console.log('---USER IDS---: ', userIds);
+    User.updateMany({ _id: { $in: userIds } }, { $set: { role: 'vendor' } })
+        .exec()
+        .then(() => {
+            return res.json({
+                success: 'Upgrade user role successfully',
+            });
+        })
+        .catch((error) => {
+            return res.status(500).json({
+                success: 'Upgrade user role failed',
+            });
+        });
+};
+
+exports.downgradeRole = (req, res) => {
+    const userIds = req.users;
+    User.updateMany({ _id: { $in: userIds } }, { $set: { role: 'customer' } })
+        .exec()
+        .then(() => {
+            return res.json({
+                success: 'Downgrade user role successfully',
+            });
+        })
+        .catch((error) => {
+            return res.status(500).json({
+                success: 'Downgrade user role failed',
+            });
+        });
 };
 
 /*------
@@ -412,7 +447,7 @@ exports.listUser = (req, res) => {
                 });
 
                 return res.json({
-                    success: 'Search users successfully',
+                    success: 'Load list users successfully',
                     filter,
                     size,
                     users,
@@ -420,7 +455,7 @@ exports.listUser = (req, res) => {
             })
             .catch((error) => {
                 return res.status(500).json({
-                    error: 'Search users failed',
+                    error: 'Load list users failed',
                 });
             });
     });

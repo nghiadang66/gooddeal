@@ -14,7 +14,11 @@ const {
     isVendor,
     isCustomer,
 } = require('../controllers/authController');
-const { userById } = require('../controllers/userController');
+const {
+    userById,
+    upgradeRole,
+    downgradeRole,
+} = require('../controllers/userController');
 const { upload } = require('../controllers/uploadController');
 const {
     storeById,
@@ -37,6 +41,7 @@ const {
     cancelStaff,
     listStaffs,
     getOwner,
+    removeStaff,
 } = require('../controllers/storeController');
 
 //routes
@@ -49,6 +54,7 @@ router.post(
     storeValidator.storeProfile(),
     validateHandler,
     createStore,
+    upgradeRole,
 );
 router.put(
     '/store/:storeId/:userId',
@@ -121,12 +127,26 @@ router.delete(
 router.get('/store/owner/:storeId/:userId', isAuth, isManager, getOwner);
 
 router.get('/store/staffs/:storeId/:userId', isAuth, isManager, listStaffs);
-router.post('/store/staffs/:storeId/:userId', isAuth, isOwner, addStaffs);
+router.post(
+    '/store/staffs/:storeId/:userId',
+    isAuth,
+    isOwner,
+    addStaffs,
+    upgradeRole,
+);
 router.get(
     '/store/staff/cancel/:storeId/:userId',
     isAuth,
     isManager,
     cancelStaff,
+    downgradeRole,
+);
+router.put(
+    '/store/staff/remove/:storeId/:userId',
+    isAuth,
+    isOwner,
+    removeStaff,
+    downgradeRole,
 );
 
 //router params

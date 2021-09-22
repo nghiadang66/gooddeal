@@ -79,40 +79,19 @@ exports.getStoreByUser = (req, res) => {
         });
 };
 
-exports.createStore = (req, res) => {
+exports.createStore = (req, res, next) => {
     const { name, bio } = req.body;
     const store = new Store({ name, bio, ownerId: req.user._id });
     store.save((error, store) => {
-        if (error) {
+        if (error | !store) {
             return res.status(400).json({
                 error: errorHandler(error),
             });
         }
 
-        User.findOneAndUpdate(
-            { _id: req.user._id },
-            { $set: { role: 'vendor' } },
-        )
-            .exec()
-            .then((user) => {
-                if (!user) {
-                    return res.status(500).json({
-                        error: 'User not found',
-                    });
-                }
-
-                return res.json({
-                    success: 'Create store successfully',
-                    store,
-                });
-            })
-            .catch((error) => {
-                if (!user) {
-                    return res.status(500).json({
-                        error: errorHandler(error),
-                    });
-                }
-            });
+        //upgrade role
+        req.users = [req.user._id];
+        next();
     });
 };
 
@@ -133,8 +112,8 @@ exports.updateStore = (req, res) => {
             });
         })
         .catch((error) => {
-            return res.json({
-                error: 'Update store failed',
+            return res.status(400).json({
+                error: errorHandler(error),
             });
         });
 };
@@ -159,8 +138,8 @@ exports.activeStore = (req, res) => {
             });
         })
         .catch((error) => {
-            return res.json({
-                error: 'Active/inactive store failed',
+            return res.status(400).json({
+                error: errorHandler(error),
             });
         });
 };
@@ -192,8 +171,8 @@ exports.updateStatus = (req, res) => {
             });
         })
         .catch((error) => {
-            return res.json({
-                error: 'Update store status store failed',
+            return res.status(400).json({
+                error: errorHandler(error),
             });
         });
 };
@@ -422,7 +401,7 @@ exports.updateFeatureImage = (req, res) => {
                 fs.unlinkSync('public' + req.filepath);
             } catch {}
 
-            return res.status(500).json({
+            return res.status(400).json({
                 error: errorHandler(error),
             });
         });
@@ -474,7 +453,7 @@ exports.removeFeaturedImage = (req, res) => {
             });
         })
         .catch((error) => {
-            return res.status(500).json({
+            return res.status(400).json({
                 error: errorHandler(error),
             });
         });
@@ -555,68 +534,54 @@ exports.listStaffs = (req, res) => {
         });
 };
 
-exports.addStaffs = (req, res) => {
+exports.addStaffs = (req, res, next) => {
     const { staffs } = req.body;
 
-    User.find({
-        _id: { $in: staffs },
-        role: 'customer',
-    })
-        .select('_id')
-        .exec()
-        .then((users) => {
-            if (users.length != staffs.length) {
-                return res.status(400).json({
-                    error: 'Some users not found or they already have their own stores',
+    User.countDocuments(
+        { _id: { $in: staffs }, role: 'customer' },
+        (error, count) => {
+            if (error) {
+                return res.status(404).json({
+                    error: 'Users not found',
                 });
-            } else {
-                let staffIds = req.store.staffIds;
-                staffIds.push(...staffs);
-                staffIds = [...new Set(staffIds)];
-
-                Store.findOneAndUpdate(
-                    { _id: req.store._id },
-                    { $set: { staffIds: staffIds } },
-                )
-                    .exec()
-                    .then((store) => {
-                        if (!store) {
-                            return res.status(500).json({
-                                error: 'Store not found',
-                            });
-                        } else {
-                            User.updateMany(
-                                { _id: { $in: staffs } },
-                                { $set: { role: 'vendor' } },
-                            )
-                                .exec()
-                                .then(() => {
-                                    return res.json({
-                                        success: 'Add staffs successfully',
-                                    });
-                                })
-                                .catch((error) => {
-                                    return res.status(500).json({
-                                        error: 'Add staffs successfully but update role failed',
-                                    });
-                                });
-                        }
-                    })
-                    .catch((error) => {
-                        return res.status(500).json({
-                            error: 'Add staffs failed',
-                        });
-                    });
             }
-        })
-        .catch((error) => {
-            return res.status(500).json({
-                error: 'Add staffs failed',
-            });
-        });
+
+            if (count != staffs.length) {
+                return res.status(400).json({
+                    error: 'Users is invalid',
+                });
+            }
+
+            let staffIds = req.store.staffIds;
+            staffIds.push(...staffs);
+            staffIds = [...new Set(staffIds)];
+
+            Store.findOneAndUpdate(
+                { _id: req.store._id },
+                { $set: { staffIds: staffIds } },
+            )
+                .exec()
+                .then((store) => {
+                    if (!store) {
+                        return res.status(500).json({
+                            error: 'Store not found',
+                        });
+                    }
+
+                    //upgrade role
+                    req.users = staffs;
+                    next();
+                })
+                .catch((error) => {
+                    return res.status(400).json({
+                        error: errorHandler(error),
+                    });
+                });
+        },
+    );
 };
 
-exports.cancelStaff = (req, res) => {
+exports.cancelStaff = (req, res, next) => {
     const userId = req.user._id;
     let staffIds = req.store.staffIds;
 
@@ -624,7 +589,7 @@ exports.cancelStaff = (req, res) => {
     console.log(index);
     if (index == -1) {
         return res.status(400).json({
-            error: 'User is not staff of store',
+            error: 'User is not staff',
         });
     }
 
@@ -639,24 +604,55 @@ exports.cancelStaff = (req, res) => {
                 return res.status(500).json({
                     error: 'Store not found',
                 });
-            } else {
-                User.updateOne({ _id: userId }, { $set: { role: 'customer' } })
-                    .exec()
-                    .then(() => {
-                        return res.json({
-                            success: 'Cancel staff successfully',
-                        });
-                    })
-                    .catch((error) => {
-                        return res.status(500).json({
-                            error: 'Cancel staff successfully but update role failed',
-                        });
-                    });
             }
+
+            //downgrade role
+            req.users = [userId];
+            next();
         })
         .catch((error) => {
-            return res.status(500).json({
-                error: 'Cancel staff failed',
+            return res.status(400).json({
+                error: errorHandler(error),
+            });
+        });
+};
+
+exports.removeStaff = (req, res, next) => {
+    const { staff } = req.body;
+    if (!staff) {
+        return res.status(400).json({
+            error: 'Staff is required',
+        });
+    }
+
+    let staffIds = req.store.staffIds;
+    const index = staffIds.indexOf(staff);
+    console.log(index);
+    if (index == -1) {
+        return res.status(400).json({
+            error: 'User is not staff',
+        });
+    }
+
+    staffIds.splice(index, 1);
+    Store.findOneAndUpdate(
+        { _id: req.store._id },
+        { $set: { staffIds: staffIds } },
+    )
+        .exec()
+        .then((store) => {
+            if (!store) {
+                return res.status(500).json({
+                    error: 'Store not found',
+                });
+            }
+
+            req.users = [staff];
+            next();
+        })
+        .catch((error) => {
+            return res.status(400).json({
+                error: errorHandler(error),
             });
         });
 };

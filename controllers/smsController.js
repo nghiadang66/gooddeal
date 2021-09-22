@@ -3,8 +3,8 @@ const Vonage = require('@vonage/server-sdk');
 const { errorHandler } = require('../helpers/errorHandler');
 
 const vonage = new Vonage({
-    apiKey: '628eebed',
-    apiSecret: '6NuYHGafS4oI65OR',
+    apiKey: process.env.VONAGE_API_KEY,
+    apiSecret: process.env.VONAGE_API_SECRET,
 });
 
 exports.sendNotificationSMS = (req, res) => {
