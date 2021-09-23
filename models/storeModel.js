@@ -61,6 +61,11 @@ const storeSchema = new mongoose.Schema(
             type: [String],
             validate: [featured_imagesLimit, 'The limit is 6 images'],
         },
+        commission: {
+            type: ObjectId,
+            ref: 'Commission',
+            required: true,
+        },
         e_wallet: {
             type: mongoose.Decimal128,
             min: 0,
@@ -69,10 +74,19 @@ const storeSchema = new mongoose.Schema(
         point: {
             type: Number,
             default: function () {
-                return this.amount_order + Math.floor(this.proceeds / 100000);
+                return (
+                    this.number_of_successful_orders -
+                    this.number_of_failed_orders +
+                    Math.floor(this.proceeds / 100000)
+                );
             },
         },
-        amount_order: {
+        number_of_successful_orders: {
+            type: Number,
+            default: 0,
+            min: 0,
+        },
+        number_of_failed_orders: {
             type: Number,
             default: 0,
             min: 0,
@@ -81,6 +95,11 @@ const storeSchema = new mongoose.Schema(
             type: mongoose.Decimal128,
             default: 0,
             min: 0,
+        },
+        number_of_followers: {
+            type: Number,
+            min: 0,
+            default: 0,
         },
     },
     { timestamps: true },

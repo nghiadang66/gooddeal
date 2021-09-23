@@ -350,35 +350,21 @@ exports.getRole = (req, res) => {
     });
 };
 
-exports.upgradeRole = (req, res) => {
-    const userIds = req.users;
-    console.log('---USER IDS---: ', userIds);
-    User.updateMany({ _id: { $in: userIds } }, { $set: { role: 'vendor' } })
-        .exec()
-        .then(() => {
-            return res.json({
-                success: 'Upgrade user role successfully',
-            });
-        })
-        .catch((error) => {
-            return res.status(500).json({
-                success: 'Upgrade user role failed',
-            });
-        });
-};
+exports.changeRole = (req, res) => {
+    const userIds = req.changeRole.users;
+    const role = req.changeRole.isUpgraded ? 'vendor' : 'customer';
+    // console.log('---CHANGE ROLE---: ', userIds, role);
 
-exports.downgradeRole = (req, res) => {
-    const userIds = req.users;
-    User.updateMany({ _id: { $in: userIds } }, { $set: { role: 'customer' } })
+    User.updateMany({ _id: { $in: userIds } }, { $set: { role } })
         .exec()
         .then(() => {
             return res.json({
-                success: 'Downgrade user role successfully',
+                success: 'Change user role successfully',
             });
         })
         .catch((error) => {
             return res.status(500).json({
-                success: 'Downgrade user role failed',
+                success: 'Change user role failed',
             });
         });
 };

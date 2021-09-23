@@ -24,7 +24,7 @@ exports.getStore = (req, res) => {
     store.ownerId = undefined;
     store.staffIds = undefined;
     store.e_wallet = undefined;
-    store.amount_spent = undefined;
+    store.proceeds = undefined;
 
     return res.json({
         success: 'Get store successfully',
@@ -80,8 +80,8 @@ exports.getStoreByUser = (req, res) => {
 };
 
 exports.createStore = (req, res, next) => {
-    const { name, bio } = req.body;
-    const store = new Store({ name, bio, ownerId: req.user._id });
+    const { name, bio, commission } = req.body;
+    const store = new Store({ name, bio, commission, ownerId: req.user._id });
     store.save((error, store) => {
         if (error | !store) {
             return res.status(400).json({
@@ -90,15 +90,21 @@ exports.createStore = (req, res, next) => {
         }
 
         //upgrade role
-        req.users = [req.user._id];
+        req.changeRole = {
+            users: [req.user._id],
+            isUpgraded: true,
+        };
         next();
     });
 };
 
 exports.updateStore = (req, res) => {
-    const { name, bio } = req.body;
+    const { name, bio, commission } = req.body;
 
-    Store.findOneAndUpdate({ _id: req.store._id }, { $set: { name, bio } })
+    Store.findOneAndUpdate(
+        { _id: req.store._id },
+        { $set: { name, bio, commission } },
+    )
         .exec()
         .then((store) => {
             if (!store) {
@@ -569,7 +575,10 @@ exports.addStaffs = (req, res, next) => {
                     }
 
                     //upgrade role
-                    req.users = staffs;
+                    req.changeRole = {
+                        users: staffs,
+                        isUpgraded: true,
+                    };
                     next();
                 })
                 .catch((error) => {
@@ -607,7 +616,10 @@ exports.cancelStaff = (req, res, next) => {
             }
 
             //downgrade role
-            req.users = [userId];
+            req.changeRole = {
+                users: [userId],
+                isUpgraded: false,
+            };
             next();
         })
         .catch((error) => {
@@ -647,7 +659,11 @@ exports.removeStaff = (req, res, next) => {
                 });
             }
 
-            req.users = [staff];
+            //downgrade role
+            req.changeRole = {
+                users: [staff],
+                isUpgraded: false,
+            };
             next();
         })
         .catch((error) => {

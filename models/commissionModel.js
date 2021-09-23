@@ -1,21 +1,26 @@
 const mongoose = require('mongoose');
 
-const businessSchema = new mongoose.Schema(
+const commissionSchema = new mongoose.Schema(
     {
-        name: {
+        business_type: {
             type: String,
             trim: true,
             required: true,
             unique: true,
             maxLength: 32,
         },
-        commission: {
+        cost: {
             type: mongoose.Decimal128,
             required: true,
             min: 0,
+        },
+        isDeleted: {
+            type: Boolean,
+            required: true,
+            default: false,
         },
     },
     { timestamps: true },
 );
 
-module.exports = mongoose.model('Business', businessSchema);
+module.exports = mongoose.model('Commission', commissionSchema);

@@ -20,6 +20,11 @@ const userLevelSchema = new mongoose.Schema(
             required: true,
             min: 0,
         },
+        isDeleted: {
+            type: Boolean,
+            required: true,
+            default: false,
+        },
     },
     { timestamps: true },
 );

@@ -62,6 +62,7 @@ exports.upload = (req, res, next) => {
             }
 
             req.filepath = newpath.replace('public', '');
+            req.fields = fields;
             next();
         }
     });

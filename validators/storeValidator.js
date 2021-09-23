@@ -8,7 +8,9 @@ const storeProfile = () => [
         .isLength({ max: 100 })
         .withMessage('Store name can contain up to 100 characters')
         .matches(/^(?=.*[a-zA-Z])[A-Za-z\d\s_'-]*$/)
-        .withMessage('Store name is invalid')
+        .withMessage(
+            "Store name must contain at least one letter, can contain numbers, some special characters such as _, ', - and space",
+        )
         .custom(checkStoreName),
 
     check('bio')
@@ -17,6 +19,8 @@ const storeProfile = () => [
         .withMessage('Store bio is required')
         .isLength({ max: 1000 })
         .withMessage('Store bio can contain up to 1000 characters'),
+
+    check('commission').not().isEmpty().withMessage('Commission is required'),
 ];
 
 const activeStore = () => [
@@ -55,7 +59,7 @@ const checkStoreName = (val) => {
 const checkStatus = (val) => {
     const stt = ['open', 'close'];
     if (stt.indexOf(val) == -1) {
-        return Promise.reject('status is invalid');
+        return Promise.reject('Status is invalid, status type is enum value');
     }
 
     return true;

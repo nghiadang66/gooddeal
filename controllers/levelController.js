@@ -37,7 +37,7 @@ exports.listUserLevel = (req, res) => {
 exports.getUserLevel = (req, res) => {
     const point = req.user.point >= 0 ? req.user.point : 0;
 
-    UserLevel.find({ minPoint: { $lte: point } })
+    UserLevel.find({ minPoint: { $lte: point }, isDeleted: false })
         .sort('-minPoint')
         .limit(1)
         .exec()
@@ -106,16 +106,51 @@ exports.updateUserLevel = (req, res) => {
 exports.removeUserLevel = (req, res) => {
     const userLevelId = req.params.userLevelId;
 
-    UserLevel.deleteOne({ _id: userLevelId })
+    UserLevel.findOneAndUpdate(
+        { _id: userLevelId },
+        { $set: { isDeleted: true } },
+    )
         .exec()
-        .then(() => {
+        .then((lv) => {
+            if (!lv) {
+                return res.status(404).json({
+                    error: 'Level not found',
+                });
+            }
+
             return res.json({
                 success: 'Remove level successfully',
             });
         })
         .catch((error) => {
-            return res.status(500).json({
-                error: 'Remove level failed',
+            return res.status(404).json({
+                error: 'Level not found',
+            });
+        });
+};
+
+exports.restoreUserLevel = (req, res) => {
+    const userLevelId = req.params.userLevelId;
+
+    UserLevel.findOneAndUpdate(
+        { _id: userLevelId },
+        { $set: { isDeleted: false } },
+    )
+        .exec()
+        .then((lv) => {
+            if (!lv) {
+                return res.status(404).json({
+                    error: 'Level not found',
+                });
+            }
+
+            return res.json({
+                success: 'Restore level successfully',
+            });
+        })
+        .catch((error) => {
+            return res.status(404).json({
+                error: 'Level not found',
             });
         });
 };
@@ -155,7 +190,7 @@ exports.listStoreLevel = (req, res) => {
 exports.getStoreLevel = (req, res) => {
     const point = req.store.point >= 0 ? req.store.point : 0;
 
-    StoreLevel.find({ minPoint: { $lte: point } })
+    StoreLevel.find({ minPoint: { $lte: point }, isDeleted: false })
         .sort('-minPoint')
         .limit(1)
         .exec()
@@ -224,16 +259,51 @@ exports.updateStoreLevel = (req, res) => {
 exports.removeStoreLevel = (req, res) => {
     const storeLevelId = req.params.storeLevelId;
 
-    StoreLevel.deleteOne({ _id: storeLevelId })
+    StoreLevel.findOneAndUpdate(
+        { _id: storeLevelId },
+        { $set: { isDeleted: true } },
+    )
         .exec()
-        .then(() => {
+        .then((lv) => {
+            if (!lv) {
+                return res.status(404).json({
+                    error: 'Level not found',
+                });
+            }
+
             return res.json({
                 success: 'Remove level successfully',
             });
         })
         .catch((error) => {
-            return res.status(500).json({
-                error: 'Remove level failed',
+            return res.status(404).json({
+                error: 'Level not found',
+            });
+        });
+};
+
+exports.restoreStoreLevel = (req, res) => {
+    const storeLevelId = req.params.storeLevelId;
+
+    StoreLevel.findOneAndUpdate(
+        { _id: storeLevelId },
+        { $set: { isDeleted: false } },
+    )
+        .exec()
+        .then((lv) => {
+            if (!lv) {
+                return res.status(404).json({
+                    error: 'Level not found',
+                });
+            }
+
+            return res.json({
+                success: 'Restore level successfully',
+            });
+        })
+        .catch((error) => {
+            return res.status(404).json({
+                error: 'Level not found',
             });
         });
 };

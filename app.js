@@ -12,6 +12,7 @@ const authRoutes = require('./routes/authRoute');
 const userRoutes = require('./routes/userRoute');
 const storeRoutes = require('./routes/storeRoute');
 const levelRoutes = require('./routes/levelRoute');
+const commissionRoutes = require('./routes/commissionRoute');
 
 //app
 const app = express();
@@ -36,6 +37,7 @@ app.use('/api', authRoutes);
 app.use('/api', userRoutes);
 app.use('/api', storeRoutes);
 app.use('/api', levelRoutes);
+app.use('/api', commissionRoutes);
 
 //port
 const port = process.env.PORT || 8000;

@@ -209,6 +209,7 @@ exports.isVendor = (req, res, next) => {
     next();
 };
 
+//owner and staff of store
 exports.isManager = (req, res, next) => {
     if (
         !req.user._id.equals(req.store.ownerId) &&

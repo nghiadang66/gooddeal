@@ -15,11 +15,13 @@ const {
     createUserLevel,
     updateUserLevel,
     removeUserLevel,
+    restoreUserLevel,
     getStoreLevel,
     listStoreLevel,
     createStoreLevel,
     updateStoreLevel,
     removeStoreLevel,
+    restoreStoreLevel,
 } = require('../controllers/levelController');
 
 //routes
@@ -47,6 +49,12 @@ router.delete(
     isAdmin,
     removeUserLevel,
 );
+router.get(
+    '/user/level/restore/:userLevelId/:userId',
+    isAuth,
+    isAdmin,
+    restoreUserLevel,
+);
 
 router.get('/store/level/:storeId', getStoreLevel);
 router.get('/store/levels/:userId', isAuth, isAdmin, listStoreLevel);
@@ -71,6 +79,12 @@ router.delete(
     isAuth,
     isAdmin,
     removeStoreLevel,
+);
+router.get(
+    '/store/level/restore/:storeLevelId/:userId',
+    isAuth,
+    isAdmin,
+    restoreStoreLevel,
 );
 
 //router params

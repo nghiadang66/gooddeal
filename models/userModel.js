@@ -36,6 +36,20 @@ const userSchema = new mongoose.Schema(
             unique: true,
             sparse: true,
         },
+        isEmailActive: {
+            type: Boolean,
+            default: false,
+        },
+        email_code: {
+            type: String,
+        },
+        isPhoneActive: {
+            type: Boolean,
+            default: false,
+        },
+        phone_code: {
+            type: String,
+        },
         id_card: {
             type: String,
             trim: true,
@@ -46,6 +60,9 @@ const userSchema = new mongoose.Schema(
         hashed_password: {
             type: String,
             required: true,
+        },
+        forgot_password_code: {
+            type: String,
         },
         role: {
             type: String,
@@ -76,42 +93,30 @@ const userSchema = new mongoose.Schema(
             type: Number,
             default: function () {
                 return (
-                    this.amount_order + Math.floor(this.amount_spent / 100000)
+                    this.number_of_successful_orders -
+                    this.number_of_failed_orders +
+                    Math.floor(this.proceeds / 100000)
                 );
             },
         },
-        amount_order: {
+        number_of_successful_orders: {
             type: Number,
             default: 0,
             min: 0,
         },
-        amount_spent: {
-            type: mongoose.Decimal128,
+        number_of_failed_orders: {
+            type: Number,
             default: 0,
             min: 0,
         },
-        isEmailActive: {
-            type: Boolean,
-            default: false,
-        },
-        email_code: {
-            type: String,
-        },
-        isPhoneActive: {
-            type: Boolean,
-            default: false,
-        },
-        phone_code: {
-            type: String,
-        },
-        forgot_password_code: {
-            type: String,
+        number_of_followings: {
+            type: Number,
+            min: 0,
+            default: 0,
         },
     },
     { timestamps: true },
 );
-
-// userSchema.index({ '$**': 'text' });
 
 //virtual field
 userSchema

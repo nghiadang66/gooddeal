@@ -11,6 +11,7 @@ const transport = nodemailer.createTransport({
     },
 });
 
+// Change tag a for front-end
 const sendEmail = (email, name, title, text, code = null) => {
     return transport.sendMail({
         from: process.env.ADMIN_EMAIL,
@@ -52,7 +53,6 @@ exports.sendNotificationEmail = (req, res, next) => {
 };
 
 // Allow less secure apps to access account
-// Change tag a for front-end
 exports.sendConfirmationEmail = (req, res) => {
     if (req.user.email) {
         if (req.user.isEmailActive) {
