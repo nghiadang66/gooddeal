@@ -23,6 +23,7 @@ const {
     getStoreByUser,
     updateStore,
     activeStore,
+    updateCommission,
     updateStatus,
     getStatusEnum,
     getAvatar,
@@ -47,7 +48,7 @@ router.post(
     '/store/create/:userId',
     isAuth,
     isCustomer,
-    storeValidator.storeProfile(),
+    storeValidator.createStore(),
     validateHandler,
     createStore,
     changeRole,
@@ -56,7 +57,7 @@ router.put(
     '/store/:storeId/:userId',
     isAuth,
     isManager,
-    storeValidator.storeProfile(),
+    storeValidator.updateStore(),
     validateHandler,
     updateStore,
 );
@@ -68,6 +69,15 @@ router.put(
     storeValidator.activeStore(),
     validateHandler,
     activeStore,
+);
+
+router.put(
+    '/store/commission/:storeId/:userId',
+    isAuth,
+    isAdmin,
+    storeValidator.updateCommission(),
+    validateHandler,
+    updateCommission,
 );
 
 router.get('/store/status/enum', getStatusEnum);
@@ -120,9 +130,9 @@ router.delete(
     removeFeaturedImage,
 );
 
-router.get('/store/owner/:storeId/:userId', isAuth, isManager, getOwner);
+router.get('/store/owner/:storeId', getOwner);
 
-router.get('/store/staffs/:storeId/:userId', isAuth, isManager, listStaffs);
+router.get('/store/staffs/:storeId', listStaffs);
 router.post(
     '/store/staffs/:storeId/:userId',
     isAuth,

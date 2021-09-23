@@ -1,6 +1,7 @@
-const { check, oneOf } = require('express-validator');
+const { check } = require('express-validator');
+const Commission = require('../models/commissionModel');
 
-const storeProfile = () => [
+const createStore = () => [
     check('name')
         .not()
         .isEmpty()
@@ -20,7 +21,29 @@ const storeProfile = () => [
         .isLength({ max: 1000 })
         .withMessage('Store bio can contain up to 1000 characters'),
 
-    check('commission').not().isEmpty().withMessage('Commission is required'),
+    check('commission').not().isEmpty().withMessage('Commission is required')
+        .custom(checkCommission),
+];
+
+const updateStore = () => [
+    check('name')
+        .not()
+        .isEmpty()
+        .withMessage('Store name is required')
+        .isLength({ max: 100 })
+        .withMessage('Store name can contain up to 100 characters')
+        .matches(/^(?=.*[a-zA-Z])[A-Za-z\d\s_'-]*$/)
+        .withMessage(
+            "Store name must contain at least one letter, can contain numbers, some special characters such as _, ', - and space",
+        )
+        .custom(checkStoreName),
+
+    check('bio')
+        .not()
+        .isEmpty()
+        .withMessage('Store bio is required')
+        .isLength({ max: 1000 })
+        .withMessage('Store bio can contain up to 1000 characters'),
 ];
 
 const activeStore = () => [
@@ -30,6 +53,14 @@ const activeStore = () => [
         .withMessage('isActive is required')
         .isBoolean()
         .withMessage('isActive type is boolean'),
+];
+
+const updateCommission = () => [
+    check('commission')
+        .not()
+        .isEmpty()
+        .withMessage('commission is required')
+        .custom(checkCommission),
 ];
 
 const updateStatus = () => [
@@ -42,12 +73,14 @@ const updateStatus = () => [
 
 //custom validator
 const checkStoreName = (val) => {
-    const regex = /g[o0][o0]d[^\w]*deal/i;
+    const regexes = [/g[o0][o0]d[^\w]*deal/i, /admin/i];
 
     let flag = true;
-    if (regex.test(val)) {
-        flag = false;
-    }
+    regexes.forEach(regex => {
+        if (regex.test(val)) {
+            flag = false;
+        }
+    });
 
     if (!flag) {
         return Promise.reject('Store name contains invalid characters');
@@ -65,8 +98,27 @@ const checkStatus = (val) => {
     return true;
 };
 
+const checkCommission = (val) => {
+    // console.log(val);
+    return new Promise((resolve, reject) => {
+        Commission.findOne({ _id: val, isDeleted: false })
+            .exec()
+            .then(commission => {
+                if (!commission) {
+                    reject('Commission not found');
+                }
+                resolve();
+            })
+            .catch(error => {
+                reject('Commission not found');
+            });
+    });
+};
+
 module.exports = {
-    storeProfile,
+    createStore,
+    updateStore,
     activeStore,
+    updateCommission,
     updateStatus,
 };

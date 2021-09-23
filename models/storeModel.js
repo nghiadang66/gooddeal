@@ -52,10 +52,12 @@ const storeSchema = new mongoose.Schema(
         avatar: {
             type: String,
             default: '/uploads/default.jpg',
+            required: true,
         },
         cover: {
             type: String,
             default: '/uploads/default.jpg',
+            required: true,
         },
         featured_images: {
             type: [String],
@@ -111,12 +113,14 @@ function featured_imagesLimit(val) {
 }
 
 function nameAvailable(val) {
-    const regex = /g[o0][o0]d[^\w]*deal/i;
+    const regexes = [/g[o0][o0]d[^\w]*deal/i, /admin/i];
 
     let flag = true;
-    if (regex.test(val)) {
-        flag = false;
-    }
+    regexes.forEach(regex => {
+        if (regex.test(val)) {
+            flag = false;
+        }
+    });
 
     return flag;
 }

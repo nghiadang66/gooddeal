@@ -24,6 +24,7 @@ exports.getUser = (req, res) => {
         lastname,
         slug,
         avatar,
+        cover,
         point,
         email,
         phone,
@@ -38,8 +39,8 @@ exports.getUser = (req, res) => {
     }
 
     if (email) email = email.slice(0, 6) + '******';
-    if (phone) phone = phone.slice(0, 6) + '****';
-    if (id_card) id_card = id_card.slice(0, 6) + '***';
+    if (phone) phone = '*******' + phone.slice(-3);
+    if (id_card) id_card = id_card.slice(0, 3) + '******';
 
     return res.json({
         success: 'Get user successfully',
@@ -48,6 +49,7 @@ exports.getUser = (req, res) => {
             lastname,
             slug,
             avatar,
+            cover,
             point,
             email,
             phone,
@@ -308,7 +310,7 @@ exports.updateAvatar = (req, res) => {
             if (!user) {
                 try {
                     fs.unlinkSync('public' + req.filepath);
-                } catch {}
+                } catch { }
 
                 return res.status(500).json({
                     error: 'User not found',
@@ -318,7 +320,7 @@ exports.updateAvatar = (req, res) => {
             if (oldpath != '/uploads/default.jpg') {
                 try {
                     fs.unlinkSync('public' + oldpath);
-                } catch {}
+                } catch { }
             }
 
             // user.hashed_password = undefined;
@@ -331,7 +333,62 @@ exports.updateAvatar = (req, res) => {
         .catch((error) => {
             try {
                 fs.unlinkSync('public' + req.filepath);
-            } catch {}
+            } catch { }
+
+            return res.status(400).json({
+                error: errorHandler(error),
+            });
+        });
+};
+
+/*------
+  COVER
+  ------*/
+exports.getCover = (req, res) => {
+    let cover = req.user.cover;
+    return res.json({
+        success: 'load cover successfully',
+        cover,
+    });
+};
+
+exports.updateCover = (req, res) => {
+    const oldpath = req.user.cover;
+
+    User.findOneAndUpdate(
+        { _id: req.user._id },
+        { $set: { cover: req.filepath } },
+        { new: true },
+    )
+        .exec()
+        .then((user) => {
+            if (!user) {
+                try {
+                    fs.unlinkSync('public' + req.filepath);
+                } catch { }
+
+                return res.status(500).json({
+                    error: 'User not found',
+                });
+            }
+
+            if (oldpath != '/uploads/default.jpg') {
+                try {
+                    fs.unlinkSync('public' + oldpath);
+                } catch { }
+            }
+
+            // user.hashed_password = undefined;
+            // user.salt = undefined;
+            return res.json({
+                success: 'Update cover successfully',
+                // user,
+            });
+        })
+        .catch((error) => {
+            try {
+                fs.unlinkSync('public' + req.filepath);
+            } catch { }
 
             return res.status(400).json({
                 error: errorHandler(error),
@@ -399,8 +456,8 @@ exports.listUser = (req, res) => {
         $or: [
             { firstname: { $regex: search, $options: 'i' } },
             { lastname: { $regex: search, $options: 'i' } },
-            { email: { $regex: search, $options: 'i' } },
-            { phone: { $regex: search, $options: 'i' } },
+            { email: { $regex: '^' + search.slice(0, 6), $options: 'i' } },
+            { phone: { $regex: search.slice(0, 3) + '$', $options: 'i' } },
         ],
         role: { $ne: 'admin' },
         role: { $in: role },
@@ -416,10 +473,11 @@ exports.listUser = (req, res) => {
         const size = count;
         const pageCount = Math.ceil(size / limit);
         filter.pageCount = pageCount;
+        filter.note = 'Note: for search by email and phone number, email can only search with first 6 characters and phone number can only search with last 3 digits';
 
         User.find(filterArgs)
             .select(
-                '_id firstname lastname email phone id_card point avatar role creatAt',
+                '_id firstname lastname email phone id_card point avatar cover role creatAt',
             )
             .sort([[sortBy, order]])
             .skip(skip)
@@ -428,8 +486,8 @@ exports.listUser = (req, res) => {
             .then((users) => {
                 users.forEach((u) => {
                     if (u.email) u.email = u.email.slice(0, 6) + '******';
-                    if (u.phone) u.phone = u.phone.slice(0, 6) + '****';
-                    if (u.id_card) u.id_card = u.id_card.slice(0, 6) + '***';
+                    if (u.phone) u.phone = '*******' + u.phone.slice(-3);
+                    if (u.id_card) u.id_card = u.id_card.slice(0, 3) + '******';
                 });
 
                 return res.json({

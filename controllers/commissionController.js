@@ -35,7 +35,7 @@ exports.listActiveCommissions = (req, res) => {
         .exec()
         .then((commissions) => {
             commissions.forEach((commission) => {
-                commission.isDelete = undefined;
+                commission.isDeleted = undefined;
             });
 
             return res.json({

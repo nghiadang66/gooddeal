@@ -12,12 +12,14 @@ const userSchema = new mongoose.Schema(
             trim: true,
             required: true,
             maxLength: 32,
+            validate: [nameAvailable, 'Name is invalid'],
         },
         lastname: {
             type: String,
             trim: true,
             required: true,
             maxLength: 32,
+            validate: [nameAvailable, 'Name is invalid'],
         },
         slug: {
             type: String,
@@ -84,6 +86,10 @@ const userSchema = new mongoose.Schema(
             type: String,
             default: '/uploads/default.jpg',
         },
+        cover: {
+            type: String,
+            default: '/uploads/default.jpg',
+        },
         e_wallet: {
             type: mongoose.Decimal128,
             min: 0,
@@ -95,7 +101,7 @@ const userSchema = new mongoose.Schema(
                 return (
                     this.number_of_successful_orders -
                     this.number_of_failed_orders +
-                    Math.floor(this.proceeds / 100000)
+                    Math.floor(this.amount_spent / 100000)
                 );
             },
         },
@@ -105,6 +111,11 @@ const userSchema = new mongoose.Schema(
             min: 0,
         },
         number_of_failed_orders: {
+            type: Number,
+            default: 0,
+            min: 0,
+        },
+        amount_spent: {
             type: Number,
             default: 0,
             min: 0,
@@ -119,8 +130,7 @@ const userSchema = new mongoose.Schema(
 );
 
 //virtual field
-userSchema
-    .virtual('password')
+userSchema.virtual('password')
     .set(function (password) {
         this._password = password;
         this.salt = uuid_v4();
@@ -152,6 +162,19 @@ userSchema.methods = {
 //validators
 function addressesLimit(val) {
     return val.length <= 6;
+}
+
+function nameAvailable(val) {
+    const regexes = [/g[o0][o0]d[^\w]*deal/i, /admin/i];
+
+    let flag = true;
+    regexes.forEach(regex => {
+        if (regex.test(val)) {
+            flag = false;
+        }
+    });
+
+    return flag;
 }
 
 module.exports = mongoose.model('User', userSchema);

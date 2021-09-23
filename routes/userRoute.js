@@ -12,13 +12,14 @@ const {
     userById,
     getUser,
     updateUser,
-    addressByIndex,
     listAddress,
     addAddress,
     updateAddress,
     removeAddress,
     getAvatar,
     updateAvatar,
+    getCover,
+    updateCover,
     getRole,
     listUser,
     getUserProfile,
@@ -55,6 +56,9 @@ router.delete('/user/address/:userId', isAuth, removeAddress);
 
 router.get('/user/avatar/:userId', getAvatar);
 router.put('/user/avatar/:userId', isAuth, upload, updateAvatar);
+
+router.get('/user/cover/:userId', getCover);
+router.put('/user/cover/:userId', isAuth, upload, updateCover);
 
 router.get('/user/role/:userId', getRole);
 

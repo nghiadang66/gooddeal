@@ -1,31 +1,29 @@
 const { check, oneOf } = require('express-validator');
 
 const updateUser = () => [
-    oneOf(
-        [
-            check('firstname')
-                .not()
-                .isEmpty()
-                .isLength({ max: 32 })
-                .matches(/^(?=.*[a-zA-Z])[A-Za-z\d\s_'-]*$/),
+    check('firstname')
+        .not()
+        .isEmpty()
+        .withMessage('Firstname is required')
+        .isLength({ max: 32 })
+        .withMessage('Firstname can contain up to 32 characters')
+        .matches(/^(?=.*[a-zA-Z])[A-Za-z\d\s_'-]*$/)
+        .withMessage(
+            "Firstname must contain at least one letter, can contain numbers, some special characters such as _, ', - and space",
+        )
+        .custom(checkStoreName),
 
-            check('firstname').not().exists(),
-        ],
-        "Firstname is required, Firstname can contain up to 32 characters, Firstname must contain at least one letter, can contain numbers, some special characters such as _, ', - and space",
-    ),
-
-    oneOf(
-        [
-            check('lastname')
-                .not()
-                .isEmpty()
-                .isLength({ max: 32 })
-                .matches(/^(?=.*[a-zA-Z])[A-Za-z\d\s_'-]*$/),
-
-            check('lastname').not().exists(),
-        ],
-        "Lastname is required, Lastname can contain up to 32 characters, Lastname must contain at least one letter, can contain numbers, some special characters such as _, ', - and space",
-    ),
+    check('lastname')
+        .not()
+        .isEmpty()
+        .withMessage('Lastname is required')
+        .isLength({ max: 32 })
+        .withMessage('Lastname can contain up to 32 characters')
+        .matches(/^(?=.*[a-zA-Z])[A-Za-z\d\s_'-]*$/)
+        .withMessage(
+            "Lastname must contain at least one letter, can contain numbers, some special characters such as _, ', - and space",
+        )
+        .custom(checkStoreName),
 
     oneOf(
         [
@@ -86,6 +84,24 @@ const userAddress = () => [
         .isLength({ max: 200 })
         .withMessage('Address can contain up to 200 characters'),
 ];
+
+//custom validator
+const checkStoreName = (val) => {
+    const regexes = [/g[o0][o0]d[^\w]*deal/i, /admin/i];
+
+    let flag = true;
+    regexes.forEacg(regex => {
+        if (regex.test(val)) {
+            flag = false;
+        }
+    });
+
+    if (!flag) {
+        return Promise.reject('Name contains invalid characters');
+    }
+
+    return true;
+};
 
 module.exports = {
     updateUser,

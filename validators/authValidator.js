@@ -10,7 +10,8 @@ const signup = () => [
         .matches(/^(?=.*[a-zA-Z])[A-Za-z\d\s_'-]*$/)
         .withMessage(
             "Firstname must contain at least one letter, can contain numbers, some special characters such as _, ', - and space",
-        ),
+        )
+        .custom(checkStoreName),
 
     check('lastname')
         .not()
@@ -21,7 +22,8 @@ const signup = () => [
         .matches(/^(?=.*[a-zA-Z])[A-Za-z\d\s_'-]*$/)
         .withMessage(
             "Lastname must contain at least one letter, can contain numbers, some special characters such as _, ', - and space",
-        ),
+        )
+        .custom(checkStoreName),
 
     oneOf(
         [
@@ -119,6 +121,24 @@ const changePassword = () => [
             'Password must contain at least 6 characters, at least 1 uppercase letter, 1 lowercase letter, 1 number and 1 special character such as @, $, !, %, *, ?, &',
         ),
 ];
+
+//custom validator
+const checkStoreName = (val) => {
+    const regexes = [/g[o0][o0]d[^\w]*deal/i, /admin/i];
+
+    let flag = true;
+    regexes.forEach(regex => {
+        if (regex.test(val)) {
+            flag = false;
+        }
+    });
+
+    if (!flag) {
+        return Promise.reject('Name contains invalid characters');
+    }
+
+    return true;
+};
 
 module.exports = {
     signup,
