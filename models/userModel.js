@@ -130,7 +130,8 @@ const userSchema = new mongoose.Schema(
 );
 
 //virtual field
-userSchema.virtual('password')
+userSchema
+    .virtual('password')
     .set(function (password) {
         this._password = password;
         this.salt = uuid_v4();
@@ -168,7 +169,7 @@ function nameAvailable(val) {
     const regexes = [/g[o0][o0]d[^\w]*deal/i, /admin/i];
 
     let flag = true;
-    regexes.forEach(regex => {
+    regexes.forEach((regex) => {
         if (regex.test(val)) {
             flag = false;
         }

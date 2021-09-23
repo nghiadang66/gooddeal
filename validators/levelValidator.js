@@ -9,7 +9,7 @@ const level = () => [
         .withMessage('Level name can contain up to 32 characters')
         .matches(/^(?=.*[a-zA-Z])[A-Za-z\d\s_'-]*$/)
         .withMessage(
-            "Level name must contain at least one letter, can contain numbers, some special characters such as _, ', - and space",
+            "Level name must contain at least one letter (can contain numbers, some special characters such as _, ', - and space)",
         ),
 
     check('minPoint')

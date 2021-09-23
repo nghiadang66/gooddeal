@@ -158,6 +158,26 @@ exports.changePassword = (req, res) => {
         });
 };
 
+exports.verifyPassword = (req, res, next) => {
+    const { currentPassword } = req.body;
+
+    User.findById(req.user._id, (error, user) => {
+        if (error || !user) {
+            return res.status(404).json({
+                error: 'User not found',
+            });
+        }
+
+        if (!user.authenticate(currentPassword)) {
+            return res.status(401).json({
+                error: "Password doesn't match",
+            });
+        }
+
+        next();
+    });
+};
+
 exports.isAuth = (req, res, next) => {
     // console.log('---REQUEST HEADERS---: ', req.headers);
     if (

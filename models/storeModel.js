@@ -116,7 +116,7 @@ function nameAvailable(val) {
     const regexes = [/g[o0][o0]d[^\w]*deal/i, /admin/i];
 
     let flag = true;
-    regexes.forEach(regex => {
+    regexes.forEach((regex) => {
         if (regex.test(val)) {
             flag = false;
         }

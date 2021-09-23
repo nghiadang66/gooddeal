@@ -9,7 +9,7 @@ const commission = () => [
         .withMessage('business_type can contain up to 32 characters')
         .matches(/^(?=.*[a-zA-Z])[A-Za-z\d\s_'-]*$/)
         .withMessage(
-            "business_type must contain at least one letter, can contain numbers, some special characters such as _, ', - and space",
+            "business_type must contain at least one letter (can contain numbers, some special characters such as _, ', - and space)",
         ),
 
     check('cost')

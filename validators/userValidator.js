@@ -1,6 +1,6 @@
 const { check, oneOf } = require('express-validator');
 
-const updateUser = () => [
+const updateProfile = () => [
     check('firstname')
         .not()
         .isEmpty()
@@ -9,7 +9,7 @@ const updateUser = () => [
         .withMessage('Firstname can contain up to 32 characters')
         .matches(/^(?=.*[a-zA-Z])[A-Za-z\d\s_'-]*$/)
         .withMessage(
-            "Firstname must contain at least one letter, can contain numbers, some special characters such as _, ', - and space",
+            "Firstname must contain at least one letter (can contain numbers, some special characters such as _, ', - and space)",
         )
         .custom(checkStoreName),
 
@@ -21,22 +21,43 @@ const updateUser = () => [
         .withMessage('Lastname can contain up to 32 characters')
         .matches(/^(?=.*[a-zA-Z])[A-Za-z\d\s_'-]*$/)
         .withMessage(
-            "Lastname must contain at least one letter, can contain numbers, some special characters such as _, ', - and space",
+            "Lastname must contain at least one letter (can contain numbers, some special characters such as _, ', - and space)",
         )
         .custom(checkStoreName),
 
     oneOf(
         [
-            check('password')
+            check('id_card')
+                .not()
+                .isEmpty()
+                .matches(/(^\d{9}$|^\d{12}$)/),
+
+            check('id_card').not().exists(),
+        ],
+        'Id_card must contain 9 or 12 numbers',
+    ),
+];
+
+const updateAccount = () => [
+    check('currentPassword')
+        .not()
+        .isEmpty()
+        .withMessage('Current Password is required')
+        .matches(/^[A-Za-z\d@$!%*?&]*$/)
+        .withMessage('Current Password contains invalid characters'),
+
+    oneOf(
+        [
+            check('newPassword')
                 .not()
                 .isEmpty()
                 .matches(
                     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/,
                 ),
 
-            check('password').not().exists(),
+            check('newPassword').not().exists(),
         ],
-        'Password is required, Password must contain at least 6 characters, at least 1 uppercase letter, 1 lowercase letter, 1 number and 1 special character such as @, $, !, %, *, ?, &',
+        'New Password must contain at least 6 characters, at least 1 uppercase letter, 1 lowercase letter, 1 number and 1 special character such as @, $, !, %, *, ?, &',
     ),
 
     oneOf(
@@ -48,7 +69,7 @@ const updateUser = () => [
 
             check('email').not().exists(),
         ],
-        'Email is required, Email must contain @',
+        'Email must contain @',
     ),
 
     oneOf(
@@ -60,19 +81,7 @@ const updateUser = () => [
 
             check('phone').not().exists(),
         ],
-        'Phone is required, Phone must contain 10 or 11 numbers',
-    ),
-
-    oneOf(
-        [
-            check('id_card')
-                .not()
-                .isEmpty()
-                .matches(/(^\d{9}$|^\d{12}$)/),
-
-            check('id_card').not().exists(),
-        ],
-        'Id_card is required, Id_card must contain 9 or 12 numbers',
+        'Phone must contain 10 or 11 numbers',
     ),
 ];
 
@@ -90,7 +99,7 @@ const checkStoreName = (val) => {
     const regexes = [/g[o0][o0]d[^\w]*deal/i, /admin/i];
 
     let flag = true;
-    regexes.forEacg(regex => {
+    regexes.forEach((regex) => {
         if (regex.test(val)) {
             flag = false;
         }
@@ -104,6 +113,7 @@ const checkStoreName = (val) => {
 };
 
 module.exports = {
-    updateUser,
+    updateProfile,
+    updateAccount,
     userAddress,
 };

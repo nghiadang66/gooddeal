@@ -101,10 +101,7 @@ exports.createStore = (req, res, next) => {
 exports.updateStore = (req, res) => {
     const { name, bio } = req.body;
 
-    Store.findOneAndUpdate(
-        { _id: req.store._id },
-        { $set: { name, bio } },
-    )
+    Store.findOneAndUpdate({ _id: req.store._id }, { $set: { name, bio } })
         .exec()
         .then((store) => {
             if (!store) {
@@ -233,7 +230,7 @@ exports.updateAvatar = (req, res) => {
             if (!store) {
                 try {
                     fs.unlinkSync('public' + req.filepath);
-                } catch { }
+                } catch {}
 
                 return res.status(500).json({
                     error: 'Store not found',
@@ -243,7 +240,7 @@ exports.updateAvatar = (req, res) => {
             if (oldpath != '/uploads/default.jpg') {
                 try {
                     fs.unlinkSync('public' + oldpath);
-                } catch { }
+                } catch {}
             }
 
             return res.json({
@@ -254,7 +251,7 @@ exports.updateAvatar = (req, res) => {
         .catch((error) => {
             try {
                 fs.unlinkSync('public' + req.filepath);
-            } catch { }
+            } catch {}
 
             return res.status(500).json({
                 error: errorHandler(error),
@@ -286,7 +283,7 @@ exports.updateCover = (req, res) => {
             if (!store) {
                 try {
                     fs.unlinkSync('public' + req.filepath);
-                } catch { }
+                } catch {}
 
                 return res.status(500).json({
                     error: 'Store not found',
@@ -296,7 +293,7 @@ exports.updateCover = (req, res) => {
             if (oldpath != '/uploads/default.jpg') {
                 try {
                     fs.unlinkSync('public' + oldpath);
-                } catch { }
+                } catch {}
             }
 
             return res.json({
@@ -307,7 +304,7 @@ exports.updateCover = (req, res) => {
         .catch((error) => {
             try {
                 fs.unlinkSync('public' + req.filepath);
-            } catch { }
+            } catch {}
 
             return res.status(500).json({
                 error: errorHandler(error),
@@ -333,7 +330,7 @@ exports.addFeatureImage = (req, res) => {
     if (index >= 6) {
         try {
             fs.unlinkSync('public' + req.filepath);
-        } catch { }
+        } catch {}
 
         return res.status(400).json({
             error: 'The limit is 6 images',
@@ -350,7 +347,7 @@ exports.addFeatureImage = (req, res) => {
             if (!store) {
                 try {
                     fs.unlinkSync('public' + req.filepath);
-                } catch { }
+                } catch {}
 
                 return res.status(500).json({
                     error: 'Store not found',
@@ -365,7 +362,7 @@ exports.addFeatureImage = (req, res) => {
         .catch((error) => {
             try {
                 fs.unlinkSync('public' + req.filepath);
-            } catch { }
+            } catch {}
 
             return res.status(500).json({
                 error: errorHandler(error),
@@ -378,7 +375,7 @@ exports.updateFeatureImage = (req, res) => {
     if (!req.query.index) {
         try {
             fs.unlinkSync('public' + req.filepath);
-        } catch { }
+        } catch {}
 
         return res.status(400).json({
             error: 'Index not found',
@@ -391,7 +388,7 @@ exports.updateFeatureImage = (req, res) => {
     if (index >= featured_images.length) {
         try {
             fs.unlinkSync('public' + req.filepath);
-        } catch { }
+        } catch {}
 
         return res.status(404).json({
             error: 'Feature image not found',
@@ -410,7 +407,7 @@ exports.updateFeatureImage = (req, res) => {
             if (!store) {
                 try {
                     fs.unlinkSync('public' + req.filepath);
-                } catch { }
+                } catch {}
 
                 return res.status(500).json({
                     error: 'Store not found',
@@ -420,7 +417,7 @@ exports.updateFeatureImage = (req, res) => {
             if (oldpath != '/uploads/default.jpg') {
                 try {
                     fs.unlinkSync('public' + oldpath);
-                } catch { }
+                } catch {}
             }
 
             return res.json({
@@ -431,7 +428,7 @@ exports.updateFeatureImage = (req, res) => {
         .catch((error) => {
             try {
                 fs.unlinkSync('public' + req.filepath);
-            } catch { }
+            } catch {}
 
             return res.status(400).json({
                 error: errorHandler(error),
@@ -538,7 +535,7 @@ exports.listStaffs = (req, res) => {
         .select('staffIds')
         .populate(
             'staffIds',
-            '_id firstname lastname slug email phone id_card point avatar cover'
+            '_id firstname lastname slug email phone id_card point avatar cover',
         )
         .exec()
         .then((store) => {

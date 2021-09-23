@@ -71,28 +71,13 @@ exports.getUserProfile = (req, res) => {
     });
 };
 
-exports.updateUser = (req, res) => {
+exports.updateProfile = (req, res) => {
     // console.log('---REQUEST BODY---: ', req.body);
-    const { firstname, lastname, email, phone, id_card, password } = req.body;
-
-    const isEmailActive =
-        email && req.user.email != email ? false : req.user.isEmailActive;
-    const isPhoneActive =
-        phone && req.user.phone != phone ? false : req.user.isPhoneActive;
+    const { firstname, lastname, id_card } = req.body;
 
     User.findOneAndUpdate(
         { _id: req.user._id },
-        {
-            $set: {
-                firstname,
-                lastname,
-                email,
-                phone,
-                id_card,
-                isEmailActive,
-                isPhoneActive,
-            },
-        },
+        { $set: { firstname, lastname, id_card } },
         { new: true },
     )
         .exec()
@@ -103,32 +88,71 @@ exports.updateUser = (req, res) => {
                 });
             }
 
-            if (password) {
+            // user.hashed_password = undefined;
+            // user.salt = undefined;
+            return res.json({
+                success: 'Update user successfully',
+                // user,
+            });
+        })
+        .catch((error) => {
+            return res.status(400).json({
+                error: errorHandler(error),
+            });
+        });
+};
+
+exports.updateAccount = (req, res) => {
+    const { email, phone, newPassword } = req.body;
+
+    const isEmailActive =
+        email && req.user.email != email ? false : req.user.isEmailActive;
+    const isPhoneActive =
+        phone && req.user.phone != phone ? false : req.user.isPhoneActive;
+
+    User.findOneAndUpdate(
+        { _id: req.user._id },
+        { $set: { email, phone, isEmailActive, isPhoneActive } },
+    )
+        .exec()
+        .then((user) => {
+            if (!user) {
+                return res.status(500).json({
+                    error: 'User not found',
+                });
+            }
+
+            if (newPassword) {
                 user.hashed_password = user.encryptPassword(
-                    password,
-                    user.salt,
+                    newPassword,
+                    this.salt,
                 );
 
-                user.save((e, u) => {
-                    if (e) {
-                        return res.status(500).json({
-                            error: 'Update user successfully but password failed',
-                        });
-                    }
+                User.findOneAndUpdate(
+                    { _id: user._id },
+                    { $set: { hashed_password: user.hashed_password } },
+                )
+                    .exec()
+                    .then((user) => {
+                        if (!user) {
+                            return res.status(500).json({
+                                error: 'Update account successfully (but password failed)',
+                            });
+                        }
 
-                    // u.hashed_password = undefined;
-                    // u.salt = undefined;
-                    return res.json({
-                        success: 'Update user (with password) successfully',
-                        // user: u,
+                        return res.json({
+                            success:
+                                'Update account (and password) successfully',
+                        });
+                    })
+                    .catch((error) => {
+                        return res.status(500).json({
+                            error: 'Update account successfully (but password failed)',
+                        });
                     });
-                });
             } else {
-                // user.hashed_password = undefined;
-                // user.salt = undefined;
                 return res.json({
-                    success: 'Update user (without password) successfully',
-                    // user,
+                    success: 'Update account (without password) successfully',
                 });
             }
         })
@@ -310,7 +334,7 @@ exports.updateAvatar = (req, res) => {
             if (!user) {
                 try {
                     fs.unlinkSync('public' + req.filepath);
-                } catch { }
+                } catch {}
 
                 return res.status(500).json({
                     error: 'User not found',
@@ -320,7 +344,7 @@ exports.updateAvatar = (req, res) => {
             if (oldpath != '/uploads/default.jpg') {
                 try {
                     fs.unlinkSync('public' + oldpath);
-                } catch { }
+                } catch {}
             }
 
             // user.hashed_password = undefined;
@@ -333,7 +357,7 @@ exports.updateAvatar = (req, res) => {
         .catch((error) => {
             try {
                 fs.unlinkSync('public' + req.filepath);
-            } catch { }
+            } catch {}
 
             return res.status(400).json({
                 error: errorHandler(error),
@@ -365,7 +389,7 @@ exports.updateCover = (req, res) => {
             if (!user) {
                 try {
                     fs.unlinkSync('public' + req.filepath);
-                } catch { }
+                } catch {}
 
                 return res.status(500).json({
                     error: 'User not found',
@@ -375,7 +399,7 @@ exports.updateCover = (req, res) => {
             if (oldpath != '/uploads/default.jpg') {
                 try {
                     fs.unlinkSync('public' + oldpath);
-                } catch { }
+                } catch {}
             }
 
             // user.hashed_password = undefined;
@@ -388,7 +412,7 @@ exports.updateCover = (req, res) => {
         .catch((error) => {
             try {
                 fs.unlinkSync('public' + req.filepath);
-            } catch { }
+            } catch {}
 
             return res.status(400).json({
                 error: errorHandler(error),
@@ -473,7 +497,8 @@ exports.listUser = (req, res) => {
         const size = count;
         const pageCount = Math.ceil(size / limit);
         filter.pageCount = pageCount;
-        filter.note = 'Note: for search by email and phone number, email can only search with first 6 characters and phone number can only search with last 3 digits';
+        filter.note =
+            'Note: for search by email and phone number, email can only search with first 6 characters and phone number can only search with last 3 digits';
 
         User.find(filterArgs)
             .select(

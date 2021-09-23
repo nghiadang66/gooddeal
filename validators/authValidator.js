@@ -9,7 +9,7 @@ const signup = () => [
         .withMessage('Firstname can contain up to 32 characters')
         .matches(/^(?=.*[a-zA-Z])[A-Za-z\d\s_'-]*$/)
         .withMessage(
-            "Firstname must contain at least one letter, can contain numbers, some special characters such as _, ', - and space",
+            "Firstname must contain at least one letter (can contain numbers, some special characters such as _, ', - and space)",
         )
         .custom(checkStoreName),
 
@@ -21,7 +21,7 @@ const signup = () => [
         .withMessage('Lastname can contain up to 32 characters')
         .matches(/^(?=.*[a-zA-Z])[A-Za-z\d\s_'-]*$/)
         .withMessage(
-            "Lastname must contain at least one letter, can contain numbers, some special characters such as _, ', - and space",
+            "Lastname must contain at least one letter (can contain numbers, some special characters such as _, ', - and space)",
         )
         .custom(checkStoreName),
 
@@ -44,7 +44,7 @@ const signup = () => [
                     .matches(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/),
             ],
         ],
-        'Email or phone number must be provided at least one, email must contain @ and phone number must contain 10 or 11 numbers',
+        'Email or phone number must be provided at least one (email must contain @ and phone number must contain 10 or 11 numbers)',
     ),
 
     check('password')
@@ -79,10 +79,15 @@ const signin = () => [
                     .matches(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/),
             ],
         ],
-        'Email or phone number must be provided at least one, email must contain @ and phone number must contain 10 or 11 numbers',
+        'Email or phone number must be provided at least one (email must contain @ and phone number must contain 10 or 11 numbers)',
     ),
 
-    check('password').not().isEmpty().withMessage('Password is required'),
+    check('password')
+        .not()
+        .isEmpty()
+        .withMessage('Password is required')
+        .matches(/^[A-Za-z\d@$!%*?&]*$/)
+        .withMessage('Password contains invalid characters'),
 ];
 
 const forgotPassword = () => [
@@ -105,7 +110,7 @@ const forgotPassword = () => [
                     .matches(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/),
             ],
         ],
-        'Email or phone number must be provided at least one, email must contain @ and phone number must contain 10 or 11 numbers',
+        'Email or phone number must be provided at least one (email must contain @ and phone number must contain 10 or 11 numbers)',
     ),
 ];
 
@@ -127,7 +132,7 @@ const checkStoreName = (val) => {
     const regexes = [/g[o0][o0]d[^\w]*deal/i, /admin/i];
 
     let flag = true;
-    regexes.forEach(regex => {
+    regexes.forEach((regex) => {
         if (regex.test(val)) {
             flag = false;
         }

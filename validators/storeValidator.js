@@ -10,7 +10,7 @@ const createStore = () => [
         .withMessage('Store name can contain up to 100 characters')
         .matches(/^(?=.*[a-zA-Z])[A-Za-z\d\s_'-]*$/)
         .withMessage(
-            "Store name must contain at least one letter, can contain numbers, some special characters such as _, ', - and space",
+            "Store name must contain at least one letter (can contain numbers, some special characters such as _, ', - and space)",
         )
         .custom(checkStoreName),
 
@@ -21,7 +21,10 @@ const createStore = () => [
         .isLength({ max: 1000 })
         .withMessage('Store bio can contain up to 1000 characters'),
 
-    check('commission').not().isEmpty().withMessage('Commission is required')
+    check('commission')
+        .not()
+        .isEmpty()
+        .withMessage('Commission is required')
         .custom(checkCommission),
 ];
 
@@ -34,7 +37,7 @@ const updateStore = () => [
         .withMessage('Store name can contain up to 100 characters')
         .matches(/^(?=.*[a-zA-Z])[A-Za-z\d\s_'-]*$/)
         .withMessage(
-            "Store name must contain at least one letter, can contain numbers, some special characters such as _, ', - and space",
+            "Store name must contain at least one letter (can contain numbers, some special characters such as _, ', - and space)",
         )
         .custom(checkStoreName),
 
@@ -76,7 +79,7 @@ const checkStoreName = (val) => {
     const regexes = [/g[o0][o0]d[^\w]*deal/i, /admin/i];
 
     let flag = true;
-    regexes.forEach(regex => {
+    regexes.forEach((regex) => {
         if (regex.test(val)) {
             flag = false;
         }
@@ -103,13 +106,13 @@ const checkCommission = (val) => {
     return new Promise((resolve, reject) => {
         Commission.findOne({ _id: val, isDeleted: false })
             .exec()
-            .then(commission => {
+            .then((commission) => {
                 if (!commission) {
                     reject('Commission not found');
                 }
                 resolve();
             })
-            .catch(error => {
+            .catch((error) => {
                 reject('Commission not found');
             });
     });
