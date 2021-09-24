@@ -19,6 +19,7 @@ exports.signup = (req, res) => {
             success: 'Sign up successfully',
             // user,
         });
+        //giang oc cho
     });
 
     ///adsasdasdadasd
