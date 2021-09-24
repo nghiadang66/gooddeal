@@ -120,11 +120,6 @@ const userSchema = new mongoose.Schema(
             default: 0,
             min: 0,
         },
-        number_of_followings: {
-            type: Number,
-            min: 0,
-            default: 0,
-        },
     },
     { timestamps: true },
 );

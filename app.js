@@ -7,12 +7,12 @@ const path = require('path');
 require('dotenv').config();
 
 //import routes
-const testRoutes = require('./routes/testRoute');
 const authRoutes = require('./routes/authRoute');
 const userRoutes = require('./routes/userRoute');
 const storeRoutes = require('./routes/storeRoute');
 const levelRoutes = require('./routes/levelRoute');
 const commissionRoutes = require('./routes/commissionRoute');
+const userFollowStoreRoutes = require('./routes/userFollowStore');
 
 //app
 const app = express();
@@ -38,12 +38,12 @@ app.use(
 );
 
 //routes middlewares
-app.use('/api', testRoutes);
 app.use('/api', authRoutes);
 app.use('/api', userRoutes);
 app.use('/api', storeRoutes);
 app.use('/api', levelRoutes);
 app.use('/api', commissionRoutes);
+app.use('/api', userFollowStoreRoutes);
 
 //port
 const port = process.env.PORT || 8000;

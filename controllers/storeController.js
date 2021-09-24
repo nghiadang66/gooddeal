@@ -696,6 +696,36 @@ exports.removeStaff = (req, res, next) => {
 };
 
 /*------
+  FOLLOWERS
+  ------*/
+exports.updateNumberOfFollowers = (req, res) => {
+    let numberOfFollowers = req.store.number_of_followers;
+    numberOfFollowers = numberOfFollowers + req.updateNumberOfFollowers;
+
+    Store.findOneAndUpdate(
+        { _id: req.store._id },
+        { $set: { number_of_followers: numberOfFollowers } },
+    )
+        .exec()
+        .then((store) => {
+            if (!store) {
+                return res.status(500).json({
+                    error: 'Store not found',
+                });
+            }
+
+            return res.json({
+                success: 'Update follow successfully',
+            });
+        })
+        .catch((error) => {
+            return res.status(500).json({
+                error: 'Update follow failed',
+            });
+        });
+};
+
+/*------
   LIST STORES
   ------*/
 exports.listStoreCommissions = (req, res, next) => {
