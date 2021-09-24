@@ -460,9 +460,16 @@ exports.listUser = (req, res) => {
         req.query.role && req.query.role != 'admin'
             ? [req.query.role]
             : ['customer', 'vendor'];
+
     const sortBy = req.query.sortBy ? req.query.sortBy : '_id';
-    const order = req.query.order ? req.query.order : 'asc'; //desc
-    const limit = req.query.limit ? parseInt(req.query.limit) : 6;
+    const order =
+        req.query.order &&
+        (req.query.order == 'asc' || req.query.order == 'desc')
+            ? req.query.order
+            : 'asc'; //desc
+
+    const limit =
+        req.query.limit && req.query.limit > 0 ? parseInt(req.query.limit) : 6;
     const page =
         req.query.page && req.query.page > 0 ? parseInt(req.query.page) : 1;
     const skip = (page - 1) * limit;
@@ -490,7 +497,7 @@ exports.listUser = (req, res) => {
     User.countDocuments(filterArgs, (error, count) => {
         if (error) {
             return res.status(404).json({
-                error: 'Products not found',
+                error: 'Users not found',
             });
         }
 
@@ -502,7 +509,7 @@ exports.listUser = (req, res) => {
 
         User.find(filterArgs)
             .select(
-                '_id firstname lastname email phone id_card point avatar cover role creatAt',
+                '_id firstname lastname slug email phone id_card point avatar cover role createdAt',
             )
             .sort([[sortBy, order]])
             .skip(skip)
@@ -515,6 +522,80 @@ exports.listUser = (req, res) => {
                     if (u.id_card) u.id_card = u.id_card.slice(0, 3) + '******';
                 });
 
+                return res.json({
+                    success: 'Load list users successfully',
+                    filter,
+                    size,
+                    users,
+                });
+            })
+            .catch((error) => {
+                return res.status(500).json({
+                    error: 'Load list users failed',
+                });
+            });
+    });
+};
+
+// list users for admin management
+exports.listUserForAdmin = (req, res) => {
+    const search = req.query.search ? req.query.search : '';
+    const role =
+        req.query.role && req.query.role != 'admin'
+            ? [req.query.role]
+            : ['customer', 'vendor'];
+    const sortBy = req.query.sortBy ? req.query.sortBy : '_id';
+    const order =
+        req.query.order &&
+        (req.query.order == 'asc' || req.query.order == 'desc')
+            ? req.query.order
+            : 'asc'; //desc
+    const limit =
+        req.query.limit && req.query.limit > 0 ? parseInt(req.query.limit) : 6;
+    const page =
+        req.query.page && req.query.page > 0 ? parseInt(req.query.page) : 1;
+    const skip = (page - 1) * limit;
+
+    const filter = {
+        search,
+        role,
+        sortBy,
+        order,
+        limit,
+        pageCurrent: page,
+    };
+
+    const filterArgs = {
+        $or: [
+            { firstname: { $regex: search, $options: 'i' } },
+            { lastname: { $regex: search, $options: 'i' } },
+            { email: { $regex: search, $options: 'i' } },
+            { phone: { $regex: search, $options: 'i' } },
+        ],
+        role: { $ne: 'admin' },
+        role: { $in: role },
+    };
+
+    User.countDocuments(filterArgs, (error, count) => {
+        if (error) {
+            return res.status(404).json({
+                error: 'Users not found',
+            });
+        }
+
+        const size = count;
+        const pageCount = Math.ceil(size / limit);
+        filter.pageCount = pageCount;
+
+        User.find(filterArgs)
+            .select(
+                '_id firstname lastname slug email phone id_card point avatar cover role createdAt',
+            )
+            .sort([[sortBy, order]])
+            .skip(skip)
+            .limit(limit)
+            .exec()
+            .then((users) => {
                 return res.json({
                     success: 'Load list users successfully',
                     filter,

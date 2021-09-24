@@ -29,11 +29,13 @@ app.use('/static', express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({
-    origin: [`http://localhost:${process.env.CLIENT_PORT_1}`],
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
-    credentials: true,
-}));
+app.use(
+    cors({
+        origin: [`http://localhost:${process.env.CLIENT_PORT_1}`],
+        methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+        credentials: true,
+    }),
+);
 
 //routes middlewares
 app.use('/api', testRoutes);

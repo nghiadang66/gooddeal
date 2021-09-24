@@ -6,7 +6,11 @@ const userValidator = require('../validators/userValidator');
 const { validateHandler } = require('../helpers/validateHandler');
 
 //import controllers
-const { isAuth, verifyPassword } = require('../controllers/authController');
+const {
+    isAuth,
+    isAdmin,
+    verifyPassword,
+} = require('../controllers/authController');
 const { upload } = require('../controllers/uploadController');
 const {
     userById,
@@ -24,12 +28,14 @@ const {
     getRole,
     listUser,
     getUserProfile,
+    listUserForAdmin,
 } = require('../controllers/userController');
 
 //routes
 router.get('/user/:userId', getUser);
 router.get('/user/profile/:userId', isAuth, getUserProfile);
 router.get('/users', listUser);
+router.get('/users/for/admin/:userId', isAuth, isAdmin, listUserForAdmin);
 router.put(
     '/user/profile/:userId',
     isAuth,

@@ -9,7 +9,11 @@ const { errorHandler } = require('../helpers/errorHandler');
 exports.listUserLevel = (req, res) => {
     const search = req.query.search ? req.query.search : '';
     const sortBy = req.query.sortBy ? req.query.sortBy : '_id';
-    const order = req.query.order ? req.query.order : 'asc'; //desc
+    const order =
+        req.query.order &&
+        (req.query.order == 'asc' || req.query.order == 'desc')
+            ? req.query.order
+            : 'asc'; //desc
 
     let filter = {
         search,

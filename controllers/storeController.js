@@ -694,3 +694,95 @@ exports.removeStaff = (req, res, next) => {
             });
         });
 };
+
+/*------
+  LIST STORES
+  ------*/
+exports.listStoreCommissions = (req, res, next) => {
+    Store.distinct('commission', {}, (error, commissions) => {
+        if (error) {
+            return res.status(400).json({
+                error: 'Commissions not found',
+            });
+        }
+
+        req.loadedCommissions = commissions;
+        next();
+    });
+};
+
+//?search=...&sortBy=...&order=...&limit=...&commission=...&isActive=...&page=...
+exports.listStores = (req, res) => {
+    const search = req.query.search ? req.query.search : '';
+    let isActive = [true, false];
+    if (req.query.isActive == 'true') isActive = [true];
+    if (req.query.isActive == 'false') isActive = [false];
+
+    const sortBy = req.query.sortBy ? req.query.sortBy : '_id';
+    const order =
+        req.query.order &&
+        (req.query.order == 'asc' || req.query.order == 'desc')
+            ? req.query.order
+            : 'asc';
+
+    const limit =
+        req.query.limit && req.query.limit > 0 ? parseInt(req.query.limit) : 6;
+    const page =
+        req.query.page && req.query.page > 0 ? parseInt(req.query.page) : 1;
+    const skip = limit * (page - 1);
+
+    const commission = req.query.commission
+        ? [req.query.commission]
+        : req.loadedCommissions;
+
+    const filter = {
+        search,
+        sortBy,
+        order,
+        isActive,
+        commission,
+        limit,
+        pageCurrent: page,
+    };
+
+    const filterArgs = {
+        name: { $regex: search, $options: 'i' },
+        isActive: { $in: isActive },
+        commission: { $in: commission },
+    };
+
+    Store.countDocuments(filterArgs, (error, count) => {
+        if (error) {
+            return res.status(404).json({
+                error: 'Stores not found',
+            });
+        }
+
+        const size = count;
+        const pageCount = Math.ceil(size / limit);
+        filter.pageCount = pageCount;
+
+        Store.find(filterArgs)
+            .select('-e_wallet')
+            .sort([[sortBy, order]])
+            .skip(skip)
+            .limit(limit)
+            .populate(
+                'ownerId',
+                '_id firstname lastname slug email phone id_card point avatar cover',
+            )
+            .populate(
+                'staffIds',
+                '_id firstname lastname slug email phone id_card point avatar cover',
+            )
+            .exec()
+            .then((stores) => {
+                return res.json({
+                    success: 'Load list stores successfully',
+                    filter,
+                    size,
+                    stores,
+                });
+            });
+    });
+};

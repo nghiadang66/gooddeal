@@ -39,11 +39,20 @@ const {
     listStaffs,
     getOwner,
     removeStaff,
+    listStoreCommissions,
+    listStores,
 } = require('../controllers/storeController');
 
 //routes
 router.get('/store/:storeId', getStore);
 router.get('/store/by/user/:userId', isAuth, isVendor, getStoreByUser);
+router.get(
+    '/stores/:userId',
+    isAuth,
+    isAdmin,
+    listStoreCommissions,
+    listStores,
+);
 router.post(
     '/store/create/:userId',
     isAuth,
