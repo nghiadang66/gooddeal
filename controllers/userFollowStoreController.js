@@ -1,4 +1,5 @@
 const UserFollowStore = require('../models/userFollowStoreModel');
+const { cleanStore } = require('../helpers/storeHandler');
 
 exports.follow = (req, res, next) => {
     const userId = req.user._id;
@@ -63,12 +64,14 @@ exports.listFollowingStoresByUser = (req, res) => {
         UserFollowStore.find({ userId })
             .skip(skip)
             .limit(limit)
-            .populate(
-                'storeId',
-                '_id name slug avatar cover point commission number_of_successful_orders number_of_failed_orders number_of_followers',
-            )
+            .populate('storeId')
             .exec()
-            .then((stores) => {
+            .then(userFollowStores => {
+                const stores = userFollowStores.map(userFollowStore => userFollowStore.storeId);
+                stores.forEach(store => {
+                    store = cleanStore(store);
+                });
+
                 return res.json({
                     success: 'Load list following stores successfully',
                     filter,

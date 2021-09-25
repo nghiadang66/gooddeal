@@ -1,6 +1,7 @@
 const User = require('../models/userModel');
 const jwt = require('jsonwebtoken');
 const { errorHandler } = require('../helpers/errorHandler');
+const { cleanUserLess } = require('../helpers/userHandler');
 
 exports.signup = (req, res) => {
     // console.log('---REQUEST BODY---: ', req.body);
@@ -13,11 +14,8 @@ exports.signup = (req, res) => {
             });
         }
 
-        // user.salt = undefined;
-        // user.hashed_password = undefined;
         return res.json({
             success: 'Sign up successfully',
-            // user,
         });
     });
 };
@@ -59,11 +57,11 @@ exports.signin = (req, res) => {
                 },
             );
 
-            const { _id, firstname, lastname, slug, avatar, role } = user;
+            user = cleanUserLess(user);
             return res.json({
                 success: 'Sign in successfully',
                 token,
-                user: { _id, firstname, lastname, slug, avatar, role },
+                user,
             });
         })
         .catch((error) => {
@@ -100,6 +98,7 @@ exports.forgotPassword = (req, res, next) => {
                 });
             }
 
+            //send email or phone
             const msg = {
                 email: email ? email : '',
                 phone: phone ? phone : '',
@@ -108,9 +107,7 @@ exports.forgotPassword = (req, res, next) => {
                 text: 'Please click on the following link to change your password.',
                 code: forgot_password_code,
             };
-
             req.msg = msg;
-            // console.log('---REQUEST MSG---: ', req.msg);
             next();
         })
         .catch((error) => {
@@ -142,12 +139,8 @@ exports.changePassword = (req, res) => {
                         error: 'Update password failed, Please request to resend mail/sms',
                     });
                 }
-
-                // u.hashed_password = undefined;
-                // u.salt = undefined;
                 return res.json({
                     success: 'Update password successfully',
-                    // user: u,
                 });
             });
         })
@@ -198,13 +191,15 @@ exports.isAuth = (req, res, next) => {
             // console.log('---REQUEST USER---: ', req.user);
             if (req.user._id == decoded._id) {
                 next();
-            } else {
+            }
+            else {
                 return res.status(403).json({
                     error: 'Access denied',
                 });
             }
         });
-    } else {
+    }
+    else {
         return res.status(401).json({
             error: 'No token provided!',
         });
@@ -214,7 +209,7 @@ exports.isAuth = (req, res, next) => {
 exports.isCustomer = (req, res, next) => {
     if (req.user.role != 'customer') {
         return res.status(403).json({
-            error: 'User role is not a customer',
+            error: 'This action is only for Customer',
         });
     }
     next();
@@ -236,7 +231,7 @@ exports.isManager = (req, res, next) => {
         req.store.staffIds.indexOf(req.user._id) == -1
     ) {
         return res.status(403).json({
-            error: 'Manager resource! Access denied',
+            error: 'Store Manager resource! Access denied',
         });
     }
     next();
@@ -245,7 +240,7 @@ exports.isManager = (req, res, next) => {
 exports.isOwner = (req, res, next) => {
     if (!req.user._id.equals(req.store.ownerId)) {
         return res.status(403).json({
-            error: 'Owner resource! Access denied',
+            error: 'Store Owner resource! Access denied',
         });
     }
     next();

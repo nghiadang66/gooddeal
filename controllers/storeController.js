@@ -2,6 +2,8 @@ const Store = require('../models/storeModel');
 const User = require('../models/userModel');
 const fs = require('fs');
 const { errorHandler } = require('../helpers/errorHandler');
+const { cleanUser, cleanUserLess } = require('../helpers/userHandler');
+const { cleanStore } = require('../helpers/storeHandler');
 
 /*------
   STORE
@@ -20,12 +22,7 @@ exports.storeById = (req, res, next, id) => {
 };
 
 exports.getStore = (req, res) => {
-    let store = req.store;
-    store.ownerId = undefined;
-    store.staffIds = undefined;
-    store.e_wallet = undefined;
-    store.proceeds = undefined;
-
+    const store = cleanStore(req.store);
     return res.json({
         success: 'Get store successfully',
         store,
@@ -36,14 +33,8 @@ exports.getStoreByUser = (req, res) => {
     Store.findOne({
         $or: [{ ownerId: req.user._id }, { staffIds: req.user._id }],
     })
-        .populate(
-            'ownerId',
-            '_id firstname lastname slug email phone id_card point avatar cover',
-        )
-        .populate(
-            'staffIds',
-            '_id firstname lastname slug email phone id_card point avatar cover',
-        )
+        .populate('ownerId')
+        .populate('staffIds')
         .exec()
         .then((store) => {
             if (!store) {
@@ -52,19 +43,9 @@ exports.getStoreByUser = (req, res) => {
                 });
             }
 
-            if (store.ownerId.email)
-                store.ownerId.email =
-                    store.ownerId.email.slice(0, 6) + '******';
-            if (store.ownerId.phone)
-                store.ownerId.phone = '*******' + store.ownerId.phone.slice(-3);
-            if (store.ownerId.id_card)
-                store.ownerId.id_card =
-                    store.ownerId.id_card.slice(0, 3) + '******';
-
-            store.staffIds.forEach((s) => {
-                if (s.email) s.email = s.email.slice(0, 6) + '******';
-                if (s.phone) s.phone = '*******' + s.phone.slice(-3);
-                if (s.id_card) s.id_card = s.id_card.slice(0, 3) + '******';
+            store.ownerId = cleanUser(store.ownerId);
+            store.staffIds.forEach(staff => {
+                staff = cleanUser(staff);
             });
 
             return res.json({
@@ -230,7 +211,7 @@ exports.updateAvatar = (req, res) => {
             if (!store) {
                 try {
                     fs.unlinkSync('public' + req.filepath);
-                } catch {}
+                } catch { }
 
                 return res.status(500).json({
                     error: 'Store not found',
@@ -240,7 +221,7 @@ exports.updateAvatar = (req, res) => {
             if (oldpath != '/uploads/default.jpg') {
                 try {
                     fs.unlinkSync('public' + oldpath);
-                } catch {}
+                } catch { }
             }
 
             return res.json({
@@ -251,7 +232,7 @@ exports.updateAvatar = (req, res) => {
         .catch((error) => {
             try {
                 fs.unlinkSync('public' + req.filepath);
-            } catch {}
+            } catch { }
 
             return res.status(500).json({
                 error: errorHandler(error),
@@ -283,7 +264,7 @@ exports.updateCover = (req, res) => {
             if (!store) {
                 try {
                     fs.unlinkSync('public' + req.filepath);
-                } catch {}
+                } catch { }
 
                 return res.status(500).json({
                     error: 'Store not found',
@@ -293,7 +274,7 @@ exports.updateCover = (req, res) => {
             if (oldpath != '/uploads/default.jpg') {
                 try {
                     fs.unlinkSync('public' + oldpath);
-                } catch {}
+                } catch { }
             }
 
             return res.json({
@@ -304,7 +285,7 @@ exports.updateCover = (req, res) => {
         .catch((error) => {
             try {
                 fs.unlinkSync('public' + req.filepath);
-            } catch {}
+            } catch { }
 
             return res.status(500).json({
                 error: errorHandler(error),
@@ -330,7 +311,7 @@ exports.addFeatureImage = (req, res) => {
     if (index >= 6) {
         try {
             fs.unlinkSync('public' + req.filepath);
-        } catch {}
+        } catch { }
 
         return res.status(400).json({
             error: 'The limit is 6 images',
@@ -347,7 +328,7 @@ exports.addFeatureImage = (req, res) => {
             if (!store) {
                 try {
                     fs.unlinkSync('public' + req.filepath);
-                } catch {}
+                } catch { }
 
                 return res.status(500).json({
                     error: 'Store not found',
@@ -362,7 +343,7 @@ exports.addFeatureImage = (req, res) => {
         .catch((error) => {
             try {
                 fs.unlinkSync('public' + req.filepath);
-            } catch {}
+            } catch { }
 
             return res.status(500).json({
                 error: errorHandler(error),
@@ -375,7 +356,7 @@ exports.updateFeatureImage = (req, res) => {
     if (!req.query.index) {
         try {
             fs.unlinkSync('public' + req.filepath);
-        } catch {}
+        } catch { }
 
         return res.status(400).json({
             error: 'Index not found',
@@ -388,7 +369,7 @@ exports.updateFeatureImage = (req, res) => {
     if (index >= featured_images.length) {
         try {
             fs.unlinkSync('public' + req.filepath);
-        } catch {}
+        } catch { }
 
         return res.status(404).json({
             error: 'Feature image not found',
@@ -407,7 +388,7 @@ exports.updateFeatureImage = (req, res) => {
             if (!store) {
                 try {
                     fs.unlinkSync('public' + req.filepath);
-                } catch {}
+                } catch { }
 
                 return res.status(500).json({
                     error: 'Store not found',
@@ -417,7 +398,7 @@ exports.updateFeatureImage = (req, res) => {
             if (oldpath != '/uploads/default.jpg') {
                 try {
                     fs.unlinkSync('public' + oldpath);
-                } catch {}
+                } catch { }
             }
 
             return res.json({
@@ -428,7 +409,7 @@ exports.updateFeatureImage = (req, res) => {
         .catch((error) => {
             try {
                 fs.unlinkSync('public' + req.filepath);
-            } catch {}
+            } catch { }
 
             return res.status(400).json({
                 error: errorHandler(error),
@@ -491,41 +472,41 @@ exports.removeFeaturedImage = (req, res) => {
 /*------
   OWNER
   ------*/
-exports.getOwner = (req, res) => {
-    Store.findOne({ _id: req.store._id })
-        .select('ownerId')
-        .populate(
-            'ownerId',
-            '_id firstname lastname slug email phone id_card point avatar cover',
-        )
-        .exec()
-        .then((store) => {
-            if (!store) {
-                return res.status(500).json({
-                    error: 'Store not found',
-                });
-            }
+// exports.getOwner = (req, res) => {
+//     Store.findOne({ _id: req.store._id })
+//         .select('ownerId')
+//         .populate(
+//             'ownerId',
+//             '_id firstname lastname slug email phone id_card point avatar cover',
+//         )
+//         .exec()
+//         .then((store) => {
+//             if (!store) {
+//                 return res.status(500).json({
+//                     error: 'Store not found',
+//                 });
+//             }
 
-            if (store.ownerId.email)
-                store.ownerId.email =
-                    store.ownerId.email.slice(0, 6) + '******';
-            if (store.ownerId.phone)
-                store.ownerId.phone = '*******' + store.ownerId.phone.slice(-3);
-            if (store.ownerId.id_card)
-                store.ownerId.id_card =
-                    store.ownerId.id_card.slice(0, 3) + '******';
+//             if (store.ownerId.email)
+//                 store.ownerId.email =
+//                     store.ownerId.email.slice(0, 6) + '******';
+//             if (store.ownerId.phone)
+//                 store.ownerId.phone = '*******' + store.ownerId.phone.slice(-3);
+//             if (store.ownerId.id_card)
+//                 store.ownerId.id_card =
+//                     store.ownerId.id_card.slice(0, 3) + '******';
 
-            return res.json({
-                success: 'Get owner successfully',
-                owner: store.ownerId,
-            });
-        })
-        .catch((error) => {
-            return res.status(500).json({
-                error: 'Get owner failed',
-            });
-        });
-};
+//             return res.json({
+//                 success: 'Get owner successfully',
+//                 owner: store.ownerId,
+//             });
+//         })
+//         .catch((error) => {
+//             return res.status(500).json({
+//                 error: 'Get owner failed',
+//             });
+//         });
+// };
 
 /*------
   STAFFS
@@ -751,7 +732,7 @@ exports.listStores = (req, res) => {
     const sortBy = req.query.sortBy ? req.query.sortBy : '_id';
     const order =
         req.query.order &&
-        (req.query.order == 'asc' || req.query.order == 'desc')
+            (req.query.order == 'asc' || req.query.order == 'desc')
             ? req.query.order
             : 'asc';
 
@@ -797,16 +778,18 @@ exports.listStores = (req, res) => {
             .sort([[sortBy, order]])
             .skip(skip)
             .limit(limit)
-            .populate(
-                'ownerId',
-                '_id firstname lastname slug email phone id_card point avatar cover',
-            )
-            .populate(
-                'staffIds',
-                '_id firstname lastname slug email phone id_card point avatar cover',
-            )
+            .populate('ownerId')
+            .populate('staffIds')
             .exec()
             .then((stores) => {
+
+                stores.forEach(store => {
+                    store.ownerId = cleanUserLess(store.ownerId);
+                    store.staffIds.forEach(staff => {
+                        staff = cleanUserLess(staff);
+                    });
+                });
+
                 return res.json({
                     success: 'Load list stores successfully',
                     filter,

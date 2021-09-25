@@ -1,6 +1,7 @@
 const User = require('../models/userModel');
 const fs = require('fs');
 const { errorHandler } = require('../helpers/errorHandler');
+const { cleanUser, cleanUserLess } = require('../helpers/userHandler');
 
 /*------
   USER
@@ -18,56 +19,39 @@ exports.userById = (req, res, next, id) => {
     });
 };
 
-exports.getUser = (req, res) => {
-    let {
-        firstname,
-        lastname,
-        slug,
-        avatar,
-        cover,
-        point,
-        email,
-        phone,
-        id_card,
-        role,
-    } = req.user;
+exports.userBySlug = (req, res, next, slug) => {
+    User.findOne({ slug: slug })
+        .exec()
+        .then(user => {
+            if (!user) {
+                return res.status(404).json({
+                    error: 'User not found',
+                });
+            }
 
-    if (role == 'admin') {
-        return res.status(403).json({
-            error: 'Admin resource! Access denied',
+            req.user = user;
+            next();
+        })
+        .catch(error => {
+            return res.status(404).json({
+                error: 'User not found',
+            });
         });
-    }
+};
 
-    if (email) email = email.slice(0, 6) + '******';
-    if (phone) phone = '*******' + phone.slice(-3);
-    if (id_card) id_card = id_card.slice(0, 3) + '******';
-
+exports.getUser = (req, res) => {
+    const user = cleanUser(req.user);
     return res.json({
         success: 'Get user successfully',
-        user: {
-            firstname,
-            lastname,
-            slug,
-            avatar,
-            cover,
-            point,
-            email,
-            phone,
-            id_card,
-        },
+        user,
     });
 };
 
 exports.getUserProfile = (req, res) => {
-    req.user.hashed_password = undefined;
-    req.user.salt = undefined;
-    req.user.email_code = undefined;
-    req.user.phone_code = undefined;
-    req.user.forgot_password_code = undefined;
-
+    const user = cleanUserLess(req.user);
     return res.json({
         success: 'Get user profile successfully',
-        user: req.user,
+        user,
     });
 };
 
@@ -88,11 +72,8 @@ exports.updateProfile = (req, res) => {
                 });
             }
 
-            // user.hashed_password = undefined;
-            // user.salt = undefined;
             return res.json({
                 success: 'Update user successfully',
-                // user,
             });
         })
         .catch((error) => {
@@ -150,7 +131,8 @@ exports.updateAccount = (req, res) => {
                             error: 'Update account successfully (but password failed)',
                         });
                     });
-            } else {
+            }
+            else {
                 return res.json({
                     success: 'Update account (without password) successfully',
                 });
@@ -199,11 +181,8 @@ exports.addAddress = (req, res) => {
                 });
             }
 
-            // user.hashed_password = undefined;
-            // user.salt = undefined;
             return res.json({
                 success: 'Add address successfully',
-                // user,
             });
         })
         .catch((error) => {
@@ -251,11 +230,8 @@ exports.updateAddress = (req, res) => {
                 });
             }
 
-            // user.hashed_password = undefined;
-            // user.salt = undefined;
             return res.json({
                 success: 'Update address successfully',
-                // user,
             });
         })
         .catch((error) => {
@@ -296,11 +272,8 @@ exports.removeAddress = (req, res) => {
                 });
             }
 
-            // user.hashed_password = undefined;
-            // user.salt = undefined;
             return res.json({
                 success: 'Remove address successfully',
-                // user,
             });
         })
         .catch((error) => {
@@ -334,7 +307,7 @@ exports.updateAvatar = (req, res) => {
             if (!user) {
                 try {
                     fs.unlinkSync('public' + req.filepath);
-                } catch {}
+                } catch { }
 
                 return res.status(500).json({
                     error: 'User not found',
@@ -344,20 +317,17 @@ exports.updateAvatar = (req, res) => {
             if (oldpath != '/uploads/default.jpg') {
                 try {
                     fs.unlinkSync('public' + oldpath);
-                } catch {}
+                } catch { }
             }
 
-            // user.hashed_password = undefined;
-            // user.salt = undefined;
             return res.json({
                 success: 'Update avatar successfully',
-                // user,
             });
         })
         .catch((error) => {
             try {
                 fs.unlinkSync('public' + req.filepath);
-            } catch {}
+            } catch { }
 
             return res.status(400).json({
                 error: errorHandler(error),
@@ -389,7 +359,7 @@ exports.updateCover = (req, res) => {
             if (!user) {
                 try {
                     fs.unlinkSync('public' + req.filepath);
-                } catch {}
+                } catch { }
 
                 return res.status(500).json({
                     error: 'User not found',
@@ -399,20 +369,17 @@ exports.updateCover = (req, res) => {
             if (oldpath != '/uploads/default.jpg') {
                 try {
                     fs.unlinkSync('public' + oldpath);
-                } catch {}
+                } catch { }
             }
 
-            // user.hashed_password = undefined;
-            // user.salt = undefined;
             return res.json({
                 success: 'Update cover successfully',
-                // user,
             });
         })
         .catch((error) => {
             try {
                 fs.unlinkSync('public' + req.filepath);
-            } catch {}
+            } catch { }
 
             return res.status(400).json({
                 error: errorHandler(error),
@@ -464,7 +431,7 @@ exports.listUser = (req, res) => {
     const sortBy = req.query.sortBy ? req.query.sortBy : '_id';
     const order =
         req.query.order &&
-        (req.query.order == 'asc' || req.query.order == 'desc')
+            (req.query.order == 'asc' || req.query.order == 'desc')
             ? req.query.order
             : 'asc'; //desc
 
@@ -508,18 +475,13 @@ exports.listUser = (req, res) => {
             'Note: for search by email and phone number, email can only search with first 6 characters and phone number can only search with last 3 digits';
 
         User.find(filterArgs)
-            .select(
-                '_id firstname lastname slug email phone id_card point avatar cover role createdAt',
-            )
             .sort([[sortBy, order]])
             .skip(skip)
             .limit(limit)
             .exec()
             .then((users) => {
-                users.forEach((u) => {
-                    if (u.email) u.email = u.email.slice(0, 6) + '******';
-                    if (u.phone) u.phone = '*******' + u.phone.slice(-3);
-                    if (u.id_card) u.id_card = u.id_card.slice(0, 3) + '******';
+                users.forEach(user => {
+                    user = cleanUser(user);
                 });
 
                 return res.json({
@@ -547,7 +509,7 @@ exports.listUserForAdmin = (req, res) => {
     const sortBy = req.query.sortBy ? req.query.sortBy : '_id';
     const order =
         req.query.order &&
-        (req.query.order == 'asc' || req.query.order == 'desc')
+            (req.query.order == 'asc' || req.query.order == 'desc')
             ? req.query.order
             : 'asc'; //desc
     const limit =
@@ -588,14 +550,15 @@ exports.listUserForAdmin = (req, res) => {
         filter.pageCount = pageCount;
 
         User.find(filterArgs)
-            .select(
-                '_id firstname lastname slug email phone id_card point avatar cover role createdAt',
-            )
             .sort([[sortBy, order]])
             .skip(skip)
             .limit(limit)
             .exec()
             .then((users) => {
+                users.forEach(user => {
+                    user = cleanUserLess(user);
+                });
+
                 return res.json({
                     success: 'Load list users successfully',
                     filter,
@@ -610,3 +573,4 @@ exports.listUserForAdmin = (req, res) => {
             });
     });
 };
+

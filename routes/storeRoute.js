@@ -37,7 +37,7 @@ const {
     addStaffs,
     cancelStaff,
     listStaffs,
-    getOwner,
+    // getOwner,
     removeStaff,
     listStoreCommissions,
     listStores,
@@ -65,6 +65,7 @@ router.post(
 router.put(
     '/store/:storeId/:userId',
     isAuth,
+    isVendor,
     isManager,
     storeValidator.updateStore(),
     validateHandler,
@@ -93,6 +94,7 @@ router.get('/store/status/enum', getStatusEnum);
 router.put(
     '/store/status/:storeId/:userId',
     isAuth,
+    isVendor,
     isManager,
     storeValidator.updateStatus(),
     validateHandler,
@@ -103,6 +105,7 @@ router.get('/store/avatar/:storeId', getAvatar);
 router.put(
     '/store/avatar/:storeId/:userId',
     isAuth,
+    isVendor,
     isManager,
     upload,
     updateAvatar,
@@ -112,6 +115,7 @@ router.get('/store/cover/:storeId', getCover);
 router.put(
     '/store/cover/:storeId/:userId',
     isAuth,
+    isVendor,
     isManager,
     upload,
     updateCover,
@@ -121,6 +125,7 @@ router.get('/store/featured/images/:storeId', getFeatureImages);
 router.post(
     '/store/featured/image/:storeId/:userId',
     isAuth,
+    isVendor,
     isManager,
     upload,
     addFeatureImage,
@@ -128,6 +133,7 @@ router.post(
 router.put(
     '/store/featured/image/:storeId/:userId',
     isAuth,
+    isVendor,
     isManager,
     upload,
     updateFeatureImage,
@@ -135,11 +141,12 @@ router.put(
 router.delete(
     '/store/featured/image/:storeId/:userId',
     isAuth,
+    isVendor,
     isManager,
     removeFeaturedImage,
 );
 
-router.get('/store/owner/:storeId', getOwner);
+// router.get('/store/owner/:storeId', getOwner);
 
 router.get('/store/staffs/:storeId', listStaffs);
 router.post(
@@ -149,18 +156,19 @@ router.post(
     addStaffs,
     changeRole,
 );
-router.get(
-    '/store/staff/cancel/:storeId/:userId',
-    isAuth,
-    isManager,
-    cancelStaff,
-    changeRole,
-);
 router.delete(
     '/store/staff/remove/:storeId/:userId',
     isAuth,
     isOwner,
     removeStaff,
+    changeRole,
+);
+router.get(
+    '/store/staff/cancel/:storeId/:userId',
+    isAuth,
+    isVendor,
+    isManager,
+    cancelStaff,
     changeRole,
 );
 

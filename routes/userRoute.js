@@ -25,15 +25,15 @@ const {
     updateAvatar,
     getCover,
     updateCover,
-    getRole,
+    // getRole,
     listUser,
-    getUserProfile,
+    // getUserProfile,
     listUserForAdmin,
 } = require('../controllers/userController');
 
 //routes
 router.get('/user/:userId', getUser);
-router.get('/user/profile/:userId', isAuth, getUserProfile);
+// router.get('/user/profile/:userId', isAuth, getUserProfile);
 router.get('/users', listUser);
 router.get('/users/for/admin/:userId', isAuth, isAdmin, listUserForAdmin);
 router.put(
@@ -75,7 +75,7 @@ router.put('/user/avatar/:userId', isAuth, upload, updateAvatar);
 router.get('/user/cover/:userId', getCover);
 router.put('/user/cover/:userId', isAuth, upload, updateCover);
 
-router.get('/user/role/:userId', getRole);
+// router.get('/user/role/:userId', getRole);
 
 //router params
 router.param('userId', userById);
