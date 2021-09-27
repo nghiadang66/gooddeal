@@ -21,19 +21,19 @@ const {
     addAddress,
     updateAddress,
     removeAddress,
-    getAvatar,
+    // getAvatar,
     updateAvatar,
-    getCover,
+    // getCover,
     updateCover,
     // getRole,
     listUser,
-    // getUserProfile,
+    getUserProfile,
     listUserForAdmin,
 } = require('../controllers/userController');
 
 //routes
 router.get('/user/:userId', getUser);
-// router.get('/user/profile/:userId', isAuth, getUserProfile);
+router.get('/user/profile/:userId', isAuth, getUserProfile);
 router.get('/users', listUser);
 router.get('/users/for/admin/:userId', isAuth, isAdmin, listUserForAdmin);
 router.put(
@@ -69,10 +69,10 @@ router.put(
 );
 router.delete('/user/address/:userId', isAuth, removeAddress);
 
-router.get('/user/avatar/:userId', getAvatar);
+// router.get('/user/avatar/:userId', getAvatar);
 router.put('/user/avatar/:userId', isAuth, upload, updateAvatar);
 
-router.get('/user/cover/:userId', getCover);
+// router.get('/user/cover/:userId', getCover);
 router.put('/user/cover/:userId', isAuth, upload, updateCover);
 
 // router.get('/user/role/:userId', getRole);

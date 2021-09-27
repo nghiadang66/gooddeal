@@ -17,7 +17,7 @@ exports.cleanUser = (user) => {
     if (user.id_card) user.id_card = user.id_card.slice(0, 3) + '******';
 
     return user;
-}
+};
 
 exports.cleanUserLess = (user) => {
     if (user.email_code) user.email_code = undefined;
@@ -28,4 +28,4 @@ exports.cleanUserLess = (user) => {
     // user.e_wallet = undefined;
 
     return user;
-}
+};

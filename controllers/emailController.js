@@ -29,31 +29,35 @@ const sendEmail = (email, name, title, text, code = null) => {
 };
 
 exports.sendNotificationEmail = (req, res, next) => {
+    console.log('---SEND EMAIL---');
     const { email, phone, name, title, text, code } = req.msg;
     if (!email && phone) {
         next();
     } else if (!email && !phone) {
-        return res.status(400).json({
-            error: 'No email provided!',
-        });
+        console.log('---NO EMAIL PROVIDED---');
+        // return res.status(400).json({
+        //     error: 'No email provided!',
+        // });
     } else {
-        // console.log('---EMAIL---: ', email);
         sendEmail(email, name, title, text, code)
             .then(() => {
-                return res.json({
-                    success: 'Send email successfully',
-                });
+                console.log('---SEND EMAIL SUCCESSFULLY---');
+                // return res.json({
+                //     success: 'Send email successfully',
+                // });
             })
             .catch((error) => {
-                return res.status(500).json({
-                    error: 'Send email failed',
-                });
+                console.log('---SEND EMAIL FAILED---');
+                // return res.status(500).json({
+                //     error: 'Send email failed',
+                // });
             });
     }
 };
 
 // Allow less secure apps to access account
 exports.sendConfirmationEmail = (req, res) => {
+    console.log('---SEND EMAIL---');
     if (req.user.email) {
         if (req.user.isEmailActive) {
             return res.status(400).json({
@@ -87,16 +91,19 @@ exports.sendConfirmationEmail = (req, res) => {
                 sendEmail(user.email, name, title, text, user.email_code);
             })
             .then(() => {
+                console.log('---SEND EMAIL SUCCESSFULLY---');
                 return res.json({
                     success: 'Send email successfully',
                 });
             })
             .catch((error) => {
+                console.log('---SEND EMAIL FAILED---');
                 return res.status(500).json({
                     error: 'Send email failed',
                 });
             });
     } else {
+        console.log('---NO EMAIL PROVIDED---');
         return res.status(400).json({
             error: 'No email provided!',
         });

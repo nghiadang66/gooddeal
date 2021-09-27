@@ -19,26 +19,6 @@ exports.userById = (req, res, next, id) => {
     });
 };
 
-exports.userBySlug = (req, res, next, slug) => {
-    User.findOne({ slug: slug })
-        .exec()
-        .then(user => {
-            if (!user) {
-                return res.status(404).json({
-                    error: 'User not found',
-                });
-            }
-
-            req.user = user;
-            next();
-        })
-        .catch(error => {
-            return res.status(404).json({
-                error: 'User not found',
-            });
-        });
-};
-
 exports.getUser = (req, res) => {
     const user = cleanUser(req.user);
     return res.json({
@@ -73,7 +53,7 @@ exports.updateProfile = (req, res) => {
             }
 
             return res.json({
-                success: 'Update user successfully',
+                success: 'Update user successfully.',
             });
         })
         .catch((error) => {
@@ -131,8 +111,7 @@ exports.updateAccount = (req, res) => {
                             error: 'Update account successfully (but password failed)',
                         });
                     });
-            }
-            else {
+            } else {
                 return res.json({
                     success: 'Update account (without password) successfully',
                 });
@@ -286,13 +265,13 @@ exports.removeAddress = (req, res) => {
 /*------
   AVATAR
   ------*/
-exports.getAvatar = (req, res) => {
-    let avatar = req.user.avatar;
-    return res.json({
-        success: 'load avatar successfully',
-        avatar,
-    });
-};
+// exports.getAvatar = (req, res) => {
+//     let avatar = req.user.avatar;
+//     return res.json({
+//         success: 'load avatar successfully',
+//         avatar,
+//     });
+// };
 
 exports.updateAvatar = (req, res) => {
     const oldpath = req.user.avatar;
@@ -307,7 +286,7 @@ exports.updateAvatar = (req, res) => {
             if (!user) {
                 try {
                     fs.unlinkSync('public' + req.filepath);
-                } catch { }
+                } catch {}
 
                 return res.status(500).json({
                     error: 'User not found',
@@ -317,7 +296,7 @@ exports.updateAvatar = (req, res) => {
             if (oldpath != '/uploads/default.jpg') {
                 try {
                     fs.unlinkSync('public' + oldpath);
-                } catch { }
+                } catch {}
             }
 
             return res.json({
@@ -327,7 +306,7 @@ exports.updateAvatar = (req, res) => {
         .catch((error) => {
             try {
                 fs.unlinkSync('public' + req.filepath);
-            } catch { }
+            } catch {}
 
             return res.status(400).json({
                 error: errorHandler(error),
@@ -338,13 +317,13 @@ exports.updateAvatar = (req, res) => {
 /*------
   COVER
   ------*/
-exports.getCover = (req, res) => {
-    let cover = req.user.cover;
-    return res.json({
-        success: 'load cover successfully',
-        cover,
-    });
-};
+// exports.getCover = (req, res) => {
+//     let cover = req.user.cover;
+//     return res.json({
+//         success: 'load cover successfully',
+//         cover,
+//     });
+// };
 
 exports.updateCover = (req, res) => {
     const oldpath = req.user.cover;
@@ -359,7 +338,7 @@ exports.updateCover = (req, res) => {
             if (!user) {
                 try {
                     fs.unlinkSync('public' + req.filepath);
-                } catch { }
+                } catch {}
 
                 return res.status(500).json({
                     error: 'User not found',
@@ -369,7 +348,7 @@ exports.updateCover = (req, res) => {
             if (oldpath != '/uploads/default.jpg') {
                 try {
                     fs.unlinkSync('public' + oldpath);
-                } catch { }
+                } catch {}
             }
 
             return res.json({
@@ -379,7 +358,7 @@ exports.updateCover = (req, res) => {
         .catch((error) => {
             try {
                 fs.unlinkSync('public' + req.filepath);
-            } catch { }
+            } catch {}
 
             return res.status(400).json({
                 error: errorHandler(error),
@@ -399,21 +378,23 @@ exports.getRole = (req, res) => {
 };
 
 exports.changeRole = (req, res) => {
+    console.log('---CHANGE ROLE---');
     const userIds = req.changeRole.users;
     const role = req.changeRole.isUpgraded ? 'vendor' : 'customer';
-    // console.log('---CHANGE ROLE---: ', userIds, role);
 
     User.updateMany({ _id: { $in: userIds } }, { $set: { role } })
         .exec()
         .then(() => {
-            return res.json({
-                success: 'Change user role successfully',
-            });
+            console.log('---CHANGE ROLE SUCCESSFULLY---');
+            // return res.json({
+            //     success: 'Change user role successfully',
+            // });
         })
         .catch((error) => {
-            return res.status(500).json({
-                success: 'Change user role failed',
-            });
+            console.log('---CHANGE ROLE FAILED---');
+            // return res.status(500).json({
+            //     success: 'Change user role failed',
+            // });
         });
 };
 
@@ -431,7 +412,7 @@ exports.listUser = (req, res) => {
     const sortBy = req.query.sortBy ? req.query.sortBy : '_id';
     const order =
         req.query.order &&
-            (req.query.order == 'asc' || req.query.order == 'desc')
+        (req.query.order == 'asc' || req.query.order == 'desc')
             ? req.query.order
             : 'asc'; //desc
 
@@ -480,7 +461,7 @@ exports.listUser = (req, res) => {
             .limit(limit)
             .exec()
             .then((users) => {
-                users.forEach(user => {
+                users.forEach((user) => {
                     user = cleanUser(user);
                 });
 
@@ -509,7 +490,7 @@ exports.listUserForAdmin = (req, res) => {
     const sortBy = req.query.sortBy ? req.query.sortBy : '_id';
     const order =
         req.query.order &&
-            (req.query.order == 'asc' || req.query.order == 'desc')
+        (req.query.order == 'asc' || req.query.order == 'desc')
             ? req.query.order
             : 'asc'; //desc
     const limit =
@@ -555,7 +536,7 @@ exports.listUserForAdmin = (req, res) => {
             .limit(limit)
             .exec()
             .then((users) => {
-                users.forEach(user => {
+                users.forEach((user) => {
                     user = cleanUserLess(user);
                 });
 
@@ -573,4 +554,3 @@ exports.listUserForAdmin = (req, res) => {
             });
     });
 };
-

@@ -22,11 +22,27 @@ exports.storeById = (req, res, next, id) => {
 };
 
 exports.getStore = (req, res) => {
-    const store = cleanStore(req.store);
-    return res.json({
-        success: 'Get store successfully',
-        store,
-    });
+    Store.findOne({ _id: req.store._id })
+        .populate('commission', '_id business_type cost')
+        .exec()
+        .then((store) => {
+            if (!store) {
+                return res.status(404).json({
+                    error: 'Store not found',
+                });
+            }
+
+            store = cleanStore(store);
+            return res.json({
+                success: 'Get store successfully',
+                store,
+            });
+        })
+        .catch((error) => {
+            return res.status(404).json({
+                error: 'Store not found',
+            });
+        });
 };
 
 exports.getStoreByUser = (req, res) => {
@@ -35,6 +51,7 @@ exports.getStoreByUser = (req, res) => {
     })
         .populate('ownerId')
         .populate('staffIds')
+        .populate('commission', '_id business_type cost')
         .exec()
         .then((store) => {
             if (!store) {
@@ -44,7 +61,7 @@ exports.getStoreByUser = (req, res) => {
             }
 
             store.ownerId = cleanUser(store.ownerId);
-            store.staffIds.forEach(staff => {
+            store.staffIds.forEach((staff) => {
                 staff = cleanUser(staff);
             });
 
@@ -70,12 +87,22 @@ exports.createStore = (req, res, next) => {
             });
         }
 
-        //upgrade role
+        req.newSlug = {
+            slug: store.slug,
+            id: store._id,
+            ref: 'store',
+        };
+
         req.changeRole = {
             users: [req.user._id],
             isUpgraded: true,
         };
+
         next();
+
+        return res.json({
+            success: 'Create store successfully',
+        });
     });
 };
 
@@ -190,13 +217,13 @@ exports.updateStatus = (req, res) => {
 /*------
   AVATAR
   ------*/
-exports.getAvatar = (req, res) => {
-    let avatar = req.store.avatar;
-    return res.json({
-        success: 'load avatar successfully',
-        avatar,
-    });
-};
+// exports.getAvatar = (req, res) => {
+//     let avatar = req.store.avatar;
+//     return res.json({
+//         success: 'load avatar successfully',
+//         avatar,
+//     });
+// };
 
 exports.updateAvatar = (req, res) => {
     const oldpath = req.store.avatar;
@@ -211,7 +238,7 @@ exports.updateAvatar = (req, res) => {
             if (!store) {
                 try {
                     fs.unlinkSync('public' + req.filepath);
-                } catch { }
+                } catch {}
 
                 return res.status(500).json({
                     error: 'Store not found',
@@ -221,18 +248,17 @@ exports.updateAvatar = (req, res) => {
             if (oldpath != '/uploads/default.jpg') {
                 try {
                     fs.unlinkSync('public' + oldpath);
-                } catch { }
+                } catch {}
             }
 
             return res.json({
                 success: 'Update avatar successfully',
-                // store,
             });
         })
         .catch((error) => {
             try {
                 fs.unlinkSync('public' + req.filepath);
-            } catch { }
+            } catch {}
 
             return res.status(500).json({
                 error: errorHandler(error),
@@ -243,13 +269,13 @@ exports.updateAvatar = (req, res) => {
 /*------
   COVER
   ------*/
-exports.getCover = (req, res) => {
-    let cover = req.store.cover;
-    return res.json({
-        success: 'load cover successfully',
-        cover,
-    });
-};
+// exports.getCover = (req, res) => {
+//     let cover = req.store.cover;
+//     return res.json({
+//         success: 'load cover successfully',
+//         cover,
+//     });
+// };
 
 exports.updateCover = (req, res) => {
     const oldpath = req.store.cover;
@@ -264,7 +290,7 @@ exports.updateCover = (req, res) => {
             if (!store) {
                 try {
                     fs.unlinkSync('public' + req.filepath);
-                } catch { }
+                } catch {}
 
                 return res.status(500).json({
                     error: 'Store not found',
@@ -274,18 +300,17 @@ exports.updateCover = (req, res) => {
             if (oldpath != '/uploads/default.jpg') {
                 try {
                     fs.unlinkSync('public' + oldpath);
-                } catch { }
+                } catch {}
             }
 
             return res.json({
                 success: 'Update cover successfully',
-                // store,
             });
         })
         .catch((error) => {
             try {
                 fs.unlinkSync('public' + req.filepath);
-            } catch { }
+            } catch {}
 
             return res.status(500).json({
                 error: errorHandler(error),
@@ -296,7 +321,7 @@ exports.updateCover = (req, res) => {
 /*------
   FEATURE IMAGES
   ------*/
-exports.getFeatureImages = (req, res) => {
+exports.listFeatureImages = (req, res) => {
     let featured_images = req.store.featured_images;
     return res.json({
         success: 'load cover successfully',
@@ -311,7 +336,7 @@ exports.addFeatureImage = (req, res) => {
     if (index >= 6) {
         try {
             fs.unlinkSync('public' + req.filepath);
-        } catch { }
+        } catch {}
 
         return res.status(400).json({
             error: 'The limit is 6 images',
@@ -328,7 +353,7 @@ exports.addFeatureImage = (req, res) => {
             if (!store) {
                 try {
                     fs.unlinkSync('public' + req.filepath);
-                } catch { }
+                } catch {}
 
                 return res.status(500).json({
                     error: 'Store not found',
@@ -337,13 +362,12 @@ exports.addFeatureImage = (req, res) => {
 
             return res.json({
                 success: 'Add featured image successfully',
-                // store,
             });
         })
         .catch((error) => {
             try {
                 fs.unlinkSync('public' + req.filepath);
-            } catch { }
+            } catch {}
 
             return res.status(500).json({
                 error: errorHandler(error),
@@ -356,7 +380,7 @@ exports.updateFeatureImage = (req, res) => {
     if (!req.query.index) {
         try {
             fs.unlinkSync('public' + req.filepath);
-        } catch { }
+        } catch {}
 
         return res.status(400).json({
             error: 'Index not found',
@@ -369,7 +393,7 @@ exports.updateFeatureImage = (req, res) => {
     if (index >= featured_images.length) {
         try {
             fs.unlinkSync('public' + req.filepath);
-        } catch { }
+        } catch {}
 
         return res.status(404).json({
             error: 'Feature image not found',
@@ -388,7 +412,7 @@ exports.updateFeatureImage = (req, res) => {
             if (!store) {
                 try {
                     fs.unlinkSync('public' + req.filepath);
-                } catch { }
+                } catch {}
 
                 return res.status(500).json({
                     error: 'Store not found',
@@ -398,18 +422,17 @@ exports.updateFeatureImage = (req, res) => {
             if (oldpath != '/uploads/default.jpg') {
                 try {
                     fs.unlinkSync('public' + oldpath);
-                } catch { }
+                } catch {}
             }
 
             return res.json({
                 success: 'Update feature image successfully',
-                // store,
             });
         })
         .catch((error) => {
             try {
                 fs.unlinkSync('public' + req.filepath);
-            } catch { }
+            } catch {}
 
             return res.status(400).json({
                 error: errorHandler(error),
@@ -459,7 +482,6 @@ exports.removeFeaturedImage = (req, res) => {
 
             return res.json({
                 success: 'Remove featured image successfully',
-                // store,
             });
         })
         .catch((error) => {
@@ -584,6 +606,10 @@ exports.addStaffs = (req, res, next) => {
                         isUpgraded: true,
                     };
                     next();
+
+                    return res.json({
+                        success: 'Add list staffs successfully',
+                    });
                 })
                 .catch((error) => {
                     return res.status(400).json({
@@ -624,6 +650,10 @@ exports.cancelStaff = (req, res, next) => {
                 isUpgraded: false,
             };
             next();
+
+            return res.json({
+                success: 'Cancel staff successfully',
+            });
         })
         .catch((error) => {
             return res.status(400).json({
@@ -668,6 +698,10 @@ exports.removeStaff = (req, res, next) => {
                 isUpgraded: false,
             };
             next();
+
+            return res.json({
+                success: 'Remove staff successfully',
+            });
         })
         .catch((error) => {
             return res.status(400).json({
@@ -680,6 +714,7 @@ exports.removeStaff = (req, res, next) => {
   FOLLOWERS
   ------*/
 exports.updateNumberOfFollowers = (req, res) => {
+    console.log('---UPDATE NUMEBER OF FOLLOWERS---');
     let numberOfFollowers = req.store.number_of_followers;
     numberOfFollowers = numberOfFollowers + req.updateNumberOfFollowers;
 
@@ -690,19 +725,22 @@ exports.updateNumberOfFollowers = (req, res) => {
         .exec()
         .then((store) => {
             if (!store) {
-                return res.status(500).json({
-                    error: 'Store not found',
-                });
+                console.log('---UPDATE NUMEBER OF FOLLOWERS FAILED---');
+                // return res.status(500).json({
+                //     error: 'Store not found',
+                // });
             }
 
-            return res.json({
-                success: 'Update follow successfully',
-            });
+            console.log('---UPDATE NUMEBER OF FOLLOWERS SUCCESSFULLY---');
+            // return res.json({
+            //     success: 'Update follow successfully',
+            // });
         })
         .catch((error) => {
-            return res.status(500).json({
-                error: 'Update follow failed',
-            });
+            console.log('---UPDATE NUMEBER OF FOLLOWERS FAILED---');
+            // return res.status(500).json({
+            //     error: 'Update follow failed',
+            // });
         });
 };
 
@@ -732,7 +770,7 @@ exports.listStores = (req, res) => {
     const sortBy = req.query.sortBy ? req.query.sortBy : '_id';
     const order =
         req.query.order &&
-            (req.query.order == 'asc' || req.query.order == 'desc')
+        (req.query.order == 'asc' || req.query.order == 'desc')
             ? req.query.order
             : 'asc';
 
@@ -782,10 +820,9 @@ exports.listStores = (req, res) => {
             .populate('staffIds')
             .exec()
             .then((stores) => {
-
-                stores.forEach(store => {
+                stores.forEach((store) => {
                     store.ownerId = cleanUserLess(store.ownerId);
-                    store.staffIds.forEach(staff => {
+                    store.staffIds.forEach((staff) => {
                         staff = cleanUserLess(staff);
                     });
                 });

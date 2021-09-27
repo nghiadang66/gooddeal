@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const crypto = require('crypto');
 const { v4: uuid_v4 } = require('uuid');
-const slug = require('mongoose-slug-updater');
+const slug = require('mongoose-slug-generator');
 
 mongoose.plugin(slug);
 
@@ -119,6 +119,18 @@ const userSchema = new mongoose.Schema(
             type: Number,
             default: 0,
             min: 0,
+        },
+        googleId: {
+            type: String,
+            trim: true,
+            unique: true,
+            sparse: true,
+        },
+        facebookId: {
+            type: String,
+            trim: true,
+            unique: true,
+            sparse: true,
         },
     },
     { timestamps: true },

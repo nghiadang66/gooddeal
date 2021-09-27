@@ -26,11 +26,11 @@ const {
     updateCommission,
     updateStatus,
     getStatusEnum,
-    getAvatar,
+    // getAvatar,
     updateAvatar,
-    getCover,
+    // getCover,
     updateCover,
-    getFeatureImages,
+    listFeatureImages,
     addFeatureImage,
     updateFeatureImage,
     removeFeaturedImage,
@@ -42,6 +42,7 @@ const {
     listStoreCommissions,
     listStores,
 } = require('../controllers/storeController');
+const { createSlug } = require('../controllers/slugController');
 
 //routes
 router.get('/store/:storeId', getStore);
@@ -60,6 +61,7 @@ router.post(
     storeValidator.createStore(),
     validateHandler,
     createStore,
+    createSlug,
     changeRole,
 );
 router.put(
@@ -101,7 +103,7 @@ router.put(
     updateStatus,
 );
 
-router.get('/store/avatar/:storeId', getAvatar);
+// router.get('/store/avatar/:storeId', getAvatar);
 router.put(
     '/store/avatar/:storeId/:userId',
     isAuth,
@@ -111,7 +113,7 @@ router.put(
     updateAvatar,
 );
 
-router.get('/store/cover/:storeId', getCover);
+// router.get('/store/cover/:storeId', getCover);
 router.put(
     '/store/cover/:storeId/:userId',
     isAuth,
@@ -121,7 +123,7 @@ router.put(
     updateCover,
 );
 
-router.get('/store/featured/images/:storeId', getFeatureImages);
+router.get('/store/featured/images/:storeId', listFeatureImages);
 router.post(
     '/store/featured/image/:storeId/:userId',
     isAuth,
@@ -148,7 +150,13 @@ router.delete(
 
 // router.get('/store/owner/:storeId', getOwner);
 
-router.get('/store/staffs/:storeId', listStaffs);
+router.get(
+    '/store/staffs/:storeId/:userId',
+    isAuth,
+    isVendor,
+    isManager,
+    listStaffs,
+);
 router.post(
     '/store/staffs/:storeId/:userId',
     isAuth,

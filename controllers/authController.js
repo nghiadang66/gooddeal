@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const { errorHandler } = require('../helpers/errorHandler');
 const { cleanUserLess } = require('../helpers/userHandler');
 
-exports.signup = (req, res) => {
+exports.signup = (req, res, next) => {
     // console.log('---REQUEST BODY---: ', req.body);
     const { firstname, lastname, email, phone, password } = req.body;
     const user = new User({ firstname, lastname, email, phone, password });
@@ -13,6 +13,13 @@ exports.signup = (req, res) => {
                 error: errorHandler(error),
             });
         }
+
+        req.newSlug = {
+            slug: user.slug,
+            id: user._id,
+            ref: 'user',
+        };
+        next();
 
         return res.json({
             success: 'Sign up successfully',
@@ -57,11 +64,11 @@ exports.signin = (req, res) => {
                 },
             );
 
-            user = cleanUserLess(user);
+            const { _id, role } = user;
             return res.json({
                 success: 'Sign in successfully',
                 token,
-                user,
+                user: { _id, role },
             });
         })
         .catch((error) => {
@@ -109,6 +116,10 @@ exports.forgotPassword = (req, res, next) => {
             };
             req.msg = msg;
             next();
+
+            return res.json({
+                success: 'Request successfully, waiting for email or sms',
+            });
         })
         .catch((error) => {
             return res.status(404).json({
@@ -153,7 +164,6 @@ exports.changePassword = (req, res) => {
 
 exports.verifyPassword = (req, res, next) => {
     const { currentPassword } = req.body;
-
     User.findById(req.user._id, (error, user) => {
         if (error || !user) {
             return res.status(404).json({
@@ -191,15 +201,13 @@ exports.isAuth = (req, res, next) => {
             // console.log('---REQUEST USER---: ', req.user);
             if (req.user._id == decoded._id) {
                 next();
-            }
-            else {
+            } else {
                 return res.status(403).json({
                     error: 'Access denied',
                 });
             }
         });
-    }
-    else {
+    } else {
         return res.status(401).json({
             error: 'No token provided!',
         });

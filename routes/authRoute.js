@@ -24,9 +24,16 @@ const {
     sendConfirmationSMS,
     verifySMS,
 } = require('../controllers/smsController');
+const { createSlug } = require('../controllers/slugController');
 
 //routes
-router.post('/signup', authValidator.signup(), validateHandler, signup);
+router.post(
+    '/signup',
+    authValidator.signup(),
+    validateHandler,
+    signup,
+    createSlug,
+);
 router.post('/signin', authValidator.signin(), validateHandler, signin);
 router.post(
     '/forgot/password',

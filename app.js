@@ -12,7 +12,7 @@ const userRoutes = require('./routes/userRoute');
 const storeRoutes = require('./routes/storeRoute');
 const levelRoutes = require('./routes/levelRoute');
 const commissionRoutes = require('./routes/commissionRoute');
-const userFollowStoreRoutes = require('./routes/userFollowStore');
+const userFollowStoreRoutes = require('./routes/userFollowStoreRoute');
 
 //app
 const app = express();

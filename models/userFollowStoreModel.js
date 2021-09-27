@@ -15,4 +15,6 @@ const userFollowStoreSchema = new mongoose.Schema(
     { timestamps: true },
 );
 
+userFollowStoreSchema.index({ userId: 1, storeId: 1 }, { unique: true });
+
 module.exports = mongoose.model('UserFollowStore', userFollowStoreSchema);

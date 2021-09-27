@@ -1,5 +1,6 @@
 const UserFollowStore = require('../models/userFollowStoreModel');
 const { cleanStore } = require('../helpers/storeHandler');
+const { errorHandler } = require('../helpers/errorHandler');
 
 exports.follow = (req, res, next) => {
     const userId = req.user._id;
@@ -8,13 +9,17 @@ exports.follow = (req, res, next) => {
     follow.save((error, follow) => {
         if (error | !follow) {
             return res.status(400).json({
-                error: errorHandler(error),
+                error: 'Follow is already exists',
             });
         }
 
         //update number of followers for store
         req.updateNumberOfFollowers = 1;
         next();
+
+        return res.json({
+            success: 'Follow store successfully',
+        });
     });
 };
 
@@ -28,6 +33,10 @@ exports.unfollow = (req, res, next) => {
             //update number of followers for store
             req.updateNumberOfFollowers = -1;
             next();
+
+            return res.json({
+                success: 'Unfollow store successfully',
+            });
         })
         .catch((error) => {
             return res.status(404).json({
@@ -66,9 +75,11 @@ exports.listFollowingStoresByUser = (req, res) => {
             .limit(limit)
             .populate('storeId')
             .exec()
-            .then(userFollowStores => {
-                const stores = userFollowStores.map(userFollowStore => userFollowStore.storeId);
-                stores.forEach(store => {
+            .then((userFollowStores) => {
+                const stores = userFollowStores.map(
+                    (userFollowStore) => userFollowStore.storeId,
+                );
+                stores.forEach((store) => {
                     store = cleanStore(store);
                 });
 

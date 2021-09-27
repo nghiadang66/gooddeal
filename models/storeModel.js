@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const { ObjectId } = mongoose.Schema;
-const slug = require('mongoose-slug-updater');
+const slug = require('mongoose-slug-generator');
 
 mongoose.plugin(slug);
 

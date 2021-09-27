@@ -8,41 +8,45 @@ const vonage = new Vonage({
 });
 
 exports.sendNotificationSMS = (req, res) => {
+    console.log('---SEND SMS---');
     let { phone, title, text, code } = req.msg;
     if (!phone) {
-        return res.status(400).json({
-            error: 'No phone provided!',
+        console.log('---NO PHONE PROVIDED---');
+        // return res.status(400).json({
+        //     error: 'No phone provided!',
+        // });
+    } else {
+        const from = 'GoodDeal';
+        const to = '84' + phone.slice(1);
+        text = code ? ` Your CODE: ${code}` : '';
+
+        vonage.message.sendSms(from, to, text, (err, responseData) => {
+            if (err) {
+                console.log('---SEND SMS FAILED---: ', err);
+                // return res.status(500).json({
+                //     error: 'Send SMS failed',
+                // });
+            } else {
+                if (responseData.messages[0]['status'] === '0') {
+                    console.log('---SEND SMS SUCCESSFULLY---');
+                    // return res.json({
+                    //     success: 'Send SMS successfully',
+                    // });
+                } else {
+                    console.log(
+                        `---SEND SMS FAILED---: ${responseData.messages[0]['status']}`,
+                    );
+                    // return res.status(500).json({
+                    //     error: 'Send SMS failed',
+                    // });
+                }
+            }
         });
     }
-
-    const from = 'GoodDeal';
-    const to = '84' + phone.slice(1);
-    text = code ? ` Your CODE: ${code}` : '';
-
-    vonage.message.sendSms(from, to, text, (err, responseData) => {
-        if (err) {
-            console.log(err);
-            return res.status(500).json({
-                error: 'Send SMS failed',
-            });
-        } else {
-            if (responseData.messages[0]['status'] === '0') {
-                return res.json({
-                    success: 'Send SMS successfully',
-                });
-            } else {
-                console.log(
-                    `---SEND SMS FAILED---: ${responseData.messages[0]['status']}`,
-                );
-                return res.status(500).json({
-                    error: 'Send SMS failed',
-                });
-            }
-        }
-    });
 };
 
 exports.sendConfirmationSMS = (req, res) => {
+    console.log('---SEND SMS---');
     if (req.user.phone) {
         if (req.user.isPhoneActive) {
             return res.status(400).json({
@@ -57,13 +61,11 @@ exports.sendConfirmationSMS = (req, res) => {
             },
             (err, result) => {
                 if (err) {
-                    console.error(err);
+                    console.log('---SEND SMS FAILED---: ', err);
                     return res.status(500).json({
                         error: 'Send SMS failed',
                     });
                 } else {
-                    console.log('---RESULT SEND SMS---: ', result);
-
                     User.findOneAndUpdate(
                         { _id: req.user._id },
                         { $set: { phone_code: result.request_id } },
@@ -72,16 +74,19 @@ exports.sendConfirmationSMS = (req, res) => {
                         .exec()
                         .then((user) => {
                             if (!user) {
+                                console.log('---SEND SMS FAILED---');
                                 return res.status(500).json({
                                     error: 'User not found',
                                 });
                             }
 
+                            console.log('---SEND SMS SUCCESSFULLY---');
                             return res.json({
                                 success: 'Send SMS successfully',
                             });
                         })
                         .catch((error) => {
+                            console.log('---SEND SMS FAILED---');
                             return res.status(500).json({
                                 error: errorHandler(error),
                             });
@@ -90,6 +95,7 @@ exports.sendConfirmationSMS = (req, res) => {
             },
         );
     } else {
+        console.log('---NO PHONE PROVIDED---');
         return res.status(400).json({
             error: 'No phone provided!',
         });
@@ -141,7 +147,7 @@ exports.verifySMS = (req, res) => {
         );
     } else {
         return res.status(400).json({
-            error: 'No phone code provided!',
+            error: 'Phone code is invalid',
         });
     }
 };
