@@ -14,7 +14,7 @@ exports.signup = (req, res, next) => {
             });
         }
 
-        req.newSlug = {
+        req.createSlug = {
             slug: user.slug,
             id: user._id,
             ref: 'user',
@@ -193,7 +193,7 @@ exports.isAuth = (req, res, next) => {
         jwt.verify(token, process.env.JWT_SECRET, (error, decoded) => {
             if (error) {
                 return res.status(401).json({
-                    error: 'Unauthorized!',
+                    error: 'Unauthorized! Please sign in again',
                 });
             }
 
@@ -209,7 +209,7 @@ exports.isAuth = (req, res, next) => {
         });
     } else {
         return res.status(401).json({
-            error: 'No token provided!',
+            error: 'No token provided! Please sign in again',
         });
     }
 };

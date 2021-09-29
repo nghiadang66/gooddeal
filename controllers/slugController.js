@@ -1,36 +1,19 @@
+/*------
+  TEST
+  ------*/
 const Slug = require('../models/slugModel');
 const { errorHandler } = require('../helpers/errorHandler');
 
-// exports.createSlug = (req, res, next) => {
-//     console.log('---CREATE SLUG---');
-//     const { slug, id, ref } = req.newSlug;
-
-//     const newSlug = new Slug({ slug, id, ref });
-//     newSlug.save((error, slug) => {
-//         if (error || !slug) {
-//             console.log('---CREATE SLUG FAILED---');
-//             return res.status(400).json({
-//                 error: errorHandler(error),
-//             });
-//         }
-
-//         console.log('---CREATE SLUG SUCCESSFULLY---');
-//         next();
-//         // return res.json({
-//         //     success: 'Create slug successfully'
-//         // });
-//     });
-// }
-
 exports.createSlug = (req, res, next) => {
     console.log('---CREATE SLUG---');
-    const { slug, id, ref } = req.newSlug;
+    const { slug, id, ref } = req.createSlug;
     Slug.find({ id, ref })
+        .sort('-_id')
         .exec()
         .then((slugs) => {
-            if (slugs.length >= 2) {
+            if (slugs.length > 1) {
                 const days =
-                    (slugs[1].createdAt.getTime() - new Date().getTime()) /
+                    (slugs[0].createdAt.getTime() - new Date().getTime()) /
                     (1000 * 3600 * 24);
                 if (days < 14) {
                     console.log(
@@ -38,35 +21,23 @@ exports.createSlug = (req, res, next) => {
                             14 - days
                         } days`,
                     );
-                    // return res.status(400).json({
-                    //     error: `Can create new slug after ${14 - days} days`,
-                    // });
                 } else {
                     const newSlug = new Slug({ slug, id, ref });
                     newSlug.save((error, slug) => {
                         if (error || !slug) {
                             console.log('---CREATE SLUG FAILED---');
-                            // return res.status(400).json({
-                            //     error: errorHandler(error),
-                            // });
                         } else {
                             console.log('---CREATE NEW SLUG SUCCESSFULLY---');
                             next();
-                            Slug.deleteOne({ _id: slugs[0]._id })
+                            Slug.deleteOne({ _id: slugs[1]._id })
                                 .exec()
                                 .then(() => {
                                     console.log('---REMOVE OLD SLUG FAILED---');
-                                    // return res.json({
-                                    //     success: 'Create new slug (remove old slug) successfully',
-                                    // });
                                 })
                                 .catch((error) => {
                                     console.log(
                                         '---REMOVE OLD SLUG SUCCESSFULLY---',
                                     );
-                                    // return res.json({
-                                    //     success: 'Create new slug successfully (but remove old failed)',
-                                    // });
                                 });
                         }
                     });
@@ -76,32 +47,25 @@ exports.createSlug = (req, res, next) => {
                 newSlug.save((error, slug) => {
                     if (error || !slug) {
                         console.log('---CREATE SLUG FAILED---');
-                        // return res.status(400).json({
-                        //     error: errorHandler(error),
-                        // });
                     }
                     console.log('---CREATE SLUG SUCCESSFULLY---');
-                    // return res.json({
-                    //     success: 'Create new slug successfully',
-                    // });
                     next();
                 });
             }
         });
 };
 
-exports.userIdBySlug = (req, res, next, slug) => {
-    Slug.findOne({ slug: slug, ref: 'user' })
+exports.userIdBySlug = (req, res) => {
+    const { slug } = req.body;
+    Slug.find({ slug: slug, ref: 'user' })
+        .sort('-_id')
         .exec()
-        .then((slug) => {
-            if (!slug) {
-                return res.status(404).json({
-                    error: 'Slug not found',
-                });
-            }
-
-            req.userId = slug.id;
-            next();
+        .then((slugs) => {
+            return res.json({
+                success: 'Get userId by slug successfully',
+                slug: slugs[0].slug,
+                userId: slug[0].id,
+            });
         })
         .catch((error) => {
             return res.status(404).json({
@@ -110,18 +74,17 @@ exports.userIdBySlug = (req, res, next, slug) => {
         });
 };
 
-exports.storeIdBySlug = (req, res, next, slug) => {
-    Slug.findOne({ slug: slug, ref: 'store' })
+exports.storeIdBySlug = (req, res) => {
+    const { slug } = req.body;
+    Slug.find({ slug: slug, ref: 'store' })
+        .sort('-_id')
         .exec()
-        .then((slug) => {
-            if (!slug) {
-                return res.status(404).json({
-                    error: 'Slug not found',
-                });
-            }
-
-            req.storeId = slug.id;
-            next();
+        .then((slugs) => {
+            return res.json({
+                success: 'Get storeId by slug successfully',
+                slug: slugs[0].slug,
+                storeId: slug[0].id,
+            });
         })
         .catch((error) => {
             return res.status(404).json({
@@ -130,18 +93,17 @@ exports.storeIdBySlug = (req, res, next, slug) => {
         });
 };
 
-exports.productIdBySlug = (req, res, next, slug) => {
-    Slug.findOne({ slug: slug, ref: 'product' })
+exports.productIdBySlug = (req, res) => {
+    const { slug } = req.body;
+    Slug.find({ slug: slug, ref: 'product' })
+        .sort('-_id')
         .exec()
-        .then((slug) => {
-            if (!slug) {
-                return res.status(404).json({
-                    error: 'Slug not found',
-                });
-            }
-
-            req.productId = slug.id;
-            next();
+        .then((slugs) => {
+            return res.json({
+                success: 'Get productId by slug successfully',
+                slug: slugs[0].slug,
+                productId: slug[0].id,
+            });
         })
         .catch((error) => {
             return res.status(404).json({

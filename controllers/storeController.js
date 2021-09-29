@@ -23,7 +23,7 @@ exports.storeById = (req, res, next, id) => {
 
 exports.getStore = (req, res) => {
     Store.findOne({ _id: req.store._id })
-        .populate('commission', '_id business_type cost')
+        .populate('commissionId', '_id name cost')
         .exec()
         .then((store) => {
             if (!store) {
@@ -51,7 +51,7 @@ exports.getStoreByUser = (req, res) => {
     })
         .populate('ownerId')
         .populate('staffIds')
-        .populate('commission', '_id business_type cost')
+        .populate('commissionId', '_id name cost')
         .exec()
         .then((store) => {
             if (!store) {
@@ -78,8 +78,8 @@ exports.getStoreByUser = (req, res) => {
 };
 
 exports.createStore = (req, res, next) => {
-    const { name, bio, commission } = req.body;
-    const store = new Store({ name, bio, commission, ownerId: req.user._id });
+    const { name, bio, commissionId } = req.body;
+    const store = new Store({ name, bio, commissionId, ownerId: req.user._id });
     store.save((error, store) => {
         if (error | !store) {
             return res.status(400).json({
@@ -87,7 +87,7 @@ exports.createStore = (req, res, next) => {
             });
         }
 
-        req.newSlug = {
+        req.createSlug = {
             slug: store.slug,
             id: store._id,
             ref: 'store',
@@ -159,9 +159,9 @@ exports.activeStore = (req, res) => {
   COMMISSION
   ------*/
 exports.updateCommission = (req, res) => {
-    const { commission } = req.body;
+    const { commissionId } = req.body;
 
-    Store.findOneAndUpdate({ _id: req.store._id }, { $set: { commission } })
+    Store.findOneAndUpdate({ _id: req.store._id }, { $set: { commissionId } })
         .exec()
         .then((store) => {
             if (!store) {
@@ -182,19 +182,12 @@ exports.updateCommission = (req, res) => {
 };
 
 /*------
-  STATUS
+  Open Store
   ------*/
-exports.getStatusEnum = (req, res) => {
-    return res.json({
-        success: 'Get status enum successfully',
-        status_enum: Store.schema.path('status').enumValues,
-    });
-};
+exports.openStore = (req, res) => {
+    const { isOpen } = req.body;
 
-exports.updateStatus = (req, res) => {
-    const { status } = req.body;
-
-    Store.findOneAndUpdate({ _id: req.store._id }, { $set: { status } })
+    Store.findOneAndUpdate({ _id: req.store._id }, { $set: { isOpen } })
         .exec()
         .then((store) => {
             if (!store) {
@@ -748,7 +741,7 @@ exports.updateNumberOfFollowers = (req, res) => {
   LIST STORES
   ------*/
 exports.listStoreCommissions = (req, res, next) => {
-    Store.distinct('commission', {}, (error, commissions) => {
+    Store.distinct('commissionId', {}, (error, commissions) => {
         if (error) {
             return res.status(400).json({
                 error: 'Commissions not found',
@@ -760,7 +753,7 @@ exports.listStoreCommissions = (req, res, next) => {
     });
 };
 
-//?search=...&sortBy=...&order=...&limit=...&commission=...&isActive=...&page=...
+//?search=...&sortBy=...&order=...&limit=...&commissionId=...&isActive=...&page=...
 exports.listStores = (req, res) => {
     const search = req.query.search ? req.query.search : '';
     let isActive = [true, false];
@@ -780,8 +773,8 @@ exports.listStores = (req, res) => {
         req.query.page && req.query.page > 0 ? parseInt(req.query.page) : 1;
     const skip = limit * (page - 1);
 
-    const commission = req.query.commission
-        ? [req.query.commission]
+    const commissionId = req.query.commissionId
+        ? [req.query.commissionId]
         : req.loadedCommissions;
 
     const filter = {
@@ -789,7 +782,7 @@ exports.listStores = (req, res) => {
         sortBy,
         order,
         isActive,
-        commission,
+        commissionId,
         limit,
         pageCurrent: page,
     };
@@ -797,7 +790,7 @@ exports.listStores = (req, res) => {
     const filterArgs = {
         name: { $regex: search, $options: 'i' },
         isActive: { $in: isActive },
-        commission: { $in: commission },
+        commissionId: { $in: commissionId },
     };
 
     Store.countDocuments(filterArgs, (error, count) => {
@@ -818,6 +811,7 @@ exports.listStores = (req, res) => {
             .limit(limit)
             .populate('ownerId')
             .populate('staffIds')
+            .populate('commissionId', '_id name cost')
             .exec()
             .then((stores) => {
                 stores.forEach((store) => {

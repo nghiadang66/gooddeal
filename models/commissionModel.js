@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const commissionSchema = new mongoose.Schema(
     {
-        business_type: {
+        name: {
             type: String,
             trim: true,
             required: true,

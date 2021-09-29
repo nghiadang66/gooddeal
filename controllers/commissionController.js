@@ -17,7 +17,7 @@ exports.listCommissions = (req, res) => {
         order,
     };
 
-    Commission.find({ business_type: { $regex: search, $options: 'i' } })
+    Commission.find({ name: { $regex: search, $options: 'i' } })
         .sort([[sortBy, order]])
         .exec()
         .then((commissions) => {
@@ -55,9 +55,9 @@ exports.listActiveCommissions = (req, res) => {
 };
 
 exports.createCommission = (req, res) => {
-    const { business_type, cost } = req.body;
+    const { name, cost } = req.body;
 
-    const commission = new Commission({ business_type, cost });
+    const commission = new Commission({ name, cost });
     commission.save((error, commission) => {
         if (error || !commission) {
             return res.status(400).json({
@@ -73,12 +73,9 @@ exports.createCommission = (req, res) => {
 
 exports.updateCommission = (req, res) => {
     const commissionId = req.params.commissionId;
-    const { business_type, cost } = req.body;
+    const { name, cost } = req.body;
 
-    Commission.findOneAndUpdate(
-        { _id: commissionId },
-        { $set: { business_type, cost } },
-    )
+    Commission.findOneAndUpdate({ _id: commissionId }, { $set: { name, cost } })
         .exec()
         .then((commission) => {
             if (!commission) {

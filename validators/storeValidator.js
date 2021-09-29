@@ -21,10 +21,10 @@ const createStore = () => [
         .isLength({ max: 1000 })
         .withMessage('Store bio can contain up to 1000 characters'),
 
-    check('commission')
+    check('commissionId')
         .not()
         .isEmpty()
-        .withMessage('Commission is required')
+        .withMessage('CommissionId is required')
         .custom(checkCommission),
 ];
 
@@ -59,19 +59,20 @@ const activeStore = () => [
 ];
 
 const updateCommission = () => [
-    check('commission')
+    check('commissionId')
         .not()
         .isEmpty()
-        .withMessage('commission is required')
+        .withMessage('commissionId is required')
         .custom(checkCommission),
 ];
 
-const updateStatus = () => [
-    check('status')
+const openStore = () => [
+    check('isOpen')
         .not()
         .isEmpty()
-        .withMessage('status is required')
-        .custom(checkStatus),
+        .withMessage('isOpen is required')
+        .isBoolean()
+        .withMessage('isOpen type is boolean'),
 ];
 
 //custom validator
@@ -123,5 +124,5 @@ module.exports = {
     updateStore,
     activeStore,
     updateCommission,
-    updateStatus,
+    openStore,
 };

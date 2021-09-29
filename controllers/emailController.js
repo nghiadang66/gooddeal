@@ -35,22 +35,13 @@ exports.sendNotificationEmail = (req, res, next) => {
         next();
     } else if (!email && !phone) {
         console.log('---NO EMAIL PROVIDED---');
-        // return res.status(400).json({
-        //     error: 'No email provided!',
-        // });
     } else {
         sendEmail(email, name, title, text, code)
             .then(() => {
                 console.log('---SEND EMAIL SUCCESSFULLY---');
-                // return res.json({
-                //     success: 'Send email successfully',
-                // });
             })
             .catch((error) => {
                 console.log('---SEND EMAIL FAILED---');
-                // return res.status(500).json({
-                //     error: 'Send email failed',
-                // });
             });
     }
 };

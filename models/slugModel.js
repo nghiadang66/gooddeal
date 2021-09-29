@@ -21,6 +21,6 @@ const slugSchema = new mongoose.Schema(
     { timestamps: true },
 );
 
-slugSchema.index({ slug: 1, id: 1, ref: 1 }, { unique: true });
+slugSchema.index({ slug: 1, ref: 1 }, { unique: true });
 
 module.exports = mongoose.model('Slug', slugSchema);

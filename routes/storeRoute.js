@@ -24,8 +24,7 @@ const {
     updateStore,
     activeStore,
     updateCommission,
-    updateStatus,
-    getStatusEnum,
+    openStore,
     // getAvatar,
     updateAvatar,
     // getCover,
@@ -92,15 +91,14 @@ router.put(
     updateCommission,
 );
 
-router.get('/store/status/enum', getStatusEnum);
 router.put(
-    '/store/status/:storeId/:userId',
+    '/store/open/:storeId/:userId',
     isAuth,
     isVendor,
     isManager,
-    storeValidator.updateStatus(),
+    storeValidator.openStore(),
     validateHandler,
-    updateStatus,
+    openStore,
 );
 
 // router.get('/store/avatar/:storeId', getAvatar);

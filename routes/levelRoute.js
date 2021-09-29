@@ -12,12 +12,14 @@ const { storeById } = require('../controllers/storeController');
 const {
     getUserLevel,
     listUserLevel,
+    listActiveUserLevel,
     createUserLevel,
     updateUserLevel,
     removeUserLevel,
     restoreUserLevel,
     getStoreLevel,
     listStoreLevel,
+    listActiveStoreLevel,
     createStoreLevel,
     updateStoreLevel,
     removeStoreLevel,
@@ -26,6 +28,7 @@ const {
 
 //routes
 router.get('/user/level/:userId', getUserLevel);
+router.get('/user/active/levels', listActiveUserLevel);
 router.get('/user/levels/:userId', isAuth, isAdmin, listUserLevel);
 router.post(
     '/user/level/create/:userId',
@@ -57,6 +60,7 @@ router.get(
 );
 
 router.get('/store/level/:storeId', getStoreLevel);
+router.get('/store/active/levels', listActiveStoreLevel);
 router.get('/store/levels/:userId', isAuth, isAdmin, listStoreLevel);
 router.post(
     '/store/level/create/:userId',

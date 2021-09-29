@@ -12,9 +12,6 @@ exports.sendNotificationSMS = (req, res) => {
     let { phone, title, text, code } = req.msg;
     if (!phone) {
         console.log('---NO PHONE PROVIDED---');
-        // return res.status(400).json({
-        //     error: 'No phone provided!',
-        // });
     } else {
         const from = 'GoodDeal';
         const to = '84' + phone.slice(1);
@@ -23,22 +20,13 @@ exports.sendNotificationSMS = (req, res) => {
         vonage.message.sendSms(from, to, text, (err, responseData) => {
             if (err) {
                 console.log('---SEND SMS FAILED---: ', err);
-                // return res.status(500).json({
-                //     error: 'Send SMS failed',
-                // });
             } else {
                 if (responseData.messages[0]['status'] === '0') {
                     console.log('---SEND SMS SUCCESSFULLY---');
-                    // return res.json({
-                    //     success: 'Send SMS successfully',
-                    // });
                 } else {
                     console.log(
                         `---SEND SMS FAILED---: ${responseData.messages[0]['status']}`,
                     );
-                    // return res.status(500).json({
-                    //     error: 'Send SMS failed',
-                    // });
                 }
             }
         });

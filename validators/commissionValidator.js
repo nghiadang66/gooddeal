@@ -1,15 +1,15 @@
 const { check } = require('express-validator');
 
 const commission = () => [
-    check('business_type')
+    check('name')
         .not()
         .isEmpty()
-        .withMessage('business_type is required')
+        .withMessage('name is required')
         .isLength({ max: 32 })
-        .withMessage('business_type can contain up to 32 characters')
+        .withMessage('name can contain up to 32 characters')
         .matches(/^(?=.*[a-zA-Z])[A-Za-z\d\s_'-]*$/)
         .withMessage(
-            "business_type must contain at least one letter (can contain numbers, some special characters such as _, ', - and space)",
+            "name must contain at least one letter (can contain numbers, some special characters such as _, ', - and space)",
         ),
 
     check('cost')

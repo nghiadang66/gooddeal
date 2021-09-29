@@ -44,10 +44,9 @@ const storeSchema = new mongoose.Schema(
             type: Boolean,
             default: false,
         },
-        status: {
-            type: String,
-            default: 'close',
-            enum: ['open', 'close'],
+        isOpen: {
+            type: Boolean,
+            default: false,
         },
         avatar: {
             type: String,
@@ -63,7 +62,7 @@ const storeSchema = new mongoose.Schema(
             type: [String],
             validate: [featured_imagesLimit, 'The limit is 6 images'],
         },
-        commission: {
+        commissionId: {
             type: ObjectId,
             ref: 'Commission',
             required: true,

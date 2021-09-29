@@ -38,6 +38,41 @@ exports.listUserLevel = (req, res) => {
         });
 };
 
+exports.listActiveUserLevel = (req, res) => {
+    const search = req.query.search ? req.query.search : '';
+    const sortBy = req.query.sortBy ? req.query.sortBy : '_id';
+    const order =
+        req.query.order &&
+        (req.query.order == 'asc' || req.query.order == 'desc')
+            ? req.query.order
+            : 'asc'; //desc
+
+    let filter = {
+        search,
+        sortBy,
+        order,
+    };
+
+    UserLevel.find({
+        name: { $regex: search, $options: 'i' },
+        isDeleted: false,
+    })
+        .sort([[sortBy, order]])
+        .exec()
+        .then((lvs) => {
+            return res.json({
+                success: 'Load list active user levels successfully',
+                filter,
+                lvs,
+            });
+        })
+        .catch((error) => {
+            return res.status(500).json({
+                error: 'Load list active user levels failed',
+            });
+        });
+};
+
 exports.getUserLevel = (req, res) => {
     const point = req.user.point >= 0 ? req.user.point : 0;
 
@@ -187,6 +222,37 @@ exports.listStoreLevel = (req, res) => {
         .catch((error) => {
             return res.status(500).json({
                 error: 'Load list store levels failed',
+            });
+        });
+};
+
+exports.listActiveStoreLevel = (req, res) => {
+    const search = req.query.search ? req.query.search : '';
+    const sortBy = req.query.sortBy ? req.query.sortBy : '_id';
+    const order = req.query.order ? req.query.order : 'asc'; //desc
+
+    let filter = {
+        search,
+        sortBy,
+        order,
+    };
+
+    StoreLevel.find({
+        name: { $regex: search, $options: 'i' },
+        isDeleted: false,
+    })
+        .sort([[sortBy, order]])
+        .exec()
+        .then((lvs) => {
+            return res.json({
+                success: 'Load list active store levels successfully',
+                filter,
+                lvs,
+            });
+        })
+        .catch((error) => {
+            return res.status(500).json({
+                error: 'Load list active store levels failed',
             });
         });
 };

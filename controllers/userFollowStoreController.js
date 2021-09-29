@@ -2,7 +2,7 @@ const UserFollowStore = require('../models/userFollowStoreModel');
 const { cleanStore } = require('../helpers/storeHandler');
 const { errorHandler } = require('../helpers/errorHandler');
 
-exports.follow = (req, res, next) => {
+exports.followStore = (req, res, next) => {
     const userId = req.user._id;
     const storeId = req.store._id;
     const follow = new UserFollowStore({ userId, storeId });
@@ -23,7 +23,7 @@ exports.follow = (req, res, next) => {
     });
 };
 
-exports.unfollow = (req, res, next) => {
+exports.unfollowStore = (req, res, next) => {
     const userId = req.user._id;
     const storeId = req.store._id;
 
