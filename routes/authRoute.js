@@ -12,6 +12,7 @@ const {
     forgotPassword,
     changePassword,
     isAuth,
+    refreshToken,
 } = require('../controllers/authController');
 const { userById } = require('../controllers/userController');
 const {
@@ -35,6 +36,9 @@ router.post(
     createSlug,
 );
 router.post('/signin', authValidator.signin(), validateHandler, signin);
+
+router.post('/refresh/token', refreshToken);
+
 router.post(
     '/forgot/password',
     authValidator.forgotPassword(),

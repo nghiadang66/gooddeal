@@ -1,10 +1,9 @@
 const User = require('../models/userModel');
+const RefreshToken = require('../models/refreshTokenModel');
 const jwt = require('jsonwebtoken');
 const { errorHandler } = require('../helpers/errorHandler');
-const { cleanUserLess } = require('../helpers/userHandler');
 
 exports.signup = (req, res, next) => {
-    // console.log('---REQUEST BODY---: ', req.body);
     const { firstname, lastname, email, phone, password } = req.body;
     const user = new User({ firstname, lastname, email, phone, password });
     user.save((error, user) => {
@@ -39,7 +38,6 @@ exports.signin = (req, res) => {
     })
         .exec()
         .then((user) => {
-            // console.log('---USER---: ', user);
             if (!user) {
                 return res.status(404).json({
                     error: 'User not found',
@@ -52,23 +50,24 @@ exports.signin = (req, res) => {
                 });
             }
 
-            //authorization
-            const token = jwt.sign(
-                {
-                    _id: user._id,
-                    role: user.role,
-                },
-                process.env.JWT_SECRET,
-                {
-                    expiresIn: '42h',
-                },
-            );
+            const accessToken = jwt.sign({ _id: user._id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '42h' });
+            const refreshToken = jwt.sign({ _id: user._id }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '9999 days' });
 
-            const { _id, role } = user;
-            return res.json({
-                success: 'Sign in successfully',
-                token,
-                user: { _id, role },
+            const token = new RefreshToken({ jwt: refreshToken });
+            token.save((error, t) => {
+                if (error || !t) {
+                    return res.status(500).json({
+                        error: 'Create JWT failed, please try sign in again',
+                    });
+                }
+
+                const { _id, role } = user;
+                return res.json({
+                    success: 'Sign in successfully',
+                    accessToken,
+                    refreshToken,
+                    user: { _id, role },
+                });
             });
         })
         .catch((error) => {
@@ -76,6 +75,59 @@ exports.signin = (req, res) => {
                 error: 'User not found',
             });
         });
+};
+
+exports.refreshToken = (req, res) => {
+    const refreshToken = req.body.refreshToken;
+    if (refreshToken == null) return res.status(401).json({ error: 'refreshToken is required' });
+
+    RefreshToken.findOne({ jwt: refreshToken })
+        .exec()
+        .then(token => {
+            if (!token) {
+                return res.status(404).json({
+                    error: 'refreshToken is invalid',
+                });
+            }
+
+            jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (error, decoded) => {
+                if (error) {
+                    return res.status(403).json({
+                        error: 'refreshToken is invalid',
+                    });
+                }
+                else {
+                    const accessToken = jwt.sign({ _id: decoded._id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '42h' });
+                    const newRefreshToken = jwt.sign({ _id: decoded._id }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '9999 days' });
+
+                    RefreshToken.findOneAndUpdate({ jwt: refreshToken }, { $set: { jwt: newRefreshToken } })
+                        .exec()
+                        .then(t => {
+                            if (!t) {
+                                return res.status(500).json({
+                                    error: 'Create JWT failed, please try refresh token again',
+                                });
+                            }
+
+                            return res.json({
+                                success: 'Refresh token successfully',
+                                accessToken,
+                                refreshToken: newRefreshToken,
+                            });
+                        })
+                        .catch(error => {
+                            return res.status(500).json({
+                                error: 'Create JWT failed, please try refresh token again',
+                            });
+                        });
+                }
+            });
+        })
+        .catch(error => {
+            return res.status(401).json({
+                error: 'refreshToken is invalid',
+            });
+        })
 };
 
 exports.forgotPassword = (req, res, next) => {
@@ -98,7 +150,6 @@ exports.forgotPassword = (req, res, next) => {
     )
         .exec()
         .then((user) => {
-            // console.log('---USER---: ', user);
             if (!user) {
                 return res.status(404).json({
                     error: 'User not found',
@@ -182,23 +233,19 @@ exports.verifyPassword = (req, res, next) => {
 };
 
 exports.isAuth = (req, res, next) => {
-    // console.log('---REQUEST HEADERS---: ', req.headers);
     if (
         req.headers &&
         req.headers.authorization &&
         req.headers.authorization.split(' ')[1]
     ) {
         const token = req.headers.authorization.split(' ')[1];
-        // console.log('---TOKEN---: ', token);
-        jwt.verify(token, process.env.JWT_SECRET, (error, decoded) => {
+        jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (error, decoded) => {
             if (error) {
                 return res.status(401).json({
                     error: 'Unauthorized! Please sign in again',
                 });
             }
 
-            // console.log('---DECODED---: ', decoded);
-            // console.log('---REQUEST USER---: ', req.user);
             if (req.user._id == decoded._id) {
                 next();
             } else {
