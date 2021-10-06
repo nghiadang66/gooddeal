@@ -13,27 +13,28 @@ exports.signup = (req, res, next) => {
             });
         }
 
-        req.createSlug = {
-            slug: user.slug,
-            id: user._id,
-            ref: 'user',
-        };
-        next();
-
         return res.json({
-            success: 'Sign up successfully',
+            success: 'Signing up successfully, you can sign in now',
         });
     });
 };
 
 exports.signin = (req, res) => {
-    // console.log('---REQUEST BODY---: ', req.body);
+    console.log(req.user);
     const { email, phone, password } = req.body;
 
     User.findOne({
         $or: [
-            { email: { $exists: true, $ne: null, $eq: email } },
-            { phone: { $exists: true, $ne: null, $eq: phone } },
+            {
+                email: { $exists: true, $ne: null, $eq: email },
+                googleId: { $exists: false, $eq: null },
+                facebookId: { $exists: false, $eq: null },
+            },
+            {
+                phone: { $exists: true, $ne: null, $eq: phone },
+                googleId: { $exists: false, $eq: null },
+                facebookId: { $exists: false, $eq: null },
+            },
         ],
     })
         .exec()
@@ -50,8 +51,16 @@ exports.signin = (req, res) => {
                 });
             }
 
-            const accessToken = jwt.sign({ _id: user._id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '42h' });
-            const refreshToken = jwt.sign({ _id: user._id }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '9999 days' });
+            const accessToken = jwt.sign(
+                { _id: user._id },
+                process.env.ACCESS_TOKEN_SECRET,
+                { expiresIn: '42h' },
+            );
+            const refreshToken = jwt.sign(
+                { _id: user._id },
+                process.env.REFRESH_TOKEN_SECRET,
+                { expiresIn: '9999 days' },
+            );
 
             const token = new RefreshToken({ jwt: refreshToken });
             token.save((error, t) => {
@@ -77,57 +86,80 @@ exports.signin = (req, res) => {
         });
 };
 
+exports.signout = (req, res) => {
+    const refreshToken = req.body.refreshToken;
+    if (refreshToken == null)
+        return res.status(401).json({ error: 'refreshToken is required' });
+
+    RefreshToken.deleteOne({ jwt: refreshToken })
+        .exec()
+        .then(() => {
+            return res.json({
+                success: 'Sign out successfully',
+            });
+        })
+        .catch((error) => {
+            return res.status(500).json({
+                error: 'Sign out failed, try again later',
+            });
+        });
+};
+
 exports.refreshToken = (req, res) => {
     const refreshToken = req.body.refreshToken;
-    if (refreshToken == null) return res.status(401).json({ error: 'refreshToken is required' });
+    if (refreshToken == null)
+        return res.status(401).json({ error: 'refreshToken is required' });
 
     RefreshToken.findOne({ jwt: refreshToken })
         .exec()
-        .then(token => {
+        .then((token) => {
             if (!token) {
                 return res.status(404).json({
                     error: 'refreshToken is invalid',
                 });
-            }
+            } else {
+                const decoded = jwt.decode(token.jwt);
+                const accessToken = jwt.sign(
+                    { _id: decoded._id },
+                    process.env.ACCESS_TOKEN_SECRET,
+                    { expiresIn: '42h' },
+                );
+                const newRefreshToken = jwt.sign(
+                    { _id: decoded._id },
+                    process.env.REFRESH_TOKEN_SECRET,
+                    { expiresIn: '9999 days' },
+                );
 
-            jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (error, decoded) => {
-                if (error) {
-                    return res.status(403).json({
-                        error: 'refreshToken is invalid',
-                    });
-                }
-                else {
-                    const accessToken = jwt.sign({ _id: decoded._id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '42h' });
-                    const newRefreshToken = jwt.sign({ _id: decoded._id }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '9999 days' });
-
-                    RefreshToken.findOneAndUpdate({ jwt: refreshToken }, { $set: { jwt: newRefreshToken } })
-                        .exec()
-                        .then(t => {
-                            if (!t) {
-                                return res.status(500).json({
-                                    error: 'Create JWT failed, please try refresh token again',
-                                });
-                            }
-
-                            return res.json({
-                                success: 'Refresh token successfully',
-                                accessToken,
-                                refreshToken: newRefreshToken,
-                            });
-                        })
-                        .catch(error => {
+                RefreshToken.findOneAndUpdate(
+                    { jwt: refreshToken },
+                    { $set: { jwt: newRefreshToken } },
+                )
+                    .exec()
+                    .then((t) => {
+                        if (!t) {
                             return res.status(500).json({
-                                error: 'Create JWT failed, please try refresh token again',
+                                error: 'Create JWT failed, try again later',
                             });
+                        }
+
+                        return res.json({
+                            success: 'Refresh token successfully',
+                            accessToken,
+                            refreshToken: newRefreshToken,
                         });
-                }
-            });
+                    })
+                    .catch((error) => {
+                        return res.status(500).json({
+                            error: 'Create JWT failed,try again later',
+                        });
+                    });
+            }
         })
-        .catch(error => {
+        .catch((error) => {
             return res.status(401).json({
                 error: 'refreshToken is invalid',
             });
-        })
+        });
 };
 
 exports.forgotPassword = (req, res, next) => {
@@ -308,4 +340,144 @@ exports.isAdmin = (req, res, next) => {
         });
     }
     next();
+};
+
+exports.authSocial = (req, res, next) => {
+    const { googleId, facebookId } = req.body;
+
+    if (!googleId && !facebookId)
+        return res.status(400).json({
+            error: 'googleId or facebookId is required',
+        });
+
+    User.findOne({
+        $or: [
+            { googleId: { $exists: true, $ne: null, $eq: googleId } },
+            { facebookId: { $exists: true, $ne: null, $eq: facebookId } },
+        ],
+    })
+        .exec()
+        .then((user) => {
+            if (!user) {
+                next();
+            } else {
+                req.auth = user;
+                next();
+            }
+        })
+        .catch((error) => {
+            return res.status(500).json({
+                error: 'Signing in with Google/Facebook failed',
+            });
+        });
+};
+
+exports.authUpdate = (req, res, next) => {
+    if (req.auth) next();
+    else {
+        const { firstname, lastname, email, googleId, facebookId } = req.body;
+
+        if (googleId) {
+            User.findOneAndUpdate(
+                { email, facebookId: { $exists: true, $ne: null } },
+                { $set: { googleId } },
+                { new: true },
+            )
+                .exec()
+                .then((user) => {
+                    if (!user) {
+                        const newUser = new User({
+                            firstname,
+                            lastname,
+                            email,
+                            googleId,
+                            facebookId,
+                            isEmailActive: true,
+                        });
+                        newUser.save((error, u) => {
+                            if (error) {
+                                return res.status(400).json({
+                                    error: errorHandler(error),
+                                });
+                            }
+                            req.auth = u;
+                            next();
+                        });
+                    } else {
+                        req.auth = user;
+                        next();
+                    }
+                })
+                .catch((error) => {
+                    next();
+                });
+        }
+
+        if (facebookId) {
+            User.findOneAndUpdate(
+                { email, googleId: { $exists: true, $ne: null } },
+                { $set: { facebookId } },
+                { new: true },
+            )
+                .exec()
+                .then((user) => {
+                    if (!user) {
+                        const newUser = new User({
+                            firstname,
+                            lastname,
+                            email,
+                            googleId,
+                            facebookId,
+                            isEmailActive: true,
+                        });
+                        newUser.save((error, u) => {
+                            if (error) {
+                                return res.status(400).json({
+                                    error: errorHandler(error),
+                                });
+                            }
+                            req.auth = u;
+                            next();
+                        });
+                    } else {
+                        req.auth = user;
+                        next();
+                    }
+                })
+                .catch((error) => {
+                    next();
+                });
+        }
+    }
+};
+
+exports.authToken = (req, res) => {
+    const user = req.auth;
+    const accessToken = jwt.sign(
+        { _id: user._id },
+        process.env.ACCESS_TOKEN_SECRET,
+        { expiresIn: '42h' },
+    );
+    const refreshToken = jwt.sign(
+        { _id: user._id },
+        process.env.REFRESH_TOKEN_SECRET,
+        { expiresIn: '9999 days' },
+    );
+
+    const token = new RefreshToken({ jwt: refreshToken });
+    token.save((error, t) => {
+        if (error) {
+            return res.status(500).json({
+                error: 'Create JWT failed, please try sign in again',
+            });
+        }
+
+        const { _id, role } = user;
+        return res.json({
+            success: 'Sign in successfully',
+            accessToken,
+            refreshToken,
+            user: { _id, role },
+        });
+    });
 };

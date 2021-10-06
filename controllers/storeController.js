@@ -87,17 +87,10 @@ exports.createStore = (req, res, next) => {
             });
         }
 
-        req.createSlug = {
-            slug: store.slug,
-            id: store._id,
-            ref: 'store',
-        };
-
         req.changeRole = {
             users: [req.user._id],
             isUpgraded: true,
         };
-
         next();
 
         return res.json({

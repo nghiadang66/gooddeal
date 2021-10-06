@@ -41,7 +41,6 @@ const {
     listStoreCommissions,
     listStores,
 } = require('../controllers/storeController');
-const { createSlug } = require('../controllers/slugController');
 
 //routes
 router.get('/store/:storeId', getStore);
@@ -60,7 +59,6 @@ router.post(
     storeValidator.createStore(),
     validateHandler,
     createStore,
-    createSlug,
     changeRole,
 );
 router.put(

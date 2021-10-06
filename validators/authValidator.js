@@ -127,6 +127,24 @@ const changePassword = () => [
         ),
 ];
 
+const authSocial = () => [
+    check('firstname')
+        .not()
+        .isEmpty()
+        .withMessage('Firstname is required')
+        .isLength({ max: 32 })
+        .withMessage('Firstname can contain up to 32 characters'),
+
+    check('lastname')
+        .not()
+        .isEmpty()
+        .withMessage('Lastname is required')
+        .isLength({ max: 32 })
+        .withMessage('Lastname can contain up to 32 characters'),
+
+    check('email').not().isEmpty().withMessage('Email is required'),
+];
+
 //custom validator
 const checkStoreName = (val) => {
     const regexes = [/g[o0][o0]d[^\w]*deal/i, /admin/i];
@@ -150,4 +168,5 @@ module.exports = {
     signin,
     forgotPassword,
     changePassword,
+    authSocial,
 };

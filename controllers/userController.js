@@ -71,8 +71,15 @@ exports.updateAccount = (req, res) => {
     const isPhoneActive =
         phone && req.user.phone != phone ? false : req.user.isPhoneActive;
 
+    if (email && (req.user.googleId || req.user.facebookId))
+        return res.status(400).json({
+            error: "This is account from Google or Facebook, you can't update email",
+        });
+
     User.findOneAndUpdate(
-        { _id: req.user._id },
+        {
+            _id: req.user._id,
+        },
         { $set: { email, phone, isEmailActive, isPhoneActive } },
     )
         .exec()

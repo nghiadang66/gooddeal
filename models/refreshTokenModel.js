@@ -5,7 +5,7 @@ const refreshTokenSchema = new mongoose.Schema(
         jwt: {
             type: String,
             required: true,
-        }
+        },
     },
     { timestamps: true },
 );

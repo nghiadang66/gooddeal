@@ -25,13 +25,12 @@ const categorySchema = new mongoose.Schema(
             required: true,
             unique: true,
         },
-        categoryID:{
+        categoryID: {
             type: ObjectId,
             ref: 'Category',
             required: true,
             unique: true,
-        }
-        
+        },
     },
     { timestamps: true },
 );

@@ -13,6 +13,10 @@ const {
     changePassword,
     isAuth,
     refreshToken,
+    signout,
+    authSocial,
+    authToken,
+    authUpdate,
 } = require('../controllers/authController');
 const { userById } = require('../controllers/userController');
 const {
@@ -25,17 +29,19 @@ const {
     sendConfirmationSMS,
     verifySMS,
 } = require('../controllers/smsController');
-const { createSlug } = require('../controllers/slugController');
 
 //routes
-router.post(
-    '/signup',
-    authValidator.signup(),
-    validateHandler,
-    signup,
-    createSlug,
-);
+router.post('/signup', authValidator.signup(), validateHandler, signup);
 router.post('/signin', authValidator.signin(), validateHandler, signin);
+router.post('/signout', signout);
+router.post(
+    '/auth/social',
+    authValidator.authSocial(),
+    validateHandler,
+    authSocial,
+    authUpdate,
+    authToken,
+);
 
 router.post('/refresh/token', refreshToken);
 

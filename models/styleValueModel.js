@@ -10,12 +10,12 @@ const styleValueSchema = new mongoose.Schema(
             unique: true,
             maxLength: 32,
         },
-        styleID:{
+        styleID: {
             type: ObjectId,
             ref: 'Style',
             required: true,
             unique: true,
-        }
+        },
     },
     { timestamps: true },
 );

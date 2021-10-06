@@ -23,27 +23,27 @@ const productSchema = new mongoose.Schema(
             required: true,
             maxLength: 1000,
         },
-        price:{
+        price: {
             type: mongoose.Decimal128,
             required: true,
             min: 0,
         },
-        promotional_price:{
+        promotional_price: {
             type: mongoose.Decimal128,
             required: true,
             min: 0,
         },
-        quantity:{
+        quantity: {
             type: Number,
             required: true,
             min: 0,
         },
-        sold:{
+        sold: {
             type: Number,
             required: true,
             default: 0,
         },
-        isStored:{
+        isStored: {
             type: Boolean,
             default: true,
         },
@@ -52,41 +52,41 @@ const productSchema = new mongoose.Schema(
             Element: String,
             default: [],
         },
-        video:{
+        video: {
             type: String,
             trim: true,
             required: true,
         },
-        categoryID:{
+        categoryID: {
             type: ObjectId,
             ref: 'Category',
             required: true,
         },
-        brandID:{
+        brandID: {
             type: ObjectId,
             ref: 'Brand',
             required: true,
         },
-        styleValueIDs:{
+        styleValueIDs: {
             type: Array,
             Element: ObjectId,
             default: [],
-            ref: 'StyleValue'
+            ref: 'StyleValue',
         },
-        storeID:{
+        storeID: {
             required,
             type: ObjectId,
             ref: 'Store',
         },
-        point:{
+        point: {
             type: Number,
             default: 0,
         },
-        number_of_review:{
+        number_of_review: {
             type: Number,
             default: 0,
         },
-        number_of_star:{
+        number_of_star: {
             type: Number,
             default: 0,
         },

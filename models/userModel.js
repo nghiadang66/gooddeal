@@ -61,7 +61,6 @@ const userSchema = new mongoose.Schema(
         salt: String,
         hashed_password: {
             type: String,
-            required: true,
         },
         forgot_password_code: {
             type: String,
