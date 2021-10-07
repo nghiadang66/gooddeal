@@ -3,7 +3,7 @@ const RefreshToken = require('../models/refreshTokenModel');
 const jwt = require('jsonwebtoken');
 const { errorHandler } = require('../helpers/errorHandler');
 
-exports.signup = (req, res, next) => {
+exports.signup = (req, res) => {
     const { firstname, lastname, email, phone, password } = req.body;
     const user = new User({ firstname, lastname, email, phone, password });
     user.save((error, user) => {
@@ -19,7 +19,7 @@ exports.signup = (req, res, next) => {
     });
 };
 
-exports.signin = (req, res) => {
+exports.signin = (req, res, next) => {
     console.log(req.user);
     const { email, phone, password } = req.body;
 
@@ -51,39 +51,45 @@ exports.signin = (req, res) => {
                 });
             }
 
-            const accessToken = jwt.sign(
-                { _id: user._id },
-                process.env.ACCESS_TOKEN_SECRET,
-                { expiresIn: '42h' },
-            );
-            const refreshToken = jwt.sign(
-                { _id: user._id },
-                process.env.REFRESH_TOKEN_SECRET,
-                { expiresIn: '9999 days' },
-            );
-
-            const token = new RefreshToken({ jwt: refreshToken });
-            token.save((error, t) => {
-                if (error || !t) {
-                    return res.status(500).json({
-                        error: 'Create JWT failed, please try sign in again',
-                    });
-                }
-
-                const { _id, role } = user;
-                return res.json({
-                    success: 'Sign in successfully',
-                    accessToken,
-                    refreshToken,
-                    user: { _id, role },
-                });
-            });
+            req.auth = user;
+            next();
         })
         .catch((error) => {
             res.status(404).json({
                 error: 'User not found',
             });
         });
+};
+
+exports.authToken = (req, res) => {
+    const user = req.auth;
+    const accessToken = jwt.sign(
+        { _id: user._id },
+        process.env.ACCESS_TOKEN_SECRET,
+        { expiresIn: '42h' },
+    );
+    const refreshToken = jwt.sign(
+        { _id: user._id },
+        process.env.REFRESH_TOKEN_SECRET,
+        { expiresIn: '9999 days' },
+    );
+
+    const token = new RefreshToken({ jwt: refreshToken });
+    token.save((error, t) => {
+        if (error) {
+            return res.status(500).json({
+                error: 'Create JWT failed, please try sign in again',
+            });
+        }
+
+        const { _id, role } = user;
+        return res.json({
+            success: 'Sign in successfully',
+            accessToken,
+            refreshToken,
+            user: { _id, role },
+        });
+    });
 };
 
 exports.signout = (req, res) => {
@@ -264,84 +270,6 @@ exports.verifyPassword = (req, res, next) => {
     });
 };
 
-exports.isAuth = (req, res, next) => {
-    if (
-        req.headers &&
-        req.headers.authorization &&
-        req.headers.authorization.split(' ')[1]
-    ) {
-        const token = req.headers.authorization.split(' ')[1];
-        jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (error, decoded) => {
-            if (error) {
-                return res.status(401).json({
-                    error: 'Unauthorized! Please sign in again',
-                });
-            }
-
-            if (req.user._id == decoded._id) {
-                next();
-            } else {
-                return res.status(403).json({
-                    error: 'Access denied',
-                });
-            }
-        });
-    } else {
-        return res.status(401).json({
-            error: 'No token provided! Please sign in again',
-        });
-    }
-};
-
-exports.isCustomer = (req, res, next) => {
-    if (req.user.role != 'customer') {
-        return res.status(403).json({
-            error: 'This action is only for Customer',
-        });
-    }
-    next();
-};
-
-exports.isVendor = (req, res, next) => {
-    if (req.user.role == 'customer') {
-        return res.status(403).json({
-            error: 'Vendor resource! Access denied',
-        });
-    }
-    next();
-};
-
-//owner and staff of store
-exports.isManager = (req, res, next) => {
-    if (
-        !req.user._id.equals(req.store.ownerId) &&
-        req.store.staffIds.indexOf(req.user._id) == -1
-    ) {
-        return res.status(403).json({
-            error: 'Store Manager resource! Access denied',
-        });
-    }
-    next();
-};
-
-exports.isOwner = (req, res, next) => {
-    if (!req.user._id.equals(req.store.ownerId)) {
-        return res.status(403).json({
-            error: 'Store Owner resource! Access denied',
-        });
-    }
-    next();
-};
-
-exports.isAdmin = (req, res, next) => {
-    if (req.user.role !== 'admin') {
-        return res.status(403).json({
-            error: 'Admin resource! Access denied',
-        });
-    }
-    next();
-};
-
 exports.authSocial = (req, res, next) => {
     const { googleId, facebookId } = req.body;
 
@@ -451,33 +379,62 @@ exports.authUpdate = (req, res, next) => {
     }
 };
 
-exports.authToken = (req, res) => {
-    const user = req.auth;
-    const accessToken = jwt.sign(
-        { _id: user._id },
-        process.env.ACCESS_TOKEN_SECRET,
-        { expiresIn: '42h' },
-    );
-    const refreshToken = jwt.sign(
-        { _id: user._id },
-        process.env.REFRESH_TOKEN_SECRET,
-        { expiresIn: '9999 days' },
-    );
+exports.isAuth = (req, res, next) => {
+    if (
+        req.headers &&
+        req.headers.authorization &&
+        req.headers.authorization.split(' ')[1]
+    ) {
+        const token = req.headers.authorization.split(' ')[1];
+        jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (error, decoded) => {
+            if (error) {
+                return res.status(401).json({
+                    error: 'Unauthorized! Please sign in again',
+                });
+            }
 
-    const token = new RefreshToken({ jwt: refreshToken });
-    token.save((error, t) => {
-        if (error) {
-            return res.status(500).json({
-                error: 'Create JWT failed, please try sign in again',
-            });
-        }
-
-        const { _id, role } = user;
-        return res.json({
-            success: 'Sign in successfully',
-            accessToken,
-            refreshToken,
-            user: { _id, role },
+            if (req.user._id == decoded._id) {
+                next();
+            } else {
+                return res.status(403).json({
+                    error: 'Access denied',
+                });
+            }
         });
-    });
+    } else {
+        return res.status(401).json({
+            error: 'No token provided! Please sign in again',
+        });
+    }
+};
+
+//owner and staff of store
+exports.isManager = (req, res, next) => {
+    if (
+        !req.user._id.equals(req.store.ownerId) &&
+        req.store.staffIds.indexOf(req.user._id) == -1
+    ) {
+        return res.status(403).json({
+            error: 'Store Manager resource! Access denied',
+        });
+    }
+    next();
+};
+
+exports.isOwner = (req, res, next) => {
+    if (!req.user._id.equals(req.store.ownerId)) {
+        return res.status(403).json({
+            error: 'Store Owner resource! Access denied',
+        });
+    }
+    next();
+};
+
+exports.isAdmin = (req, res, next) => {
+    if (req.user.role !== 'admin') {
+        return res.status(403).json({
+            error: 'Admin resource! Access denied',
+        });
+    }
+    next();
 };

@@ -45,9 +45,9 @@ exports.getStore = (req, res) => {
         });
 };
 
-exports.getStoreByUser = (req, res) => {
+exports.getStoreProfile = (req, res) => {
     Store.findOne({
-        $or: [{ ownerId: req.user._id }, { staffIds: req.user._id }],
+        _id: req.store._id,
     })
         .populate('ownerId')
         .populate('staffIds')
@@ -56,7 +56,7 @@ exports.getStoreByUser = (req, res) => {
         .then((store) => {
             if (!store) {
                 return res.status(404).json({
-                    error: 'Store not found',
+                    error: 'Stores not found',
                 });
             }
 
@@ -66,7 +66,7 @@ exports.getStoreByUser = (req, res) => {
             });
 
             return res.json({
-                success: 'Get store by user successfully',
+                success: 'Get store profile successfully',
                 store,
             });
         })
@@ -77,7 +77,7 @@ exports.getStoreByUser = (req, res) => {
         });
 };
 
-exports.createStore = (req, res, next) => {
+exports.createStore = (req, res) => {
     const { name, bio, commissionId } = req.body;
     const store = new Store({ name, bio, commissionId, ownerId: req.user._id });
     store.save((error, store) => {
@@ -86,12 +86,6 @@ exports.createStore = (req, res, next) => {
                 error: errorHandler(error),
             });
         }
-
-        req.changeRole = {
-            users: [req.user._id],
-            isUpgraded: true,
-        };
-        next();
 
         return res.json({
             success: 'Create store successfully',
@@ -200,17 +194,6 @@ exports.openStore = (req, res) => {
         });
 };
 
-/*------
-  AVATAR
-  ------*/
-// exports.getAvatar = (req, res) => {
-//     let avatar = req.store.avatar;
-//     return res.json({
-//         success: 'load avatar successfully',
-//         avatar,
-//     });
-// };
-
 exports.updateAvatar = (req, res) => {
     const oldpath = req.store.avatar;
 
@@ -251,17 +234,6 @@ exports.updateAvatar = (req, res) => {
             });
         });
 };
-
-/*------
-  COVER
-  ------*/
-// exports.getCover = (req, res) => {
-//     let cover = req.store.cover;
-//     return res.json({
-//         success: 'load cover successfully',
-//         cover,
-//     });
-// };
 
 exports.updateCover = (req, res) => {
     const oldpath = req.store.cover;
@@ -478,45 +450,6 @@ exports.removeFeaturedImage = (req, res) => {
 };
 
 /*------
-  OWNER
-  ------*/
-// exports.getOwner = (req, res) => {
-//     Store.findOne({ _id: req.store._id })
-//         .select('ownerId')
-//         .populate(
-//             'ownerId',
-//             '_id firstname lastname slug email phone id_card point avatar cover',
-//         )
-//         .exec()
-//         .then((store) => {
-//             if (!store) {
-//                 return res.status(500).json({
-//                     error: 'Store not found',
-//                 });
-//             }
-
-//             if (store.ownerId.email)
-//                 store.ownerId.email =
-//                     store.ownerId.email.slice(0, 6) + '******';
-//             if (store.ownerId.phone)
-//                 store.ownerId.phone = '*******' + store.ownerId.phone.slice(-3);
-//             if (store.ownerId.id_card)
-//                 store.ownerId.id_card =
-//                     store.ownerId.id_card.slice(0, 3) + '******';
-
-//             return res.json({
-//                 success: 'Get owner successfully',
-//                 owner: store.ownerId,
-//             });
-//         })
-//         .catch((error) => {
-//             return res.status(500).json({
-//                 error: 'Get owner failed',
-//             });
-//         });
-// };
-
-/*------
   STAFFS
   ------*/
 exports.listStaffs = (req, res) => {
@@ -554,9 +487,8 @@ exports.listStaffs = (req, res) => {
 
 exports.addStaffs = (req, res, next) => {
     const { staffs } = req.body;
-
     User.countDocuments(
-        { _id: { $in: staffs }, role: 'customer' },
+        { _id: { $in: staffs }, role: 'user' },
         (error, count) => {
             if (error) {
                 return res.status(404).json({
@@ -585,13 +517,6 @@ exports.addStaffs = (req, res, next) => {
                             error: 'Store not found',
                         });
                     }
-
-                    //upgrade role
-                    req.changeRole = {
-                        users: staffs,
-                        isUpgraded: true,
-                    };
-                    next();
 
                     return res.json({
                         success: 'Add list staffs successfully',
@@ -629,13 +554,6 @@ exports.cancelStaff = (req, res, next) => {
                     error: 'Store not found',
                 });
             }
-
-            //downgrade role
-            req.changeRole = {
-                users: [userId],
-                isUpgraded: false,
-            };
-            next();
 
             return res.json({
                 success: 'Cancel staff successfully',
@@ -678,13 +596,6 @@ exports.removeStaff = (req, res, next) => {
                 });
             }
 
-            //downgrade role
-            req.changeRole = {
-                users: [staff],
-                isUpgraded: false,
-            };
-            next();
-
             return res.json({
                 success: 'Remove staff successfully',
             });
@@ -712,21 +623,12 @@ exports.updateNumberOfFollowers = (req, res) => {
         .then((store) => {
             if (!store) {
                 console.log('---UPDATE NUMEBER OF FOLLOWERS FAILED---');
-                // return res.status(500).json({
-                //     error: 'Store not found',
-                // });
             }
 
             console.log('---UPDATE NUMEBER OF FOLLOWERS SUCCESSFULLY---');
-            // return res.json({
-            //     success: 'Update follow successfully',
-            // });
         })
         .catch((error) => {
             console.log('---UPDATE NUMEBER OF FOLLOWERS FAILED---');
-            // return res.status(500).json({
-            //     error: 'Update follow failed',
-            // });
         });
 };
 
@@ -747,6 +649,84 @@ exports.listStoreCommissions = (req, res, next) => {
 };
 
 //?search=...&sortBy=...&order=...&limit=...&commissionId=...&isActive=...&page=...
+exports.listStoresByUser = (req, res) => {
+    const search = req.query.search ? req.query.search : '';
+    let isActive = [true, false];
+    if (req.query.isActive == 'true') isActive = [true];
+    if (req.query.isActive == 'false') isActive = [false];
+
+    const sortBy = req.query.sortBy ? req.query.sortBy : '_id';
+    const order =
+        req.query.order &&
+        (req.query.order == 'asc' || req.query.order == 'desc')
+            ? req.query.order
+            : 'asc';
+
+    const limit =
+        req.query.limit && req.query.limit > 0 ? parseInt(req.query.limit) : 6;
+    const page =
+        req.query.page && req.query.page > 0 ? parseInt(req.query.page) : 1;
+    const skip = limit * (page - 1);
+
+    const commissionId = req.query.commissionId
+        ? [req.query.commissionId]
+        : req.loadedCommissions;
+
+    const filter = {
+        search,
+        sortBy,
+        order,
+        isActive,
+        commissionId,
+        limit,
+        pageCurrent: page,
+    };
+
+    const filterArgs = {
+        name: { $regex: search, $options: 'i' },
+        isActive: { $in: isActive },
+        commissionId: { $in: commissionId },
+        $or: [{ ownerId: req.user._id }, { staffIds: req.user._id }],
+    };
+
+    Store.countDocuments(filterArgs, (error, count) => {
+        if (error) {
+            return res.status(404).json({
+                error: 'Stores not found',
+            });
+        }
+
+        const size = count;
+        const pageCount = Math.ceil(size / limit);
+        filter.pageCount = pageCount;
+
+        Store.find(filterArgs)
+            .select('-e_wallet')
+            .sort([[sortBy, order]])
+            .skip(skip)
+            .limit(limit)
+            .populate('ownerId')
+            .populate('staffIds')
+            .populate('commissionId', '_id name cost')
+            .exec()
+            .then((stores) => {
+                stores.forEach((store) => {
+                    store.ownerId = cleanUser(store.ownerId);
+                    store.staffIds.forEach((staff) => {
+                        staff = cleanUser(staff);
+                    });
+                });
+
+                return res.json({
+                    success: 'Load list stores by user successfully',
+                    filter,
+                    size,
+                    stores,
+                });
+            });
+    });
+};
+
 exports.listStores = (req, res) => {
     const search = req.query.search ? req.query.search : '';
     let isActive = [true, false];

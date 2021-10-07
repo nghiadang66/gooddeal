@@ -374,48 +374,11 @@ exports.updateCover = (req, res) => {
 };
 
 /*------
-  ROLE
-  ------*/
-exports.getRole = (req, res) => {
-    let role = req.user.role;
-    return res.json({
-        success: 'Get role successfully',
-        role,
-    });
-};
-
-exports.changeRole = (req, res) => {
-    console.log('---CHANGE ROLE---');
-    const userIds = req.changeRole.users;
-    const role = req.changeRole.isUpgraded ? 'vendor' : 'customer';
-
-    User.updateMany({ _id: { $in: userIds } }, { $set: { role } })
-        .exec()
-        .then(() => {
-            console.log('---CHANGE ROLE SUCCESSFULLY---');
-            // return res.json({
-            //     success: 'Change user role successfully',
-            // });
-        })
-        .catch((error) => {
-            console.log('---CHANGE ROLE FAILED---');
-            // return res.status(500).json({
-            //     success: 'Change user role failed',
-            // });
-        });
-};
-
-/*------
   LIST USERS
   ------*/
-// users?search=...&role=...&sortBy=...&order=...&limit=...&page=...
+// users?search=...&sortBy=...&order=...&limit=...&page=...
 exports.listUser = (req, res) => {
     const search = req.query.search ? req.query.search : '';
-    const role =
-        req.query.role && req.query.role != 'admin'
-            ? [req.query.role]
-            : ['customer', 'vendor'];
-
     const sortBy = req.query.sortBy ? req.query.sortBy : '_id';
     const order =
         req.query.order &&
@@ -431,7 +394,6 @@ exports.listUser = (req, res) => {
 
     const filter = {
         search,
-        role,
         sortBy,
         order,
         limit,
@@ -446,7 +408,6 @@ exports.listUser = (req, res) => {
             { phone: { $regex: search.slice(0, 3) + '$', $options: 'i' } },
         ],
         role: { $ne: 'admin' },
-        role: { $in: role },
     };
 
     User.countDocuments(filterArgs, (error, count) => {
@@ -490,10 +451,6 @@ exports.listUser = (req, res) => {
 // list users for admin management
 exports.listUserForAdmin = (req, res) => {
     const search = req.query.search ? req.query.search : '';
-    const role =
-        req.query.role && req.query.role != 'admin'
-            ? [req.query.role]
-            : ['customer', 'vendor'];
     const sortBy = req.query.sortBy ? req.query.sortBy : '_id';
     const order =
         req.query.order &&
@@ -508,7 +465,6 @@ exports.listUserForAdmin = (req, res) => {
 
     const filter = {
         search,
-        role,
         sortBy,
         order,
         limit,
@@ -523,7 +479,6 @@ exports.listUserForAdmin = (req, res) => {
             { phone: { $regex: search, $options: 'i' } },
         ],
         role: { $ne: 'admin' },
-        role: { $in: role },
     };
 
     User.countDocuments(filterArgs, (error, count) => {
