@@ -11,23 +11,19 @@ const {
     isAdmin,
     isManager,
     isOwner,
-    isVendor,
-    isCustomer,
 } = require('../controllers/authController');
-const { userById, changeRole } = require('../controllers/userController');
+const { userById } = require('../controllers/userController');
 const { upload } = require('../controllers/uploadController');
 const {
     storeById,
     getStore,
     createStore,
-    getStoreByUser,
+    getStoreProfile,
     updateStore,
     activeStore,
     updateCommission,
     openStore,
-    // getAvatar,
     updateAvatar,
-    // getCover,
     updateCover,
     listFeatureImages,
     addFeatureImage,
@@ -36,15 +32,26 @@ const {
     addStaffs,
     cancelStaff,
     listStaffs,
-    // getOwner,
     removeStaff,
     listStoreCommissions,
     listStores,
+    listStoresByUser,
 } = require('../controllers/storeController');
 
 //routes
 router.get('/store/:storeId', getStore);
-router.get('/store/by/user/:userId', isAuth, isVendor, getStoreByUser);
+router.get(
+    '/store/profile/:storeId/:userId',
+    isAuth,
+    isManager,
+    getStoreProfile,
+);
+router.get(
+    '/stores/by/user/:userId',
+    isAuth,
+    listStoreCommissions,
+    listStoresByUser,
+);
 router.get(
     '/stores/:userId',
     isAuth,
@@ -55,16 +62,13 @@ router.get(
 router.post(
     '/store/create/:userId',
     isAuth,
-    isCustomer,
     storeValidator.createStore(),
     validateHandler,
     createStore,
-    changeRole,
 );
 router.put(
     '/store/:storeId/:userId',
     isAuth,
-    isVendor,
     isManager,
     storeValidator.updateStore(),
     validateHandler,
@@ -92,7 +96,6 @@ router.put(
 router.put(
     '/store/open/:storeId/:userId',
     isAuth,
-    isVendor,
     isManager,
     storeValidator.openStore(),
     validateHandler,
@@ -103,7 +106,6 @@ router.put(
 router.put(
     '/store/avatar/:storeId/:userId',
     isAuth,
-    isVendor,
     isManager,
     upload,
     updateAvatar,
@@ -113,7 +115,6 @@ router.put(
 router.put(
     '/store/cover/:storeId/:userId',
     isAuth,
-    isVendor,
     isManager,
     upload,
     updateCover,
@@ -123,7 +124,6 @@ router.get('/store/featured/images/:storeId', listFeatureImages);
 router.post(
     '/store/featured/image/:storeId/:userId',
     isAuth,
-    isVendor,
     isManager,
     upload,
     addFeatureImage,
@@ -131,7 +131,6 @@ router.post(
 router.put(
     '/store/featured/image/:storeId/:userId',
     isAuth,
-    isVendor,
     isManager,
     upload,
     updateFeatureImage,
@@ -139,41 +138,25 @@ router.put(
 router.delete(
     '/store/featured/image/:storeId/:userId',
     isAuth,
-    isVendor,
     isManager,
     removeFeaturedImage,
 );
 
 // router.get('/store/owner/:storeId', getOwner);
 
-router.get(
-    '/store/staffs/:storeId/:userId',
-    isAuth,
-    isVendor,
-    isManager,
-    listStaffs,
-);
-router.post(
-    '/store/staffs/:storeId/:userId',
-    isAuth,
-    isOwner,
-    addStaffs,
-    changeRole,
-);
+router.get('/store/staffs/:storeId/:userId', isAuth, isManager, listStaffs);
+router.post('/store/staffs/:storeId/:userId', isAuth, isOwner, addStaffs);
 router.delete(
     '/store/staff/remove/:storeId/:userId',
     isAuth,
     isOwner,
     removeStaff,
-    changeRole,
 );
 router.get(
     '/store/staff/cancel/:storeId/:userId',
     isAuth,
-    isVendor,
     isManager,
     cancelStaff,
-    changeRole,
 );
 
 //router params

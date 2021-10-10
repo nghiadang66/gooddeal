@@ -37,11 +37,22 @@ exports.getUserProfile = (req, res) => {
 
 exports.updateProfile = (req, res) => {
     // console.log('---REQUEST BODY---: ', req.body);
-    const { firstname, lastname, id_card } = req.body;
+    const { firstname, lastname, id_card, email, phone } = req.body;
+
+    if (email && (req.user.googleId || req.user.facebookId)) {
+        return res.status(400).json({
+            error: 'Can not update Google/Facebook email address',
+        });
+    }
+
+    const isEmailActive =
+        email && req.user.email != email ? false : req.user.isEmailActive;
+    const isPhoneActive =
+        phone && req.user.phone != phone ? false : req.user.isPhoneActive;
 
     User.findOneAndUpdate(
         { _id: req.user._id },
-        { $set: { firstname, lastname, id_card } },
+        { $set: { firstname, lastname, id_card, email, phone } },
         { new: true },
     )
         .exec()
@@ -54,6 +65,7 @@ exports.updateProfile = (req, res) => {
 
             return res.json({
                 success: 'Update user successfully.',
+                user: cleanUserLess(user),
             });
         })
         .catch((error) => {
@@ -63,73 +75,31 @@ exports.updateProfile = (req, res) => {
         });
 };
 
-exports.updateAccount = (req, res) => {
-    const { email, phone, newPassword } = req.body;
+exports.updatePassword = (req, res) => {
+    let { newPassword } = req.body;
 
-    const isEmailActive =
-        email && req.user.email != email ? false : req.user.isEmailActive;
-    const isPhoneActive =
-        phone && req.user.phone != phone ? false : req.user.isPhoneActive;
+    const user = req.user;
+    newPassword = user.encryptPassword(newPassword, user.salt)
 
-    if (email && (req.user.googleId || req.user.facebookId))
-        return res.status(400).json({
-            error: "This is account from Google or Facebook, you can't update email",
-        });
-
-    User.findOneAndUpdate(
-        {
-            _id: req.user._id,
-        },
-        { $set: { email, phone, isEmailActive, isPhoneActive } },
-    )
+    User.findOneAndUpdate({ _id: req.user._id }, { $set: { hashed_password: newPassword } })
         .exec()
-        .then((user) => {
+        .then(user => {
             if (!user) {
-                return res.status(500).json({
-                    error: 'User not found',
+                return res.status(400).json({
+                    error: errorHandler(error),
                 });
             }
 
-            if (newPassword) {
-                user.hashed_password = user.encryptPassword(
-                    newPassword,
-                    this.salt,
-                );
-
-                User.findOneAndUpdate(
-                    { _id: user._id },
-                    { $set: { hashed_password: user.hashed_password } },
-                )
-                    .exec()
-                    .then((user) => {
-                        if (!user) {
-                            return res.status(500).json({
-                                error: 'Update account successfully (but password failed)',
-                            });
-                        }
-
-                        return res.json({
-                            success:
-                                'Update account (and password) successfully',
-                        });
-                    })
-                    .catch((error) => {
-                        return res.status(500).json({
-                            error: 'Update account successfully (but password failed)',
-                        });
-                    });
-            } else {
-                return res.json({
-                    success: 'Update account (without password) successfully',
-                });
-            }
+            return res.json({
+                success: 'Update new password successfully',
+            });
         })
-        .catch((error) => {
-            return res.status(400).json({
-                error: errorHandler(error),
+        .catch(error => {
+            return res.status(500).json({
+                error: 'Update new password failed',
             });
         });
-};
+}
 
 /*------
   ADDRESS
@@ -272,14 +242,6 @@ exports.removeAddress = (req, res) => {
 /*------
   AVATAR
   ------*/
-// exports.getAvatar = (req, res) => {
-//     let avatar = req.user.avatar;
-//     return res.json({
-//         success: 'load avatar successfully',
-//         avatar,
-//     });
-// };
-
 exports.updateAvatar = (req, res) => {
     const oldpath = req.user.avatar;
 
@@ -293,7 +255,7 @@ exports.updateAvatar = (req, res) => {
             if (!user) {
                 try {
                     fs.unlinkSync('public' + req.filepath);
-                } catch {}
+                } catch { }
 
                 return res.status(500).json({
                     error: 'User not found',
@@ -303,17 +265,18 @@ exports.updateAvatar = (req, res) => {
             if (oldpath != '/uploads/default.jpg') {
                 try {
                     fs.unlinkSync('public' + oldpath);
-                } catch {}
+                } catch { }
             }
 
             return res.json({
                 success: 'Update avatar successfully',
+                avatar: user.avatar,
             });
         })
         .catch((error) => {
             try {
                 fs.unlinkSync('public' + req.filepath);
-            } catch {}
+            } catch { }
 
             return res.status(400).json({
                 error: errorHandler(error),
@@ -345,7 +308,7 @@ exports.updateCover = (req, res) => {
             if (!user) {
                 try {
                     fs.unlinkSync('public' + req.filepath);
-                } catch {}
+                } catch { }
 
                 return res.status(500).json({
                     error: 'User not found',
@@ -355,17 +318,18 @@ exports.updateCover = (req, res) => {
             if (oldpath != '/uploads/default.jpg') {
                 try {
                     fs.unlinkSync('public' + oldpath);
-                } catch {}
+                } catch { }
             }
 
             return res.json({
                 success: 'Update cover successfully',
+                cover: user.cover,
             });
         })
         .catch((error) => {
             try {
                 fs.unlinkSync('public' + req.filepath);
-            } catch {}
+            } catch { }
 
             return res.status(400).json({
                 error: errorHandler(error),
@@ -382,7 +346,7 @@ exports.listUser = (req, res) => {
     const sortBy = req.query.sortBy ? req.query.sortBy : '_id';
     const order =
         req.query.order &&
-        (req.query.order == 'asc' || req.query.order == 'desc')
+            (req.query.order == 'asc' || req.query.order == 'desc')
             ? req.query.order
             : 'asc'; //desc
 
@@ -454,7 +418,7 @@ exports.listUserForAdmin = (req, res) => {
     const sortBy = req.query.sortBy ? req.query.sortBy : '_id';
     const order =
         req.query.order &&
-        (req.query.order == 'asc' || req.query.order == 'desc')
+            (req.query.order == 'asc' || req.query.order == 'desc')
             ? req.query.order
             : 'asc'; //desc
     const limit =

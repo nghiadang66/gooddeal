@@ -7,7 +7,7 @@ const signup = () => [
         .withMessage('Firstname is required')
         .isLength({ max: 32 })
         .withMessage('Firstname can contain up to 32 characters')
-        .matches(/^(?=.*[a-zA-Z])[A-Za-z\d\s_'-]*$/)
+        .matches(/^(?=.*[a-zA-Z])[A-Za-záàảãạăắằẳẵặâấầẩẫậéèẻẽẹêếềểễệóòỏõọôốồổỗộơớờởỡợíìỉĩịúùủũụưứừửữựýỳỷỹỵđÁÀẢÃẠĂẮẰẲẴẶÂẤẦẨẪẬÉÈẺẼẸÊẾỀỂỄỆÓÒỎÕỌÔỐỒỔỖỘƠỚỜỞỠỢÍÌỈĨỊÚÙỦŨỤƯỨỪỬỮỰÝỲỶỸỴĐ\d\s_'-]*$/)
         .withMessage(
             "Firstname must contain at least one letter (can contain numbers, some special characters such as _, ', - and space)",
         )
@@ -19,7 +19,7 @@ const signup = () => [
         .withMessage('Lastname is required')
         .isLength({ max: 32 })
         .withMessage('Lastname can contain up to 32 characters')
-        .matches(/^(?=.*[a-zA-Z])[A-Za-z\d\s_'-]*$/)
+        .matches(/^(?=.*[a-zA-Z])[A-Za-záàảãạăắằẳẵặâấầẩẫậéèẻẽẹêếềểễệóòỏõọôốồổỗộơớờởỡợíìỉĩịúùủũụưứừửữựýỳỷỹỵđÁÀẢÃẠĂẮẰẲẴẶÂẤẦẨẪẬÉÈẺẼẸÊẾỀỂỄỆÓÒỎÕỌÔỐỒỔỖỘƠỚỜỞỠỢÍÌỈĨỊÚÙỦŨỤƯỨỪỬỮỰÝỲỶỸỴĐ\d\s_'-]*$/)
         .withMessage(
             "Lastname must contain at least one letter (can contain numbers, some special characters such as _, ', - and space)",
         )

@@ -7,7 +7,7 @@ const updateProfile = () => [
         .withMessage('Firstname is required')
         .isLength({ max: 32 })
         .withMessage('Firstname can contain up to 32 characters')
-        .matches(/^(?=.*[a-zA-Z])[A-Za-z\d\s_'-]*$/)
+        .matches(/^(?=.*[a-zA-Z])[A-Za-záàảãạăắằẳẵặâấầẩẫậéèẻẽẹêếềểễệóòỏõọôốồổỗộơớờởỡợíìỉĩịúùủũụưứừửữựýỳỷỹỵđÁÀẢÃẠĂẮẰẲẴẶÂẤẦẨẪẬÉÈẺẼẸÊẾỀỂỄỆÓÒỎÕỌÔỐỒỔỖỘƠỚỜỞỠỢÍÌỈĨỊÚÙỦŨỤƯỨỪỬỮỰÝỲỶỸỴĐ\d\s_'-]*$/)
         .withMessage(
             "Firstname must contain at least one letter (can contain numbers, some special characters such as _, ', - and space)",
         )
@@ -19,7 +19,7 @@ const updateProfile = () => [
         .withMessage('Lastname is required')
         .isLength({ max: 32 })
         .withMessage('Lastname can contain up to 32 characters')
-        .matches(/^(?=.*[a-zA-Z])[A-Za-z\d\s_'-]*$/)
+        .matches(/^(?=.*[a-zA-Z])[A-Za-záàảãạăắằẳẵặâấầẩẫậéèẻẽẹêếềểễệóòỏõọôốồổỗộơớờởỡợíìỉĩịúùủũụưứừửữựýỳỷỹỵđÁÀẢÃẠĂẮẰẲẴẶÂẤẦẨẪẬÉÈẺẼẸÊẾỀỂỄỆÓÒỎÕỌÔỐỒỔỖỘƠỚỜỞỠỢÍÌỈĨỊÚÙỦŨỤƯỨỪỬỮỰÝỲỶỸỴĐ\d\s_'-]*$/)
         .withMessage(
             "Lastname must contain at least one letter (can contain numbers, some special characters such as _, ', - and space)",
         )
@@ -35,29 +35,6 @@ const updateProfile = () => [
             check('id_card').not().exists(),
         ],
         'Id_card must contain 9 or 12 numbers',
-    ),
-];
-
-const updateAccount = () => [
-    check('currentPassword')
-        .not()
-        .isEmpty()
-        .withMessage('Current Password is required')
-        .matches(/^[A-Za-z\d@$!%*?&]*$/)
-        .withMessage('Current Password contains invalid characters'),
-
-    oneOf(
-        [
-            check('newPassword')
-                .not()
-                .isEmpty()
-                .matches(
-                    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/,
-                ),
-
-            check('newPassword').not().exists(),
-        ],
-        'New Password must contain at least 6 characters, at least 1 uppercase letter, 1 lowercase letter, 1 number and 1 special character such as @, $, !, %, *, ?, &',
     ),
 
     oneOf(
@@ -83,6 +60,24 @@ const updateAccount = () => [
         ],
         'Phone must contain 10 or 11 numbers',
     ),
+];
+
+const updateAccount = () => [
+    check('currentPassword')
+        .not()
+        .isEmpty()
+        .withMessage('Current Password is required')
+        .matches(/^[A-Za-z\d@$!%*?&]*$/)
+        .withMessage('Current Password contains invalid characters'),
+
+    check('newPassword')
+        .not()
+        .isEmpty()
+        .withMessage('New password is required')
+        .matches(
+            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/,
+        )
+        .withMessage('New Password must contain at least 6 characters, at least 1 uppercase letter, 1 lowercase letter, 1 number and 1 special character such as @, $, !, %, *, ?, &'),
 ];
 
 const userAddress = () => [

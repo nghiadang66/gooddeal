@@ -16,19 +16,16 @@ const {
     userById,
     getUser,
     updateProfile,
-    updateAccount,
     listAddress,
     addAddress,
     updateAddress,
     removeAddress,
-    // getAvatar,
     updateAvatar,
-    // getCover,
     updateCover,
-    // getRole,
     listUser,
     getUserProfile,
     listUserForAdmin,
+    updatePassword,
 } = require('../controllers/userController');
 
 //routes
@@ -43,14 +40,7 @@ router.put(
     validateHandler,
     updateProfile,
 );
-router.put(
-    '/user/account/:userId',
-    isAuth,
-    userValidator.updateAccount(),
-    validateHandler,
-    verifyPassword,
-    updateAccount,
-);
+router.put('/user/password/:userId', isAuth, userValidator.updateAccount(), validateHandler, verifyPassword, updatePassword);
 
 router.get('/user/addresses/:userId', isAuth, listAddress);
 router.post(
@@ -69,13 +59,9 @@ router.put(
 );
 router.delete('/user/address/:userId', isAuth, removeAddress);
 
-// router.get('/user/avatar/:userId', getAvatar);
 router.put('/user/avatar/:userId', isAuth, upload, updateAvatar);
 
-// router.get('/user/cover/:userId', getCover);
 router.put('/user/cover/:userId', isAuth, upload, updateCover);
-
-// router.get('/user/role/:userId', getRole);
 
 //router params
 router.param('userId', userById);

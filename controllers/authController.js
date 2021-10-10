@@ -20,7 +20,6 @@ exports.signup = (req, res) => {
 };
 
 exports.signin = (req, res, next) => {
-    console.log(req.user);
     const { email, phone, password } = req.body;
 
     User.findOne({
@@ -82,12 +81,11 @@ exports.authToken = (req, res) => {
             });
         }
 
-        const { _id, role } = user;
         return res.json({
             success: 'Sign in successfully',
             accessToken,
             refreshToken,
-            user: { _id, role },
+            _id: user._id,
         });
     });
 };

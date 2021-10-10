@@ -29,7 +29,6 @@ const storeSchema = new mongoose.Schema(
             type: ObjectId,
             ref: 'User',
             required: true,
-            unique: true,
         },
         staffIds: {
             type: [

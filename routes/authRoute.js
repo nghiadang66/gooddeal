@@ -32,7 +32,13 @@ const {
 
 //routes
 router.post('/signup', authValidator.signup(), validateHandler, signup);
-router.post('/signin', authValidator.signin(), validateHandler, signin);
+router.post(
+    '/signin',
+    authValidator.signin(),
+    validateHandler,
+    signin,
+    authToken,
+);
 router.post('/signout', signout);
 router.post(
     '/auth/social',
