@@ -172,7 +172,7 @@ function addressesLimit(val) {
 }
 
 function nameAvailable(val) {
-    const regexes = [/g[o0][o0]d[^\w]*deal/i, /admin/i];
+    const regexes = [/g[o0][o0]d[^\w]*deal/i];
 
     let flag = true;
     regexes.forEach((regex) => {

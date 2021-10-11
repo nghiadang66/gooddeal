@@ -36,7 +36,6 @@ exports.getUserProfile = (req, res) => {
 };
 
 exports.updateProfile = (req, res) => {
-    // console.log('---REQUEST BODY---: ', req.body);
     const { firstname, lastname, id_card, email, phone } = req.body;
 
     if (email && (req.user.googleId || req.user.facebookId)) {
@@ -52,7 +51,7 @@ exports.updateProfile = (req, res) => {
 
     User.findOneAndUpdate(
         { _id: req.user._id },
-        { $set: { firstname, lastname, id_card, email, phone } },
+        { $set: { firstname, lastname, id_card, email, phone, isEmailActive, isPhoneActive } },
         { new: true },
     )
         .exec()

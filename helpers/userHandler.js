@@ -10,7 +10,6 @@ exports.cleanUser = (user) => {
     user.addresses = undefined;
     user.e_wallet = undefined;
     user.amount_spent = undefined;
-    user.role = undefined;
 
     if (user.email) user.email = user.email.slice(0, 6) + '******';
     if (user.phone) user.phone = '*******' + user.phone.slice(-3);

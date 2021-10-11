@@ -18,12 +18,20 @@ const sendEmail = (email, name, title, text, code = null) => {
         to: email,
         subject: `GoodDeal Ecommerce - ${title}`,
         html: `<div>
-                    <h2>GOODDEAL</h2>
+                    <h2>GOODDEAL!</h2>
                     <h1>${title}</h1>
                     <p>Hi ${name},</p>
                     <p>Thank you for choosing GoodDeal.</p>
                     <p>${text}</p>
-                    ${code ? `<p>Your CODE: ${code}</p>` : ''}
+                    ${code ? `<button style="background-color:#0d6efd; border:none; border-radius:4px; padding:0;">
+                            <a 
+                                style="color:#fff; text-decoration:none; font-size:16px; padding: 16px 32px; display: inline-block;"
+                                href='http://localhost:${process.env.CLIENT_PORT_2}/verify/email/${code}'
+                            >
+                            Verify now!
+                            </a>
+                        </button>
+                        ` : ''}
                 </div>`,
     });
 };
@@ -52,7 +60,7 @@ exports.sendConfirmationEmail = (req, res) => {
     if (req.user.email) {
         if (req.user.isEmailActive) {
             return res.status(400).json({
-                error: 'User email is confirmed',
+                error: 'Email Verified',
             });
         }
 
@@ -73,19 +81,26 @@ exports.sendConfirmationEmail = (req, res) => {
                         error: 'User not found',
                     });
                 }
+                else {
+                    const title = 'Verify your email address';
+                    const text =
+                        'To get access to your account please verify your email address by clicking the link below.';
+                    const name = user.firstname + ' ' + user.lastname;
 
-                const title = 'Verify your email address';
-                const text =
-                    'To get access to your account please verify your email address by clicking the link below.';
-                const name = user.firstname + ' ' + user.lastname;
-
-                sendEmail(user.email, name, title, text, user.email_code);
-            })
-            .then(() => {
-                console.log('---SEND EMAIL SUCCESSFULLY---');
-                return res.json({
-                    success: 'Send email successfully',
-                });
+                    sendEmail(user.email, name, title, text, user.email_code)
+                        .then(() => {
+                            console.log('---SEND EMAIL SUCCESSFULLY---');
+                            return res.json({
+                                success: 'Send email successfully',
+                            });
+                        })
+                        .catch((error) => {
+                            console.log('---SEND EMAIL FAILED---', error);
+                            return res.status(500).json({
+                                error: 'Send email failed',
+                            });
+                        });
+                }
             })
             .catch((error) => {
                 console.log('---SEND EMAIL FAILED---');
@@ -102,31 +117,25 @@ exports.sendConfirmationEmail = (req, res) => {
 };
 
 exports.verifyEmail = (req, res) => {
-    if (req.user.email_code == req.params.emailCode) {
-        User.findOneAndUpdate(
-            { _id: req.user._id },
-            { $set: { isEmailActive: true }, $unset: { email_code: '' } },
-        )
-            .exec()
-            .then((user) => {
-                if (!user) {
-                    return res.status(500).json({
-                        error: 'User not found',
-                    });
-                }
-
-                return res.json({
-                    success: 'Confirm email successfully',
-                });
-            })
-            .catch((error) => {
+    User.findOneAndUpdate(
+        { email_code: req.params.emailCode },
+        { $set: { isEmailActive: true }, $unset: { email_code: '' } },
+    )
+        .exec()
+        .then((user) => {
+            if (!user) {
                 return res.status(500).json({
-                    error: errorHandler(error),
+                    error: 'User not found',
                 });
+            }
+
+            return res.json({
+                success: 'Confirm email successfully',
             });
-    } else {
-        return res.status(400).json({
-            error: 'Confirm email failed',
+        })
+        .catch((error) => {
+            return res.status(500).json({
+                error: errorHandler(error),
+            });
         });
-    }
 };

@@ -260,7 +260,7 @@ exports.verifyPassword = (req, res, next) => {
 
         if (!user.authenticate(currentPassword)) {
             return res.status(401).json({
-                error: "Password doesn't match",
+                error: "Current password doesn't match",
             });
         }
 
