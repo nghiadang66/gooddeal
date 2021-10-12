@@ -138,6 +138,7 @@ exports.addAddress = (req, res) => {
 
             return res.json({
                 success: 'Add address successfully',
+                user: cleanUserLess(user),
             });
         })
         .catch((error) => {
@@ -187,6 +188,7 @@ exports.updateAddress = (req, res) => {
 
             return res.json({
                 success: 'Update address successfully',
+                user: cleanUserLess(user),
             });
         })
         .catch((error) => {
@@ -229,6 +231,7 @@ exports.removeAddress = (req, res) => {
 
             return res.json({
                 success: 'Remove address successfully',
+                user: cleanUserLess(user),
             });
         })
         .catch((error) => {
