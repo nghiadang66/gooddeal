@@ -96,13 +96,7 @@ const userSchema = new mongoose.Schema(
         },
         point: {
             type: Number,
-            default: function () {
-                return (
-                    this.number_of_successful_orders -
-                    this.number_of_failed_orders +
-                    Math.floor(this.amount_spent / 100000)
-                );
-            },
+            default: 0,
         },
         number_of_successful_orders: {
             type: Number,

@@ -70,6 +70,19 @@ exports.listFollowingStoresByUser = (req, res) => {
         const pageCount = Math.ceil(size / limit);
         filter.pageCount = pageCount;
 
+        if (page > pageCount) {
+            skip = (pageCount - 1) * limit;
+        }
+
+        if (count <= 0) {
+            return res.json({
+                success: 'Load list following stores successfully',
+                filter,
+                size,
+                stores: [],
+            });
+        }
+
         UserFollowStore.find({ userId })
             .skip(skip)
             .limit(limit)

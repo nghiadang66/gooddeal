@@ -345,6 +345,7 @@ exports.updateCover = (req, res) => {
 // users?search=...&sortBy=...&order=...&limit=...&page=...
 exports.listUser = (req, res) => {
     const search = req.query.search ? req.query.search : '';
+    const regex = search.split(' ').filter(w => w).join('|');
     const sortBy = req.query.sortBy ? req.query.sortBy : '_id';
     const order =
         req.query.order &&
@@ -356,7 +357,7 @@ exports.listUser = (req, res) => {
         req.query.limit && req.query.limit > 0 ? parseInt(req.query.limit) : 6;
     const page =
         req.query.page && req.query.page > 0 ? parseInt(req.query.page) : 1;
-    const skip = (page - 1) * limit;
+    let skip = (page - 1) * limit;
 
     const filter = {
         search,
@@ -368,10 +369,8 @@ exports.listUser = (req, res) => {
 
     const filterArgs = {
         $or: [
-            { firstname: { $regex: search, $options: 'i' } },
-            { lastname: { $regex: search, $options: 'i' } },
-            { email: { $regex: '^' + search.slice(0, 6), $options: 'i' } },
-            { phone: { $regex: search.slice(0, 3) + '$', $options: 'i' } },
+            { firstname: { $regex: regex, $options: 'i' } },
+            { lastname: { $regex: regex, $options: 'i' } },
         ],
         role: { $ne: 'admin' },
     };
@@ -386,14 +385,24 @@ exports.listUser = (req, res) => {
         const size = count;
         const pageCount = Math.ceil(size / limit);
         filter.pageCount = pageCount;
-        filter.note =
-            'Note: for search by email and phone number, email can only search with first 6 characters and phone number can only search with last 3 digits';
+
+        if (page > pageCount) {
+            skip = (pageCount - 1) * limit;
+        }
+
+        if (count <= 0) {
+            return res.json({
+                success: 'Load list users successfully',
+                filter,
+                size,
+                users: [],
+            });
+        }
 
         User.find(filterArgs)
-            .sort([[sortBy, order]])
-            .skip(skip)
+            .sort({ [sortBy]: order, '_id': 1 })
             .limit(limit)
-            .exec()
+            .skip(skip)
             .then((users) => {
                 users.forEach((user) => {
                     user = cleanUser(user);
@@ -417,6 +426,7 @@ exports.listUser = (req, res) => {
 // list users for admin management
 exports.listUserForAdmin = (req, res) => {
     const search = req.query.search ? req.query.search : '';
+    const regex = search.split(' ').filter(w => w).join('|');
     const sortBy = req.query.sortBy ? req.query.sortBy : '_id';
     const order =
         req.query.order &&
@@ -439,10 +449,10 @@ exports.listUserForAdmin = (req, res) => {
 
     const filterArgs = {
         $or: [
-            { firstname: { $regex: search, $options: 'i' } },
-            { lastname: { $regex: search, $options: 'i' } },
-            { email: { $regex: search, $options: 'i' } },
-            { phone: { $regex: search, $options: 'i' } },
+            { firstname: { $regex: regex, $options: 'i' } },
+            { lastname: { $regex: regex, $options: 'i' } },
+            { email: { $regex: regex, $options: 'i' } },
+            { phone: { $regex: regex, $options: 'i' } },
         ],
         role: { $ne: 'admin' },
     };
@@ -458,8 +468,21 @@ exports.listUserForAdmin = (req, res) => {
         const pageCount = Math.ceil(size / limit);
         filter.pageCount = pageCount;
 
+        if (page > pageCount) {
+            skip = (pageCount - 1) * limit;
+        }
+
+        if (count <= 0) {
+            return res.json({
+                success: 'Load list users successfully',
+                filter,
+                size,
+                users: [],
+            });
+        }
+
         User.find(filterArgs)
-            .sort([[sortBy, order]])
+            .sort({ [sortBy]: order, '_id': 1 })
             .skip(skip)
             .limit(limit)
             .exec()

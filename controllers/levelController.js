@@ -8,10 +8,11 @@ const { errorHandler } = require('../helpers/errorHandler');
 //?search=...&sortBy=...&order=...
 exports.listUserLevel = (req, res) => {
     const search = req.query.search ? req.query.search : '';
+    const regex = search.split(' ').filter(w => w).join('|');
     const sortBy = req.query.sortBy ? req.query.sortBy : '_id';
     const order =
         req.query.order &&
-        (req.query.order == 'asc' || req.query.order == 'desc')
+            (req.query.order == 'asc' || req.query.order == 'desc')
             ? req.query.order
             : 'asc'; //desc
 
@@ -21,8 +22,8 @@ exports.listUserLevel = (req, res) => {
         order,
     };
 
-    UserLevel.find({ name: { $regex: search, $options: 'i' } })
-        .sort([[sortBy, order]])
+    UserLevel.find({ name: { $regex: regex, $options: 'i' } })
+        .sort({ [sortBy]: order, '_id': 1 })
         .exec()
         .then((lvs) => {
             return res.json({
@@ -43,7 +44,7 @@ exports.listActiveUserLevel = (req, res) => {
     const sortBy = req.query.sortBy ? req.query.sortBy : '_id';
     const order =
         req.query.order &&
-        (req.query.order == 'asc' || req.query.order == 'desc')
+            (req.query.order == 'asc' || req.query.order == 'desc')
             ? req.query.order
             : 'asc'; //desc
 
@@ -57,7 +58,7 @@ exports.listActiveUserLevel = (req, res) => {
         name: { $regex: search, $options: 'i' },
         isDeleted: false,
     })
-        .sort([[sortBy, order]])
+        .sort({ [sortBy]: order, '_id': 1 })
         .exec()
         .then((lvs) => {
             return res.json({
@@ -200,6 +201,7 @@ exports.restoreUserLevel = (req, res) => {
 //?search=...&sortBy=...&order=...
 exports.listStoreLevel = (req, res) => {
     const search = req.query.search ? req.query.search : '';
+    const regex = search.split(' ').filter(w => w).join('|');
     const sortBy = req.query.sortBy ? req.query.sortBy : '_id';
     const order = req.query.order ? req.query.order : 'asc'; //desc
 
@@ -209,8 +211,8 @@ exports.listStoreLevel = (req, res) => {
         order,
     };
 
-    StoreLevel.find({ name: { $regex: search, $options: 'i' } })
-        .sort([[sortBy, order]])
+    StoreLevel.find({ name: { $regex: regex, $options: 'i' } })
+        .sort({ [sortBy]: order, '_id': 1 })
         .exec()
         .then((lvs) => {
             return res.json({
@@ -241,7 +243,7 @@ exports.listActiveStoreLevel = (req, res) => {
         name: { $regex: search, $options: 'i' },
         isDeleted: false,
     })
-        .sort([[sortBy, order]])
+        .sort({ [sortBy]: order, '_id': 1 })
         .exec()
         .then((lvs) => {
             return res.json({

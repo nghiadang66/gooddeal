@@ -73,13 +73,7 @@ const storeSchema = new mongoose.Schema(
         },
         point: {
             type: Number,
-            default: function () {
-                return (
-                    this.number_of_successful_orders -
-                    this.number_of_failed_orders +
-                    Math.floor(this.proceeds / 100000)
-                );
-            },
+            default: 0,
         },
         number_of_successful_orders: {
             type: Number,

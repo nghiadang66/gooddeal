@@ -207,7 +207,7 @@ exports.updateAvatar = (req, res) => {
             if (!store) {
                 try {
                     fs.unlinkSync('public' + req.filepath);
-                } catch {}
+                } catch { }
 
                 return res.status(500).json({
                     error: 'Store not found',
@@ -217,7 +217,7 @@ exports.updateAvatar = (req, res) => {
             if (oldpath != '/uploads/default.jpg') {
                 try {
                     fs.unlinkSync('public' + oldpath);
-                } catch {}
+                } catch { }
             }
 
             return res.json({
@@ -227,7 +227,7 @@ exports.updateAvatar = (req, res) => {
         .catch((error) => {
             try {
                 fs.unlinkSync('public' + req.filepath);
-            } catch {}
+            } catch { }
 
             return res.status(500).json({
                 error: errorHandler(error),
@@ -248,7 +248,7 @@ exports.updateCover = (req, res) => {
             if (!store) {
                 try {
                     fs.unlinkSync('public' + req.filepath);
-                } catch {}
+                } catch { }
 
                 return res.status(500).json({
                     error: 'Store not found',
@@ -258,7 +258,7 @@ exports.updateCover = (req, res) => {
             if (oldpath != '/uploads/default.jpg') {
                 try {
                     fs.unlinkSync('public' + oldpath);
-                } catch {}
+                } catch { }
             }
 
             return res.json({
@@ -268,7 +268,7 @@ exports.updateCover = (req, res) => {
         .catch((error) => {
             try {
                 fs.unlinkSync('public' + req.filepath);
-            } catch {}
+            } catch { }
 
             return res.status(500).json({
                 error: errorHandler(error),
@@ -294,7 +294,7 @@ exports.addFeatureImage = (req, res) => {
     if (index >= 6) {
         try {
             fs.unlinkSync('public' + req.filepath);
-        } catch {}
+        } catch { }
 
         return res.status(400).json({
             error: 'The limit is 6 images',
@@ -311,7 +311,7 @@ exports.addFeatureImage = (req, res) => {
             if (!store) {
                 try {
                     fs.unlinkSync('public' + req.filepath);
-                } catch {}
+                } catch { }
 
                 return res.status(500).json({
                     error: 'Store not found',
@@ -325,7 +325,7 @@ exports.addFeatureImage = (req, res) => {
         .catch((error) => {
             try {
                 fs.unlinkSync('public' + req.filepath);
-            } catch {}
+            } catch { }
 
             return res.status(500).json({
                 error: errorHandler(error),
@@ -338,7 +338,7 @@ exports.updateFeatureImage = (req, res) => {
     if (!req.query.index) {
         try {
             fs.unlinkSync('public' + req.filepath);
-        } catch {}
+        } catch { }
 
         return res.status(400).json({
             error: 'Index not found',
@@ -351,7 +351,7 @@ exports.updateFeatureImage = (req, res) => {
     if (index >= featured_images.length) {
         try {
             fs.unlinkSync('public' + req.filepath);
-        } catch {}
+        } catch { }
 
         return res.status(404).json({
             error: 'Feature image not found',
@@ -370,7 +370,7 @@ exports.updateFeatureImage = (req, res) => {
             if (!store) {
                 try {
                     fs.unlinkSync('public' + req.filepath);
-                } catch {}
+                } catch { }
 
                 return res.status(500).json({
                     error: 'Store not found',
@@ -380,7 +380,7 @@ exports.updateFeatureImage = (req, res) => {
             if (oldpath != '/uploads/default.jpg') {
                 try {
                     fs.unlinkSync('public' + oldpath);
-                } catch {}
+                } catch { }
             }
 
             return res.json({
@@ -390,7 +390,7 @@ exports.updateFeatureImage = (req, res) => {
         .catch((error) => {
             try {
                 fs.unlinkSync('public' + req.filepath);
-            } catch {}
+            } catch { }
 
             return res.status(400).json({
                 error: errorHandler(error),
@@ -651,6 +651,8 @@ exports.listStoreCommissions = (req, res, next) => {
 //?search=...&sortBy=...&order=...&limit=...&commissionId=...&isActive=...&page=...
 exports.listStoresByUser = (req, res) => {
     const search = req.query.search ? req.query.search : '';
+    const regex = search.split(' ').filter(w => w).join('|');
+
     let isActive = [true, false];
     if (req.query.isActive == 'true') isActive = [true];
     if (req.query.isActive == 'false') isActive = [false];
@@ -658,7 +660,7 @@ exports.listStoresByUser = (req, res) => {
     const sortBy = req.query.sortBy ? req.query.sortBy : '_id';
     const order =
         req.query.order &&
-        (req.query.order == 'asc' || req.query.order == 'desc')
+            (req.query.order == 'asc' || req.query.order == 'desc')
             ? req.query.order
             : 'asc';
 
@@ -683,7 +685,7 @@ exports.listStoresByUser = (req, res) => {
     };
 
     const filterArgs = {
-        name: { $regex: search, $options: 'i' },
+        name: { $regex: regex, $options: 'i' },
         isActive: { $in: isActive },
         commissionId: { $in: commissionId },
         $or: [{ ownerId: req.user._id }, { staffIds: req.user._id }],
@@ -700,9 +702,22 @@ exports.listStoresByUser = (req, res) => {
         const pageCount = Math.ceil(size / limit);
         filter.pageCount = pageCount;
 
+        if (page > pageCount) {
+            skip = (pageCount - 1) * limit;
+        }
+
+        if (count <= 0) {
+            return res.json({
+                success: 'Load list stores successfully',
+                filter,
+                size,
+                stores: [],
+            });
+        }
+
         Store.find(filterArgs)
             .select('-e_wallet')
-            .sort([[sortBy, order]])
+            .sort({ [sortBy]: order, '_id': 1 })
             .skip(skip)
             .limit(limit)
             .populate('ownerId')
@@ -729,6 +744,8 @@ exports.listStoresByUser = (req, res) => {
 
 exports.listStores = (req, res) => {
     const search = req.query.search ? req.query.search : '';
+    const regex = search.split(' ').filter(w => w).join('|');
+
     let isActive = [true, false];
     if (req.query.isActive == 'true') isActive = [true];
     if (req.query.isActive == 'false') isActive = [false];
@@ -736,7 +753,7 @@ exports.listStores = (req, res) => {
     const sortBy = req.query.sortBy ? req.query.sortBy : '_id';
     const order =
         req.query.order &&
-        (req.query.order == 'asc' || req.query.order == 'desc')
+            (req.query.order == 'asc' || req.query.order == 'desc')
             ? req.query.order
             : 'asc';
 
@@ -761,7 +778,7 @@ exports.listStores = (req, res) => {
     };
 
     const filterArgs = {
-        name: { $regex: search, $options: 'i' },
+        name: { $regex: regex, $options: 'i' },
         isActive: { $in: isActive },
         commissionId: { $in: commissionId },
     };
@@ -777,9 +794,22 @@ exports.listStores = (req, res) => {
         const pageCount = Math.ceil(size / limit);
         filter.pageCount = pageCount;
 
+        if (page > pageCount) {
+            skip = (pageCount - 1) * limit;
+        }
+
+        if (count <= 0) {
+            return res.json({
+                success: 'Load list stores successfully',
+                filter,
+                size,
+                stores: [],
+            });
+        }
+
         Store.find(filterArgs)
             .select('-e_wallet')
-            .sort([[sortBy, order]])
+            .sort({ [sortBy]: order, '_id': 1 })
             .skip(skip)
             .limit(limit)
             .populate('ownerId')
