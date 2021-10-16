@@ -32,10 +32,9 @@ exports.getStore = (req, res) => {
                 });
             }
 
-            store = cleanStore(store);
             return res.json({
                 success: 'Get store successfully',
-                store,
+                store: cleanStore(store),
             });
         })
         .catch((error) => {
@@ -89,6 +88,7 @@ exports.createStore = (req, res) => {
 
         return res.json({
             success: 'Create store successfully',
+            store: cleanStore(store),
         });
     });
 };
@@ -96,7 +96,10 @@ exports.createStore = (req, res) => {
 exports.updateStore = (req, res) => {
     const { name, bio } = req.body;
 
-    Store.findOneAndUpdate({ _id: req.store._id }, { $set: { name, bio } })
+    Store.findOneAndUpdate({ _id: req.store._id }, { $set: { name, bio } }, { new: true })
+        .populate('ownerId')
+        .populate('staffIds')
+        .populate('commissionId', '_id name cost')
         .exec()
         .then((store) => {
             if (!store) {
@@ -105,8 +108,14 @@ exports.updateStore = (req, res) => {
                 });
             }
 
+            store.ownerId = cleanUser(store.ownerId);
+            store.staffIds.forEach((staff) => {
+                staff = cleanUser(staff);
+            });
+
             return res.json({
                 success: 'Update store successfully',
+                store: cleanStore(store),
             });
         })
         .catch((error) => {
@@ -202,6 +211,9 @@ exports.updateAvatar = (req, res) => {
         { $set: { avatar: req.filepath } },
         { new: true },
     )
+        .populate('ownerId')
+        .populate('staffIds')
+        .populate('commissionId', '_id name cost')
         .exec()
         .then((store) => {
             if (!store) {
@@ -220,8 +232,14 @@ exports.updateAvatar = (req, res) => {
                 } catch { }
             }
 
+            store.ownerId = cleanUser(store.ownerId);
+            store.staffIds.forEach((staff) => {
+                staff = cleanUser(staff);
+            });
+
             return res.json({
                 success: 'Update avatar successfully',
+                store: cleanStore(store),
             });
         })
         .catch((error) => {
@@ -243,6 +261,9 @@ exports.updateCover = (req, res) => {
         { $set: { cover: req.filepath } },
         { new: true },
     )
+        .populate('ownerId')
+        .populate('staffIds')
+        .populate('commissionId', '_id name cost')
         .exec()
         .then((store) => {
             if (!store) {
@@ -261,8 +282,14 @@ exports.updateCover = (req, res) => {
                 } catch { }
             }
 
+            store.ownerId = cleanUser(store.ownerId);
+            store.staffIds.forEach((staff) => {
+                staff = cleanUser(staff);
+            });
+
             return res.json({
                 success: 'Update cover successfully',
+                store: cleanStore(store),
             });
         })
         .catch((error) => {

@@ -18,7 +18,7 @@ const createStore = () => [
         .not()
         .isEmpty()
         .withMessage('Store bio is required')
-        .isLength({ max: 1000 })
+        .isLength({ max: 3000 })
         .withMessage('Store bio can contain up to 1000 characters'),
 
     check('commissionId')
@@ -45,7 +45,7 @@ const updateStore = () => [
         .not()
         .isEmpty()
         .withMessage('Store bio is required')
-        .isLength({ max: 1000 })
+        .isLength({ max: 3000 })
         .withMessage('Store bio can contain up to 1000 characters'),
 ];
 

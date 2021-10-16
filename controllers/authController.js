@@ -414,6 +414,7 @@ exports.isManager = (req, res, next) => {
     ) {
         return res.status(403).json({
             error: 'Store Manager resource! Access denied',
+            isManager: false,
         });
     }
     next();
@@ -423,6 +424,7 @@ exports.isOwner = (req, res, next) => {
     if (!req.user._id.equals(req.store.ownerId)) {
         return res.status(403).json({
             error: 'Store Owner resource! Access denied',
+            isOwner: false,
         });
     }
     next();

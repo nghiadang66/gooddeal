@@ -272,7 +272,7 @@ exports.updateAvatar = (req, res) => {
 
             return res.json({
                 success: 'Update avatar successfully',
-                avatar: user.avatar,
+                user: cleanUserLess(user),
             });
         })
         .catch((error) => {
@@ -325,7 +325,7 @@ exports.updateCover = (req, res) => {
 
             return res.json({
                 success: 'Update cover successfully',
-                cover: user.cover,
+                user: cleanUserLess(user),
             });
         })
         .catch((error) => {

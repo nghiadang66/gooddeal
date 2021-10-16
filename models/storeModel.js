@@ -23,7 +23,7 @@ const storeSchema = new mongoose.Schema(
             type: String,
             trim: true,
             required: true,
-            maxLength: 1000,
+            maxLength: 3000,
         },
         ownerId: {
             type: ObjectId,
