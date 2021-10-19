@@ -43,10 +43,6 @@ const storeSchema = new mongoose.Schema(
             type: Boolean,
             default: false,
         },
-        isOpen: {
-            type: Boolean,
-            default: false,
-        },
         avatar: {
             type: String,
             default: '/uploads/default.jpg',

@@ -437,7 +437,7 @@ exports.listUserForAdmin = (req, res) => {
         req.query.limit && req.query.limit > 0 ? parseInt(req.query.limit) : 6;
     const page =
         req.query.page && req.query.page > 0 ? parseInt(req.query.page) : 1;
-    const skip = (page - 1) * limit;
+    let skip = (page - 1) * limit;
 
     const filter = {
         search,

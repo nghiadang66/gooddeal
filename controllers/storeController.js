@@ -80,15 +80,15 @@ exports.createStore = (req, res) => {
     const { name, bio, commissionId } = req.body;
     const store = new Store({ name, bio, commissionId, ownerId: req.user._id });
     store.save((error, store) => {
-        if (error | !store) {
+        if (error || !store) {
             return res.status(400).json({
                 error: errorHandler(error),
             });
         }
 
         return res.json({
-            success: 'Create store successfully',
-            store: cleanStore(store),
+            success: 'Signing up successfully, you can sign in now',
+            storeId: store._id,
         });
     });
 };
@@ -115,7 +115,7 @@ exports.updateStore = (req, res) => {
 
             return res.json({
                 success: 'Update store successfully',
-                store: cleanStore(store),
+                store: store,
             });
         })
         .catch((error) => {
@@ -131,7 +131,10 @@ exports.updateStore = (req, res) => {
 exports.activeStore = (req, res) => {
     const { isActive } = req.body;
 
-    Store.findOneAndUpdate({ _id: req.store._id }, { $set: { isActive } })
+    Store.findOneAndUpdate({ _id: req.store._id }, { $set: { isActive } }, { new: true })
+        .populate('ownerId')
+        .populate('staffIds')
+        .populate('commissionId', '_id name cost')
         .exec()
         .then((store) => {
             if (!store) {
@@ -140,8 +143,13 @@ exports.activeStore = (req, res) => {
                 });
             }
 
+            store.ownerId = cleanUser(store.ownerId);
+            store.staffIds.forEach((staff) => {
+                staff = cleanUser(staff);
+            });
             return res.json({
                 success: 'Active/inactive store successfully',
+                store: store,
             });
         })
         .catch((error) => {
@@ -157,7 +165,10 @@ exports.activeStore = (req, res) => {
 exports.updateCommission = (req, res) => {
     const { commissionId } = req.body;
 
-    Store.findOneAndUpdate({ _id: req.store._id }, { $set: { commissionId } })
+    Store.findOneAndUpdate({ _id: req.store._id }, { $set: { commissionId } }, { new: true })
+        .populate('ownerId')
+        .populate('staffIds')
+        .populate('commissionId', '_id name cost')
         .exec()
         .then((store) => {
             if (!store) {
@@ -166,8 +177,13 @@ exports.updateCommission = (req, res) => {
                 });
             }
 
+            store.ownerId = cleanUser(store.ownerId);
+            store.staffIds.forEach((staff) => {
+                staff = cleanUser(staff);
+            });
             return res.json({
                 success: 'Update store commission successfully',
+                store: store,
             });
         })
         .catch((error) => {
@@ -177,31 +193,40 @@ exports.updateCommission = (req, res) => {
         });
 };
 
-/*------
-  Open Store
-  ------*/
-exports.openStore = (req, res) => {
-    const { isOpen } = req.body;
+// /*------
+//   Open Store
+//   ------*/
+// exports.openStore = (req, res) => {
+//     const { isOpen } = req.body;
 
-    Store.findOneAndUpdate({ _id: req.store._id }, { $set: { isOpen } })
-        .exec()
-        .then((store) => {
-            if (!store) {
-                return res.status(500).json({
-                    error: 'Store not found',
-                });
-            }
+//     Store.findOneAndUpdate({ _id: req.store._id }, { $set: { isOpen } }, { new: true })
+//         .populate('ownerId')
+//         .populate('staffIds')
+//         .populate('commissionId', '_id name cost')
+//         .exec()
+//         .then((store) => {
+//             if (!store) {
+//                 return res.status(404).json({
+//                     error: 'Store not found',
+//                 });
+//             }
 
-            return res.json({
-                success: 'Update store status successfully',
-            });
-        })
-        .catch((error) => {
-            return res.status(400).json({
-                error: errorHandler(error),
-            });
-        });
-};
+//             store.ownerId = cleanUser(store.ownerId);
+//             store.staffIds.forEach((staff) => {
+//                 staff = cleanUser(staff);
+//             });
+
+//             return res.json({
+//                 success: 'Update store status successfully',
+//                 store: store,
+//             });
+//         })
+//         .catch((error) => {
+//             return res.status(400).json({
+//                 error: errorHandler(error),
+//             });
+//         });
+// };
 
 exports.updateAvatar = (req, res) => {
     const oldpath = req.store.avatar;
@@ -239,7 +264,7 @@ exports.updateAvatar = (req, res) => {
 
             return res.json({
                 success: 'Update avatar successfully',
-                store: cleanStore(store),
+                store: store,
             });
         })
         .catch((error) => {
@@ -289,7 +314,7 @@ exports.updateCover = (req, res) => {
 
             return res.json({
                 success: 'Update cover successfully',
-                store: cleanStore(store),
+                store: store,
             });
         })
         .catch((error) => {
@@ -333,6 +358,9 @@ exports.addFeatureImage = (req, res) => {
         { $push: { featured_images: req.filepath } },
         { new: true },
     )
+        .populate('ownerId')
+        .populate('staffIds')
+        .populate('commissionId', '_id name cost')
         .exec()
         .then((store) => {
             if (!store) {
@@ -345,8 +373,13 @@ exports.addFeatureImage = (req, res) => {
                 });
             }
 
+            store.ownerId = cleanUser(store.ownerId);
+            store.staffIds.forEach((staff) => {
+                staff = cleanUser(staff);
+            });
             return res.json({
                 success: 'Add featured image successfully',
+                store: store,
             });
         })
         .catch((error) => {
@@ -392,6 +425,9 @@ exports.updateFeatureImage = (req, res) => {
         { $set: { featured_images } },
         { new: true },
     )
+        .populate('ownerId')
+        .populate('staffIds')
+        .populate('commissionId', '_id name cost')
         .exec()
         .then((store) => {
             if (!store) {
@@ -410,8 +446,13 @@ exports.updateFeatureImage = (req, res) => {
                 } catch { }
             }
 
+            store.ownerId = cleanUser(store.ownerId);
+            store.staffIds.forEach((staff) => {
+                staff = cleanUser(staff);
+            });
             return res.json({
                 success: 'Update feature image successfully',
+                store: store,
             });
         })
         .catch((error) => {
@@ -457,6 +498,9 @@ exports.removeFeaturedImage = (req, res) => {
         { $set: { featured_images } },
         { new: true },
     )
+        .populate('ownerId')
+        .populate('staffIds')
+        .populate('commissionId', '_id name cost')
         .exec()
         .then((store) => {
             if (!store) {
@@ -465,8 +509,13 @@ exports.removeFeaturedImage = (req, res) => {
                 });
             }
 
+            store.ownerId = cleanUser(store.ownerId);
+            store.staffIds.forEach((staff) => {
+                staff = cleanUser(staff);
+            });
             return res.json({
                 success: 'Remove featured image successfully',
+                store: store,
             });
         })
         .catch((error) => {
@@ -512,7 +561,7 @@ exports.listStaffs = (req, res) => {
         });
 };
 
-exports.addStaffs = (req, res, next) => {
+exports.addStaffs = (req, res) => {
     const { staffs } = req.body;
     User.countDocuments(
         { _id: { $in: staffs }, role: 'user' },
@@ -530,13 +579,23 @@ exports.addStaffs = (req, res, next) => {
             }
 
             let staffIds = req.store.staffIds;
-            staffIds.push(...staffs);
-            staffIds = [...new Set(staffIds)];
+            for (let i = 0; i < staffs.length; i++) {
+                let flag = false;
+                for (let j = 0; j < staffIds.length; j++) {
+                    if (staffs[i] == staffIds[j]) {
+                        flag = true; break;
+                    }
+                }
+                if (!flag) staffIds.push(staffs[i]);
+            }
 
             Store.findOneAndUpdate(
                 { _id: req.store._id },
-                { $set: { staffIds: staffIds } },
+                { $set: { staffIds: staffIds } }, { new: true }
             )
+                .populate('ownerId')
+                .populate('staffIds')
+                .populate('commissionId', '_id name cost')
                 .exec()
                 .then((store) => {
                     if (!store) {
@@ -545,8 +604,13 @@ exports.addStaffs = (req, res, next) => {
                         });
                     }
 
+                    store.ownerId = cleanUser(store.ownerId);
+                    store.staffIds.forEach((staff) => {
+                        staff = cleanUser(staff);
+                    });
                     return res.json({
                         success: 'Add list staffs successfully',
+                        store: store,
                     });
                 })
                 .catch((error) => {
@@ -572,8 +636,11 @@ exports.cancelStaff = (req, res, next) => {
     staffIds.splice(index, 1);
     Store.findOneAndUpdate(
         { _id: req.store._id },
-        { $set: { staffIds: staffIds } },
+        { $set: { staffIds: staffIds } }, { new: true }
     )
+        .populate('ownerId')
+        .populate('staffIds')
+        .populate('commissionId', '_id name cost')
         .exec()
         .then((store) => {
             if (!store) {
@@ -613,8 +680,11 @@ exports.removeStaff = (req, res, next) => {
     staffIds.splice(index, 1);
     Store.findOneAndUpdate(
         { _id: req.store._id },
-        { $set: { staffIds: staffIds } },
+        { $set: { staffIds: staffIds } }, { new: true }
     )
+        .populate('ownerId')
+        .populate('staffIds')
+        .populate('commissionId', '_id name cost')
         .exec()
         .then((store) => {
             if (!store) {
@@ -623,8 +693,13 @@ exports.removeStaff = (req, res, next) => {
                 });
             }
 
+            store.ownerId = cleanUser(store.ownerId);
+            store.staffIds.forEach((staff) => {
+                staff = cleanUser(staff);
+            });
             return res.json({
                 success: 'Remove staff successfully',
+                store: store,
             });
         })
         .catch((error) => {
@@ -644,7 +719,7 @@ exports.updateNumberOfFollowers = (req, res) => {
 
     Store.findOneAndUpdate(
         { _id: req.store._id },
-        { $set: { number_of_followers: numberOfFollowers } },
+        { $set: { number_of_followers: numberOfFollowers } }, { new: true }
     )
         .exec()
         .then((store) => {
@@ -676,6 +751,103 @@ exports.listStoreCommissions = (req, res, next) => {
 };
 
 //?search=...&sortBy=...&order=...&limit=...&commissionId=...&isActive=...&page=...
+exports.listStores = (req, res) => {
+    const search = req.query.search ? req.query.search : '';
+    const regex = search.split(' ').filter(w => w).join('|');
+
+    let isActive = [true, false];
+    if (req.query.isActive == 'true') isActive = [true];
+    if (req.query.isActive == 'false') isActive = [false];
+
+    const sortBy = req.query.sortBy ? req.query.sortBy : '_id';
+    const order =
+        req.query.order &&
+            (req.query.order == 'asc' || req.query.order == 'desc')
+            ? req.query.order
+            : 'asc';
+
+    const limit =
+        req.query.limit && req.query.limit > 0 ? parseInt(req.query.limit) : 6;
+    const page =
+        req.query.page && req.query.page > 0 ? parseInt(req.query.page) : 1;
+    let skip = limit * (page - 1);
+
+    const commissionId = req.query.commissionId
+        ? [req.query.commissionId]
+        : req.loadedCommissions;
+
+    const filter = {
+        search,
+        sortBy,
+        order,
+        isActive,
+        commissionId,
+        limit,
+        pageCurrent: page,
+    };
+
+    const filterArgs = {
+        name: { $regex: regex, $options: 'i' },
+        isActive: { $in: isActive },
+        commissionId: { $in: commissionId },
+    };
+
+    Store.countDocuments(filterArgs, (error, count) => {
+        if (error) {
+            return res.status(404).json({
+                error: 'Stores not found',
+            });
+        }
+
+        const size = count;
+        const pageCount = Math.ceil(size / limit);
+        filter.pageCount = pageCount;
+
+        if (page > pageCount) {
+            skip = (pageCount - 1) * limit;
+        }
+
+        if (count <= 0) {
+            return res.json({
+                success: 'Load list stores successfully',
+                filter,
+                size,
+                stores: [],
+            });
+        }
+
+        Store.find(filterArgs)
+            .select('-e_wallet')
+            .sort({ [sortBy]: order, '_id': 1 })
+            .skip(skip)
+            .limit(limit)
+            .populate('ownerId')
+            .populate('staffIds')
+            .populate('commissionId', '_id name cost')
+            .exec()
+            .then((stores) => {
+                stores.forEach((store) => {
+                    store.ownerId = cleanUser(store.ownerId);
+                    store.staffIds.forEach((staff) => {
+                        staff = cleanUser(staff);
+                    });
+                });
+
+                return res.json({
+                    success: 'Load list stores successfully',
+                    filter,
+                    size,
+                    stores,
+                });
+            })
+            .catch((error) => {
+                return res.status(500).json({
+                    error: 'Load list users failed',
+                });
+            });
+    });
+};
+
 exports.listStoresByUser = (req, res) => {
     const search = req.query.search ? req.query.search : '';
     const regex = search.split(' ').filter(w => w).join('|');
@@ -695,7 +867,7 @@ exports.listStoresByUser = (req, res) => {
         req.query.limit && req.query.limit > 0 ? parseInt(req.query.limit) : 6;
     const page =
         req.query.page && req.query.page > 0 ? parseInt(req.query.page) : 1;
-    const skip = limit * (page - 1);
+    let skip = limit * (page - 1);
 
     const commissionId = req.query.commissionId
         ? [req.query.commissionId]
@@ -765,11 +937,16 @@ exports.listStoresByUser = (req, res) => {
                     size,
                     stores,
                 });
+            })
+            .catch((error) => {
+                return res.status(500).json({
+                    error: 'Load list users failed',
+                });
             });
     });
 };
 
-exports.listStores = (req, res) => {
+exports.listStoresForAdmin = (req, res) => {
     const search = req.query.search ? req.query.search : '';
     const regex = search.split(' ').filter(w => w).join('|');
 
@@ -788,7 +965,7 @@ exports.listStores = (req, res) => {
         req.query.limit && req.query.limit > 0 ? parseInt(req.query.limit) : 6;
     const page =
         req.query.page && req.query.page > 0 ? parseInt(req.query.page) : 1;
-    const skip = limit * (page - 1);
+    let skip = limit * (page - 1);
 
     const commissionId = req.query.commissionId
         ? [req.query.commissionId]
@@ -857,6 +1034,11 @@ exports.listStores = (req, res) => {
                     size,
                     stores,
                 });
-            });
+            })
+            .catch((error) => {
+                return res.status(500).json({
+                    error: 'Load list users failed',
+                });
+            });;
     });
 };

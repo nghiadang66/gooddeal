@@ -7,7 +7,7 @@ exports.signup = (req, res) => {
     const { firstname, lastname, email, phone, password } = req.body;
     const user = new User({ firstname, lastname, email, phone, password });
     user.save((error, user) => {
-        if (error) {
+        if (error || !user) {
             return res.status(400).json({
                 error: errorHandler(error),
             });
@@ -65,7 +65,7 @@ exports.authToken = (req, res) => {
     const accessToken = jwt.sign(
         { _id: user._id },
         process.env.ACCESS_TOKEN_SECRET,
-        { expiresIn: '42h' },
+        { expiresIn: '48h' },
     );
     const refreshToken = jwt.sign(
         { _id: user._id },
@@ -126,7 +126,7 @@ exports.refreshToken = (req, res) => {
                 const accessToken = jwt.sign(
                     { _id: decoded._id },
                     process.env.ACCESS_TOKEN_SECRET,
-                    { expiresIn: '42h' },
+                    { expiresIn: '48h' },
                 );
                 const newRefreshToken = jwt.sign(
                     { _id: decoded._id },

@@ -22,7 +22,7 @@ const {
     updateStore,
     activeStore,
     updateCommission,
-    openStore,
+    // openStore,
     updateAvatar,
     updateCover,
     listFeatureImages,
@@ -36,6 +36,7 @@ const {
     listStoreCommissions,
     listStores,
     listStoresByUser,
+    listStoresForAdmin,
 } = require('../controllers/storeController');
 
 //routes
@@ -47,17 +48,22 @@ router.get(
     getStoreProfile,
 );
 router.get(
+    '/stores',
+    listStoreCommissions,
+    listStores,
+);
+router.get(
     '/stores/by/user/:userId',
     isAuth,
     listStoreCommissions,
     listStoresByUser,
 );
 router.get(
-    '/stores/:userId',
+    '/stores/for/admin/:userId',
     isAuth,
     isAdmin,
     listStoreCommissions,
-    listStores,
+    listStoresForAdmin,
 );
 router.post(
     '/store/create/:userId',
@@ -93,14 +99,14 @@ router.put(
     updateCommission,
 );
 
-router.put(
-    '/store/open/:storeId/:userId',
-    isAuth,
-    isManager,
-    storeValidator.openStore(),
-    validateHandler,
-    openStore,
-);
+// router.put(
+//     '/store/open/:storeId/:userId',
+//     isAuth,
+//     isManager,
+//     storeValidator.openStore(),
+//     validateHandler,
+//     openStore,
+// );
 
 // router.get('/store/avatar/:storeId', getAvatar);
 router.put(
