@@ -158,7 +158,7 @@ router.delete(
     isOwner,
     removeStaff,
 );
-router.get(
+router.delete(
     '/store/staff/cancel/:storeId/:userId',
     isAuth,
     isManager,
