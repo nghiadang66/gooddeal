@@ -12,22 +12,24 @@ const {
     followStore,
     unfollowStore,
     listFollowingStoresByUser,
+    checkFollowingStore,
 } = require('../controllers/userFollowStoreController');
 
 //routes
 router.get(
-    '/follow/:storeId/:userId',
+    '/follow/store/:storeId/:userId',
     isAuth,
     followStore,
     updateNumberOfFollowers,
 );
 router.delete(
-    '/unfollow/:storeId/:userId',
+    '/unfollow/store/:storeId/:userId',
     isAuth,
     unfollowStore,
     updateNumberOfFollowers,
 );
 router.get('/following/stores/:userId', isAuth, listFollowingStoresByUser);
+router.get('/check/following/stores/:storeId/:userId', isAuth, checkFollowingStore);
 
 //params
 router.param('userId', userById);

@@ -45,6 +45,31 @@ exports.unfollowStore = (req, res, next) => {
         });
 };
 
+exports.checkFollowingStore = (req, res) => {
+    const userId = req.user._id;
+    const storeId = req.store._id;
+
+    UserFollowStore.findOne({ userId: userId, storeId: storeId })
+        .exec()
+        .then(follow => {
+            if (!follow) {
+                return res.status(404).json({
+                    error: 'Following store not found',
+                });
+            }
+            else {
+                return res.json({
+                    success: 'Following store',
+                });
+            }
+        })
+        .catch(error => {
+            return res.status(404).json({
+                error: 'Following store not found',
+            });
+        })
+}
+
 //?limit=...&page=...
 exports.listFollowingStoresByUser = (req, res) => {
     const userId = req.user._id;
