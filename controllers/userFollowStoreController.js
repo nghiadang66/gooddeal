@@ -81,7 +81,7 @@ exports.listFollowingStoresByUser = (req, res) => {
 
     const filter = {
         limit,
-        currentPage: page,
+        pageCurrent: page,
     };
 
     UserFollowStore.countDocuments({ userId }, (error, count) => {
