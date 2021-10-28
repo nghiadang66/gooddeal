@@ -1,42 +1,86 @@
-const UserFollowStore = require('../models/userFollowStoreModel');
+const UserFollowStore = require('../models/userFollowStore');
+const Store = require('../models/store');
 const { cleanStore } = require('../helpers/storeHandler');
-const { errorHandler } = require('../helpers/errorHandler');
 
-exports.followStore = (req, res, next) => {
+exports.followStore = (req, res) => {
     const userId = req.user._id;
     const storeId = req.store._id;
     const follow = new UserFollowStore({ userId, storeId });
     follow.save((error, follow) => {
-        if (error | !follow) {
+        if (error || !follow) {
             return res.status(400).json({
                 error: 'Follow is already exists',
             });
         }
+        else {
+            const numberOfFollowers = req.store.number_of_followers + 1;
+            Store.findOneAndUpdate(
+                { _id: storeId },
+                { $set: { number_of_followers: numberOfFollowers } },
+                { new: true },
+            )
+                .populate('commissionId')
+                .exec()
+                .then(store => {
+                    if (!store) {
+                        return res.status(404).json({
+                            error: 'Store not found',
+                        });
+                    }
 
-        //update number of followers for store
-        req.updateNumberOfFollowers = 1;
-        next();
-
-        return res.json({
-            success: 'Follow store successfully',
-        });
+                    return res.json({
+                        success: 'Follow store successfully',
+                        store: cleanStore(store),
+                    });
+                })
+                .catch(error => {
+                    return res.status(500).json({
+                        error: 'Follow store failed',
+                    });
+                });
+        }
     });
 };
 
-exports.unfollowStore = (req, res, next) => {
+exports.unfollowStore = (req, res) => {
     const userId = req.user._id;
     const storeId = req.store._id;
 
-    UserFollowStore.deleteOne({ userId, storeId })
+    UserFollowStore.findOneAndDelete({ userId, storeId })
         .exec()
-        .then(() => {
-            //update number of followers for store
-            req.updateNumberOfFollowers = -1;
-            next();
+        .then((follow) => {
+            if (!follow) {
+                return res.status(400).json({
+                    error: 'Follow is already exists',
+                });
+            }
+            else {
+                const numberOfFollowers = req.store.number_of_followers - 1;
+                Store.findOneAndUpdate(
+                    { _id: storeId },
+                    { $set: { number_of_followers: numberOfFollowers } },
+                    { new: true },
+                )
+                    .populate('commissionId')
+                    .exec()
+                    .then(store => {
+                        if (!store) {
+                            return res.status(404).json({
+                                error: 'Store not found',
+                            });
+                        }
 
-            return res.json({
-                success: 'Unfollow store successfully',
-            });
+                        return res.json({
+                            success: 'Unfollow store successfully',
+                            store: cleanStore(store),
+                        });
+                    })
+                    .catch(error => {
+                        return res.status(500).json({
+                            error: 'Unfollow store failed',
+                        });
+                    });
+            }
         })
         .catch((error) => {
             return res.status(404).json({
@@ -111,12 +155,16 @@ exports.listFollowingStoresByUser = (req, res) => {
         UserFollowStore.find({ userId })
             .skip(skip)
             .limit(limit)
-            .populate('storeId')
+            .populate({
+                path: 'storeId',
+                populate: { path: 'commissionId' },
+            })
             .exec()
             .then((userFollowStores) => {
                 const stores = userFollowStores.map(
                     (userFollowStore) => userFollowStore.storeId,
                 );
+
                 stores.forEach((store) => {
                     store = cleanStore(store);
                 });

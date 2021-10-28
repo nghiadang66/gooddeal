@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 //import validators
-const authValidator = require('../validators/authValidator');
+const authValidator = require('../validators/auth');
 const { validateHandler } = require('../helpers/validateHandler');
 
 //import controllers
@@ -17,18 +17,18 @@ const {
     authSocial,
     authToken,
     authUpdate,
-} = require('../controllers/authController');
-const { userById } = require('../controllers/userController');
+} = require('../controllers/auth');
+const { userById } = require('../controllers/user');
 const {
     sendNotificationEmail,
     sendConfirmationEmail,
     verifyEmail,
-} = require('../controllers/emailController');
+} = require('../controllers/email');
 const {
     sendNotificationSMS,
     sendConfirmationSMS,
     verifySMS,
-} = require('../controllers/smsController');
+} = require('../controllers/sms');
 
 //routes
 router.post('/signup', authValidator.signup(), validateHandler, signup);

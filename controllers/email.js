@@ -1,4 +1,4 @@
-const User = require('../models/userModel');
+const User = require('../models/user');
 const nodemailer = require('nodemailer');
 const jwt = require('jsonwebtoken');
 const { errorHandler } = require('../helpers/errorHandler');

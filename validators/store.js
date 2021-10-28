@@ -1,5 +1,5 @@
 const { check } = require('express-validator');
-const Commission = require('../models/commissionModel');
+const Commission = require('../models/commission');
 
 const createStore = () => [
     check('name')

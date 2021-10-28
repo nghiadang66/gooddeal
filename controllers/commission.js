@@ -1,4 +1,4 @@
-const Commission = require('../models/commissionModel');
+const Commission = require('../models/commission');
 const { errorHandler } = require('../helpers/errorHandler');
 
 //?search=...&sortBy=...&order=...

@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 //import validators
-const storeValidator = require('../validators/storeValidator');
+const storeValidator = require('../validators/store');
 const { validateHandler } = require('../helpers/validateHandler');
 
 //import controllers
@@ -11,9 +11,9 @@ const {
     isAdmin,
     isManager,
     isOwner,
-} = require('../controllers/authController');
-const { userById } = require('../controllers/userController');
-const { upload } = require('../controllers/uploadController');
+} = require('../controllers/auth');
+const { userById } = require('../controllers/user');
+const { upload } = require('../controllers/upload');
 const {
     storeById,
     getStore,
@@ -37,7 +37,7 @@ const {
     listStores,
     listStoresByUser,
     listStoresForAdmin,
-} = require('../controllers/storeController');
+} = require('../controllers/store');
 
 //routes
 router.get('/store/:storeId', getStore);

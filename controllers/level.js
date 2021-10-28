@@ -1,5 +1,5 @@
-const UserLevel = require('../models/userLevelModel');
-const StoreLevel = require('../models/storeLevelModel');
+const UserLevel = require('../models/userLevel');
+const StoreLevel = require('../models/storeLevel');
 const { errorHandler } = require('../helpers/errorHandler');
 
 /*------

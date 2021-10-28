@@ -1,5 +1,5 @@
-const Store = require('../models/storeModel');
-const User = require('../models/userModel');
+const Store = require('../models/store');
+const User = require('../models/user');
 const fs = require('fs');
 const { errorHandler } = require('../helpers/errorHandler');
 const { cleanUser, cleanUserLess } = require('../helpers/userHandler');

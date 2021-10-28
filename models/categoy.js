@@ -1,8 +1,9 @@
 const mongoose = require('mongoose');
 const slug = require('mongoose-slug-generator');
+
 mongoose.plugin(slug);
 
-const brandSchema = new mongoose.Schema(
+const categorySchema = new mongoose.Schema(
     {
         name: {
             type: String,
@@ -16,15 +17,19 @@ const brandSchema = new mongoose.Schema(
             slug: 'name',
             unique: true,
         },
-
         image: {
             type: String,
             trim: true,
             required: true,
             unique: true,
         },
+        isDeleted: {
+            type: Boolean,
+            required: true,
+            default: false,
+        },
     },
     { timestamps: true },
 );
 
-module.exports = mongoose.model('Brand', brandSchema);
+module.exports = mongoose.model('Category', categorySchema);

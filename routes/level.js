@@ -2,13 +2,13 @@ const express = require('express');
 const router = express.Router();
 
 //import validators
-const levelValidator = require('../validators/levelValidator');
+const levelValidator = require('../validators/level');
 const { validateHandler } = require('../helpers/validateHandler');
 
 //import controllers
-const { isAuth, isAdmin } = require('../controllers/authController');
-const { userById } = require('../controllers/userController');
-const { storeById } = require('../controllers/storeController');
+const { isAuth, isAdmin } = require('../controllers/auth');
+const { userById } = require('../controllers/user');
+const { storeById } = require('../controllers/store');
 const {
     getUserLevel,
     listUserLevel,
@@ -24,7 +24,7 @@ const {
     updateStoreLevel,
     removeStoreLevel,
     restoreStoreLevel,
-} = require('../controllers/levelController');
+} = require('../controllers/level');
 
 //routes
 router.get('/user/level/:userId', getUserLevel);

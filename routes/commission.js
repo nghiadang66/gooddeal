@@ -2,12 +2,12 @@ const express = require('express');
 const router = express.Router();
 
 //import validators
-const commissionValidator = require('../validators/commissionValidator');
+const commissionValidator = require('../validators/commission');
 const { validateHandler } = require('../helpers/validateHandler');
 
 //import controllers
-const { isAuth, isAdmin } = require('../controllers/authController');
-const { userById } = require('../controllers/userController');
+const { isAuth, isAdmin } = require('../controllers/auth');
+const { userById } = require('../controllers/user');
 const {
     listCommissions,
     listActiveCommissions,
@@ -15,7 +15,7 @@ const {
     updateCommission,
     removeCommission,
     restoreCommission,
-} = require('../controllers/commissionController');
+} = require('../controllers/commission');
 
 //routes
 router.get('/commissions/:userId', isAuth, isAdmin, listCommissions);

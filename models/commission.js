@@ -14,6 +14,12 @@ const commissionSchema = new mongoose.Schema(
             required: true,
             min: 0,
         },
+        description: {
+            type: String,
+            trim: true,
+            required: true,
+            maxLength: 3000,
+        },
         isDeleted: {
             type: Boolean,
             required: true,

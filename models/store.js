@@ -43,6 +43,10 @@ const storeSchema = new mongoose.Schema(
             type: Boolean,
             default: false,
         },
+        isOpen: {
+            type: Boolean,
+            default: true,
+        },
         avatar: {
             type: String,
             default: '/uploads/default.jpg',
@@ -81,8 +85,19 @@ const storeSchema = new mongoose.Schema(
             default: 0,
             min: 0,
         },
-        proceeds: {
+        total_revenue: {
             type: mongoose.Decimal128,
+            default: 0,
+            min: 0,
+        },
+        rating: {
+            type: Number,
+            default: 0,
+            min: 0,
+            max: 5,
+        },
+        number_of_reviews: {
+            type: Number,
             default: 0,
             min: 0,
         },

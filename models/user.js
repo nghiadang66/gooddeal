@@ -108,7 +108,7 @@ const userSchema = new mongoose.Schema(
             default: 0,
             min: 0,
         },
-        amount_spent: {
+        total_spending: {
             type: Number,
             default: 0,
             min: 0,

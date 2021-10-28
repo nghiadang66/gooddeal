@@ -7,12 +7,12 @@ const path = require('path');
 require('dotenv').config();
 
 //import routes
-const authRoutes = require('./routes/authRoute');
-const userRoutes = require('./routes/userRoute');
-const storeRoutes = require('./routes/storeRoute');
-const levelRoutes = require('./routes/levelRoute');
-const commissionRoutes = require('./routes/commissionRoute');
-const userFollowStoreRoutes = require('./routes/userFollowStoreRoute');
+const authRoutes = require('./routes/auth');
+const userRoutes = require('./routes/user');
+const storeRoutes = require('./routes/store');
+const levelRoutes = require('./routes/level');
+const commissionRoutes = require('./routes/commission');
+const userFollowStoreRoutes = require('./routes/userFollowStore');
 
 //app
 const app = express();

@@ -1,4 +1,4 @@
-const User = require('../models/userModel');
+const User = require('../models/user');
 const Vonage = require('@vonage/server-sdk');
 const { errorHandler } = require('../helpers/errorHandler');
 

@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 //import validators
-const userValidator = require('../validators/userValidator');
+const userValidator = require('../validators/user');
 const { validateHandler } = require('../helpers/validateHandler');
 
 //import controllers
@@ -10,8 +10,8 @@ const {
     isAuth,
     isAdmin,
     verifyPassword,
-} = require('../controllers/authController');
-const { upload } = require('../controllers/uploadController');
+} = require('../controllers/auth');
+const { upload } = require('../controllers/upload');
 const {
     userById,
     getUser,
@@ -26,7 +26,7 @@ const {
     getUserProfile,
     listUserForAdmin,
     updatePassword,
-} = require('../controllers/userController');
+} = require('../controllers/user');
 
 //routes
 router.get('/user/:userId', getUser);
