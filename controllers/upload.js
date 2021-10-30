@@ -14,63 +14,68 @@ exports.upload = (req, res, next) => {
             });
         }
 
-        if (files.photo) {
-            // console.log(files.photo);
+        const listFiles = Object.values(files);
+        // console.log('---upload---', fields, listFiles);
+        let listFilePaths = [];
+        if (listFiles.length > 0) {
+            listFiles.forEach(file => {
+                //check type
+                const type = file.type;
+                if (
+                    type !== 'image/png' &&
+                    type !== 'image/jpg' &&
+                    type !== 'image/jpeg' &&
+                    type !== 'image/gif'
+                ) {
+                    console.log('---UPLOAD IMAGE FAILED---');
+                    return res.status(400).json({
+                        error: 'Invalid type. Photo type must be png, jpg, jpeg or gif.',
+                    });
+                }
 
-            //check type
-            const type = files.photo.type;
-            if (
-                type !== 'image/png' &&
-                type !== 'image/jpg' &&
-                type !== 'image/jpeg' &&
-                type !== 'image/gif'
-            ) {
-                console.log('---UPLOAD IMAGE FAILED---');
-                return res.status(400).json({
-                    error: 'Invalid type. Photo type must be png, jpg, jpeg or gif.',
-                });
-            }
+                //check size
+                const size = file.size;
+                if (size > 1000000) {
+                    console.log('---UPLOAD IMAGE FAILED---');
+                    return res.status(400).json({
+                        error: 'Image should be less than 1mb in size',
+                    });
+                }
 
-            //check size
-            const size = files.photo.size;
-            if (size > 1000000) {
-                console.log('---UPLOAD IMAGE FAILED---');
-                return res.status(400).json({
-                    error: 'Image should be less than 1mb in size',
-                });
-            }
+                const path = file.path;
+                let data;
+                try {
+                    data = fs.readFileSync(path);
+                } catch (e) {
+                    console.log('---UPLOAD IMAGE FAILED---');
+                    return res.status(500).json({
+                        error: 'Can not read photo file',
+                    });
+                }
 
-            const path = files.photo.path;
-            let data;
-            try {
-                data = fs.readFileSync(path);
-            } catch (e) {
-                console.log('---UPLOAD IMAGE FAILED---');
-                return res.status(500).json({
-                    error: 'Can not read photo file',
-                });
-            }
+                const newpath =
+                    'public/uploads/' +
+                    Date.now() +
+                    `${req.store && req.store.slug ? req.store.slug : ''}` +
+                    `${req.product && req.product.slug ? req.product.slug : ''}` +
+                    file.name;
 
-            const newpath =
-                'public/uploads/' +
-                Date.now() +
-                `${req.store && req.store.slug ? req.store.slug : ''}` +
-                `${req.product && req.product.slug ? req.product.slug : ''}` +
-                files.photo.name;
+                try {
+                    fs.writeFileSync(newpath, data);
+                } catch (e) {
+                    console.log('---UPLOAD IMAGE FAILED---');
+                    return res.status(500).json({
+                        error: 'Photo could not be up load',
+                    });
+                }
 
-            try {
-                fs.writeFileSync(newpath, data);
-            } catch (e) {
-                console.log('---UPLOAD IMAGE FAILED---');
-                return res.status(500).json({
-                    error: 'Photo could not be up load',
-                });
-            }
-
-            console.log('---UPLOAD IMAGE SUCCESSFULLY---');
-            req.filepath = newpath.replace('public', '');
-            req.fields = fields;
-            next();
+                console.log('---UPLOAD IMAGE SUCCESSFULLY---');
+                listFilePaths.push(newpath.replace('public', ''));
+            });
         }
+
+        req.filepaths = listFilePaths;
+        req.fields = fields;
+        next();
     });
 };

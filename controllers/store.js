@@ -77,8 +77,16 @@ exports.getStoreProfile = (req, res) => {
 };
 
 exports.createStore = (req, res) => {
-    const { name, bio, commissionId } = req.body;
-    const store = new Store({ name, bio, commissionId, ownerId: req.user._id });
+    const { name, bio, commissionId } = req.fields;
+    const avatar = req.filepaths[0];
+    const cover = req.filepaths[1];
+
+    if (!name || !bio || !commissionId || !avatar || !cover)
+        return res.status(400).json({
+            error: 'All fields are required',
+        });
+
+    const store = new Store({ name, bio, commissionId, avatar, cover, ownerId: req.user._id });
     store.save((error, store) => {
         if (error || !store) {
             return res.status(400).json({
@@ -87,7 +95,7 @@ exports.createStore = (req, res) => {
         }
 
         return res.json({
-            success: 'Signing up successfully, you can sign in now',
+            success: 'Creating store successfully',
             storeId: store._id,
         });
     });
@@ -233,7 +241,7 @@ exports.updateAvatar = (req, res) => {
 
     Store.findOneAndUpdate(
         { _id: req.store._id },
-        { $set: { avatar: req.filepath } },
+        { $set: { avatar: req.filepaths[0] } },
         { new: true },
     )
         .populate('ownerId')
@@ -243,7 +251,7 @@ exports.updateAvatar = (req, res) => {
         .then((store) => {
             if (!store) {
                 try {
-                    fs.unlinkSync('public' + req.filepath);
+                    fs.unlinkSync('public' + req.filepaths[0]);
                 } catch { }
 
                 return res.status(500).json({
@@ -269,7 +277,7 @@ exports.updateAvatar = (req, res) => {
         })
         .catch((error) => {
             try {
-                fs.unlinkSync('public' + req.filepath);
+                fs.unlinkSync('public' + req.filepaths[0]);
             } catch { }
 
             return res.status(500).json({
@@ -283,7 +291,7 @@ exports.updateCover = (req, res) => {
 
     Store.findOneAndUpdate(
         { _id: req.store._id },
-        { $set: { cover: req.filepath } },
+        { $set: { cover: req.filepaths[0] } },
         { new: true },
     )
         .populate('ownerId')
@@ -293,7 +301,7 @@ exports.updateCover = (req, res) => {
         .then((store) => {
             if (!store) {
                 try {
-                    fs.unlinkSync('public' + req.filepath);
+                    fs.unlinkSync('public' + req.filepaths[0]);
                 } catch { }
 
                 return res.status(500).json({
@@ -319,7 +327,7 @@ exports.updateCover = (req, res) => {
         })
         .catch((error) => {
             try {
-                fs.unlinkSync('public' + req.filepath);
+                fs.unlinkSync('public' + req.filepaths[0]);
             } catch { }
 
             return res.status(500).json({
@@ -345,7 +353,7 @@ exports.addFeatureImage = (req, res) => {
     const index = featured_images.length;
     if (index >= 6) {
         try {
-            fs.unlinkSync('public' + req.filepath);
+            fs.unlinkSync('public' + req.filepaths[0]);
         } catch { }
 
         return res.status(400).json({
@@ -355,7 +363,7 @@ exports.addFeatureImage = (req, res) => {
 
     Store.findOneAndUpdate(
         { _id: req.store._id },
-        { $push: { featured_images: req.filepath } },
+        { $push: { featured_images: req.filepaths[0] } },
         { new: true },
     )
         .populate('ownerId')
@@ -365,7 +373,7 @@ exports.addFeatureImage = (req, res) => {
         .then((store) => {
             if (!store) {
                 try {
-                    fs.unlinkSync('public' + req.filepath);
+                    fs.unlinkSync('public' + req.filepaths[0]);
                 } catch { }
 
                 return res.status(500).json({
@@ -384,7 +392,7 @@ exports.addFeatureImage = (req, res) => {
         })
         .catch((error) => {
             try {
-                fs.unlinkSync('public' + req.filepath);
+                fs.unlinkSync('public' + req.filepaths[0]);
             } catch { }
 
             return res.status(500).json({
@@ -397,7 +405,7 @@ exports.updateFeatureImage = (req, res) => {
     let index;
     if (!req.query.index) {
         try {
-            fs.unlinkSync('public' + req.filepath);
+            fs.unlinkSync('public' + req.filepaths[0]);
         } catch { }
 
         return res.status(400).json({
@@ -410,7 +418,7 @@ exports.updateFeatureImage = (req, res) => {
     let featured_images = req.store.featured_images;
     if (index >= featured_images.length) {
         try {
-            fs.unlinkSync('public' + req.filepath);
+            fs.unlinkSync('public' + req.filepaths[0]);
         } catch { }
 
         return res.status(404).json({
@@ -419,7 +427,7 @@ exports.updateFeatureImage = (req, res) => {
     }
 
     const oldpath = featured_images[index];
-    featured_images[index] = req.filepath;
+    featured_images[index] = req.filepaths[0];
     Store.findOneAndUpdate(
         { _id: req.store._id },
         { $set: { featured_images } },
@@ -432,7 +440,7 @@ exports.updateFeatureImage = (req, res) => {
         .then((store) => {
             if (!store) {
                 try {
-                    fs.unlinkSync('public' + req.filepath);
+                    fs.unlinkSync('public' + req.filepaths[0]);
                 } catch { }
 
                 return res.status(500).json({
@@ -457,7 +465,7 @@ exports.updateFeatureImage = (req, res) => {
         })
         .catch((error) => {
             try {
-                fs.unlinkSync('public' + req.filepath);
+                fs.unlinkSync('public' + req.filepaths[0]);
             } catch { }
 
             return res.status(400).json({

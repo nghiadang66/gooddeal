@@ -249,14 +249,14 @@ exports.updateAvatar = (req, res) => {
 
     User.findOneAndUpdate(
         { _id: req.user._id },
-        { $set: { avatar: req.filepath } },
+        { $set: { avatar: req.filepaths[0] } },
         { new: true },
     )
         .exec()
         .then((user) => {
             if (!user) {
                 try {
-                    fs.unlinkSync('public' + req.filepath);
+                    fs.unlinkSync('public' + req.filepaths[0]);
                 } catch { }
 
                 return res.status(500).json({
@@ -277,7 +277,7 @@ exports.updateAvatar = (req, res) => {
         })
         .catch((error) => {
             try {
-                fs.unlinkSync('public' + req.filepath);
+                fs.unlinkSync('public' + req.filepaths[0]);
             } catch { }
 
             return res.status(400).json({
@@ -302,14 +302,14 @@ exports.updateCover = (req, res) => {
 
     User.findOneAndUpdate(
         { _id: req.user._id },
-        { $set: { cover: req.filepath } },
+        { $set: { cover: req.filepaths[0] } },
         { new: true },
     )
         .exec()
         .then((user) => {
             if (!user) {
                 try {
-                    fs.unlinkSync('public' + req.filepath);
+                    fs.unlinkSync('public' + req.filepaths[0]);
                 } catch { }
 
                 return res.status(500).json({
@@ -330,7 +330,7 @@ exports.updateCover = (req, res) => {
         })
         .catch((error) => {
             try {
-                fs.unlinkSync('public' + req.filepath);
+                fs.unlinkSync('public' + req.filepaths[0]);
             } catch { }
 
             return res.status(400).json({

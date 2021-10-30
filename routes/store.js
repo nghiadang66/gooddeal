@@ -68,8 +68,7 @@ router.get(
 router.post(
     '/store/create/:userId',
     isAuth,
-    storeValidator.createStore(),
-    validateHandler,
+    upload,
     createStore,
 );
 router.put(
