@@ -22,7 +22,7 @@ const {
     updateStore,
     activeStore,
     updateCommission,
-    // openStore,
+    openStore,
     updateAvatar,
     updateCover,
     listFeatureImages,
@@ -98,14 +98,14 @@ router.put(
     updateCommission,
 );
 
-// router.put(
-//     '/store/open/:storeId/:userId',
-//     isAuth,
-//     isManager,
-//     storeValidator.openStore(),
-//     validateHandler,
-//     openStore,
-// );
+router.put(
+    '/store/open/:storeId/:userId',
+    isAuth,
+    isManager,
+    storeValidator.openStore(),
+    validateHandler,
+    openStore,
+);
 
 // router.get('/store/avatar/:storeId', getAvatar);
 router.put(

@@ -201,40 +201,40 @@ exports.updateCommission = (req, res) => {
         });
 };
 
-// /*------
-//   Open Store
-//   ------*/
-// exports.openStore = (req, res) => {
-//     const { isOpen } = req.body;
+/*------
+  Open Store
+  ------*/
+exports.openStore = (req, res) => {
+    const { isOpen } = req.body;
 
-//     Store.findOneAndUpdate({ _id: req.store._id }, { $set: { isOpen } }, { new: true })
-//         .populate('ownerId')
-//         .populate('staffIds')
-//         .populate('commissionId', '_id name cost')
-//         .exec()
-//         .then((store) => {
-//             if (!store) {
-//                 return res.status(404).json({
-//                     error: 'Store not found',
-//                 });
-//             }
+    Store.findOneAndUpdate({ _id: req.store._id }, { $set: { isOpen } }, { new: true })
+        .populate('ownerId')
+        .populate('staffIds')
+        .populate('commissionId', '_id name cost')
+        .exec()
+        .then((store) => {
+            if (!store) {
+                return res.status(404).json({
+                    error: 'Store not found',
+                });
+            }
 
-//             store.ownerId = cleanUser(store.ownerId);
-//             store.staffIds.forEach((staff) => {
-//                 staff = cleanUser(staff);
-//             });
+            store.ownerId = cleanUser(store.ownerId);
+            store.staffIds.forEach((staff) => {
+                staff = cleanUser(staff);
+            });
 
-//             return res.json({
-//                 success: 'Update store status successfully',
-//                 store: store,
-//             });
-//         })
-//         .catch((error) => {
-//             return res.status(400).json({
-//                 error: errorHandler(error),
-//             });
-//         });
-// };
+            return res.json({
+                success: 'Update store status successfully',
+                store: store,
+            });
+        })
+        .catch((error) => {
+            return res.status(400).json({
+                error: errorHandler(error),
+            });
+        });
+};
 
 exports.updateAvatar = (req, res) => {
     const oldpath = req.store.avatar;
@@ -768,6 +768,7 @@ exports.listStores = (req, res) => {
     if (req.query.isActive == 'false') isActive = [false];
 
     const sortBy = req.query.sortBy ? req.query.sortBy : '_id';
+    const sortMoreBy = req.query.sortMoreBy ? req.query.sortMoreBy : '_id';
     const order =
         req.query.order &&
             (req.query.order == 'asc' || req.query.order == 'desc')
@@ -787,6 +788,7 @@ exports.listStores = (req, res) => {
     const filter = {
         search,
         sortBy,
+        sortMoreBy,
         order,
         isActive,
         commissionId,
@@ -796,6 +798,7 @@ exports.listStores = (req, res) => {
 
     const filterArgs = {
         name: { $regex: regex, $options: 'i' },
+        bio: { $regex: regex, $options: 'i' },
         isActive: { $in: isActive },
         commissionId: { $in: commissionId },
     };
@@ -826,7 +829,7 @@ exports.listStores = (req, res) => {
 
         Store.find(filterArgs)
             .select('-e_wallet')
-            .sort({ [sortBy]: order, '_id': 1 })
+            .sort({ [sortBy]: order, [sortMoreBy]: order, '_id': 1 })
             .skip(skip)
             .limit(limit)
             .populate('ownerId')
@@ -865,6 +868,7 @@ exports.listStoresByUser = (req, res) => {
     if (req.query.isActive == 'false') isActive = [false];
 
     const sortBy = req.query.sortBy ? req.query.sortBy : '_id';
+    const sortMoreBy = req.query.sortMoreBy ? req.query.sortMoreBy : '_id';
     const order =
         req.query.order &&
             (req.query.order == 'asc' || req.query.order == 'desc')
@@ -884,6 +888,7 @@ exports.listStoresByUser = (req, res) => {
     const filter = {
         search,
         sortBy,
+        sortMoreBy,
         order,
         isActive,
         commissionId,
@@ -893,6 +898,7 @@ exports.listStoresByUser = (req, res) => {
 
     const filterArgs = {
         name: { $regex: regex, $options: 'i' },
+        bio: { $regex: regex, $options: 'i' },
         isActive: { $in: isActive },
         commissionId: { $in: commissionId },
         $or: [{ ownerId: req.user._id }, { staffIds: req.user._id }],
@@ -924,7 +930,7 @@ exports.listStoresByUser = (req, res) => {
 
         Store.find(filterArgs)
             .select('-e_wallet')
-            .sort({ [sortBy]: order, '_id': 1 })
+            .sort({ [sortBy]: order, [sortMoreBy]: order, '_id': 1 })
             .skip(skip)
             .limit(limit)
             .populate('ownerId')
@@ -963,6 +969,7 @@ exports.listStoresForAdmin = (req, res) => {
     if (req.query.isActive == 'false') isActive = [false];
 
     const sortBy = req.query.sortBy ? req.query.sortBy : '_id';
+    const sortMoreBy = req.query.sortMoreBy ? req.query.sortMoreBy : '_id';
     const order =
         req.query.order &&
             (req.query.order == 'asc' || req.query.order == 'desc')
@@ -982,6 +989,7 @@ exports.listStoresForAdmin = (req, res) => {
     const filter = {
         search,
         sortBy,
+        sortMoreBy,
         order,
         isActive,
         commissionId,
@@ -991,6 +999,7 @@ exports.listStoresForAdmin = (req, res) => {
 
     const filterArgs = {
         name: { $regex: regex, $options: 'i' },
+        bio: { $regex: regex, $options: 'i' },
         isActive: { $in: isActive },
         commissionId: { $in: commissionId },
     };
@@ -1021,7 +1030,7 @@ exports.listStoresForAdmin = (req, res) => {
 
         Store.find(filterArgs)
             .select('-e_wallet')
-            .sort({ [sortBy]: order, '_id': 1 })
+            .sort({ [sortBy]: order, [sortMoreBy]: order, '_id': 1 })
             .skip(skip)
             .limit(limit)
             .populate('ownerId')

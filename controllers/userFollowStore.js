@@ -161,19 +161,14 @@ exports.listFollowingStoresByUser = (req, res) => {
             })
             .exec()
             .then((userFollowStores) => {
-                const stores = userFollowStores.map(
-                    (userFollowStore) => userFollowStore.storeId,
-                );
-
-                stores.forEach((store) => {
-                    store = cleanStore(store);
-                });
+                const stores = userFollowStores.map(userFollowStore => userFollowStore.storeId);
+                const cleanStores = stores.map(store => cleanStore(store));
 
                 return res.json({
                     success: 'Load list following stores successfully',
                     filter,
                     size,
-                    stores,
+                    stores: cleanStores,
                 });
             })
             .catch((error) => {
