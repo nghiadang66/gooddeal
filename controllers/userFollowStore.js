@@ -97,7 +97,7 @@ exports.checkFollowingStore = (req, res) => {
         .exec()
         .then(follow => {
             if (!follow) {
-                return res.status(404).json({
+                return res.json({
                     error: 'Following store not found',
                 });
             }
