@@ -9,6 +9,7 @@ const {
     updateNumberOfFollowers,
 } = require('../controllers/store');
 const {
+    getNumberOfFollowers,
     followStore,
     unfollowStore,
     listFollowingStoresByUser,
@@ -16,6 +17,7 @@ const {
 } = require('../controllers/userFollowStore');
 
 //routes
+router.get('/store/number/of/followers/:storeId', getNumberOfFollowers);
 router.get('/follow/store/:storeId/:userId', isAuth, followStore);
 router.delete('/unfollow/store/:storeId/:userId', isAuth, unfollowStore);
 router.get('/following/stores/:userId', isAuth, listFollowingStoresByUser);

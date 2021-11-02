@@ -111,7 +111,23 @@ exports.checkFollowingStore = (req, res) => {
             return res.status(404).json({
                 error: 'Following store not found',
             });
-        })
+        });
+}
+
+exports.getNumberOfFollowers = (req, res) => {
+    const storeId = req.store._id;
+    UserFollowStore.countDocuments({ storeId: storeId }, (error, count) => {
+        if (error) {
+            return res.status(404).json({
+                error: 'Following stores not found',
+            });
+        }
+
+        return res.json({
+            success: 'get store number of followers successfully',
+            count,
+        });
+    });
 }
 
 //?limit=...&page=...
