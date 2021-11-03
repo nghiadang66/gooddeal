@@ -6,12 +6,7 @@ const storeValidator = require('../validators/store');
 const { validateHandler } = require('../helpers/validateHandler');
 
 //import controllers
-const {
-    isAuth,
-    isAdmin,
-    isManager,
-    isOwner,
-} = require('../controllers/auth');
+const { isAuth, isAdmin, isManager, isOwner } = require('../controllers/auth');
 const { userById } = require('../controllers/user');
 const { upload } = require('../controllers/upload');
 const {
@@ -47,11 +42,7 @@ router.get(
     isManager,
     getStoreProfile,
 );
-router.get(
-    '/stores',
-    listStoreCommissions,
-    listStores,
-);
+router.get('/stores', listStoreCommissions, listStores);
 router.get(
     '/stores/by/user/:userId',
     isAuth,
@@ -65,12 +56,7 @@ router.get(
     listStoreCommissions,
     listStoresForAdmin,
 );
-router.post(
-    '/store/create/:userId',
-    isAuth,
-    upload,
-    createStore,
-);
+router.post('/store/create/:userId', isAuth, upload, createStore);
 router.put(
     '/store/:storeId/:userId',
     isAuth,

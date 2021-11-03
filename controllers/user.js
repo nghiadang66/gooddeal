@@ -51,7 +51,17 @@ exports.updateProfile = (req, res) => {
 
     User.findOneAndUpdate(
         { _id: req.user._id },
-        { $set: { firstname, lastname, id_card, email, phone, isEmailActive, isPhoneActive } },
+        {
+            $set: {
+                firstname,
+                lastname,
+                id_card,
+                email,
+                phone,
+                isEmailActive,
+                isPhoneActive,
+            },
+        },
         { new: true },
     )
         .exec()
@@ -78,11 +88,14 @@ exports.updatePassword = (req, res) => {
     let { newPassword } = req.body;
 
     const user = req.user;
-    newPassword = user.encryptPassword(newPassword, user.salt)
+    newPassword = user.encryptPassword(newPassword, user.salt);
 
-    User.findOneAndUpdate({ _id: req.user._id }, { $set: { hashed_password: newPassword } })
+    User.findOneAndUpdate(
+        { _id: req.user._id },
+        { $set: { hashed_password: newPassword } },
+    )
         .exec()
-        .then(user => {
+        .then((user) => {
             if (!user) {
                 return res.status(400).json({
                     error: errorHandler(error),
@@ -93,12 +106,12 @@ exports.updatePassword = (req, res) => {
                 success: 'Update new password successfully',
             });
         })
-        .catch(error => {
+        .catch((error) => {
             return res.status(500).json({
                 error: 'Update new password failed',
             });
         });
-}
+};
 
 /*------
   ADDRESS
@@ -257,7 +270,7 @@ exports.updateAvatar = (req, res) => {
             if (!user) {
                 try {
                     fs.unlinkSync('public' + req.filepaths[0]);
-                } catch { }
+                } catch {}
 
                 return res.status(500).json({
                     error: 'User not found',
@@ -267,7 +280,7 @@ exports.updateAvatar = (req, res) => {
             if (oldpath != '/uploads/default.jpg') {
                 try {
                     fs.unlinkSync('public' + oldpath);
-                } catch { }
+                } catch {}
             }
 
             return res.json({
@@ -278,7 +291,7 @@ exports.updateAvatar = (req, res) => {
         .catch((error) => {
             try {
                 fs.unlinkSync('public' + req.filepaths[0]);
-            } catch { }
+            } catch {}
 
             return res.status(400).json({
                 error: errorHandler(error),
@@ -310,7 +323,7 @@ exports.updateCover = (req, res) => {
             if (!user) {
                 try {
                     fs.unlinkSync('public' + req.filepaths[0]);
-                } catch { }
+                } catch {}
 
                 return res.status(500).json({
                     error: 'User not found',
@@ -320,7 +333,7 @@ exports.updateCover = (req, res) => {
             if (oldpath != '/uploads/default.jpg') {
                 try {
                     fs.unlinkSync('public' + oldpath);
-                } catch { }
+                } catch {}
             }
 
             return res.json({
@@ -331,7 +344,7 @@ exports.updateCover = (req, res) => {
         .catch((error) => {
             try {
                 fs.unlinkSync('public' + req.filepaths[0]);
-            } catch { }
+            } catch {}
 
             return res.status(400).json({
                 error: errorHandler(error),
@@ -345,11 +358,14 @@ exports.updateCover = (req, res) => {
 // users?search=...&sortBy=...&order=...&limit=...&page=...
 exports.listUser = (req, res) => {
     const search = req.query.search ? req.query.search : '';
-    const regex = search.split(' ').filter(w => w).join('|');
+    const regex = search
+        .split(' ')
+        .filter((w) => w)
+        .join('|');
     const sortBy = req.query.sortBy ? req.query.sortBy : '_id';
     const order =
         req.query.order &&
-            (req.query.order == 'asc' || req.query.order == 'desc')
+        (req.query.order == 'asc' || req.query.order == 'desc')
             ? req.query.order
             : 'asc'; //desc
 
@@ -400,7 +416,7 @@ exports.listUser = (req, res) => {
         }
 
         User.find(filterArgs)
-            .sort({ [sortBy]: order, '_id': 1 })
+            .sort({ [sortBy]: order, _id: 1 })
             .limit(limit)
             .skip(skip)
             .then((users) => {
@@ -426,11 +442,14 @@ exports.listUser = (req, res) => {
 // list users for admin management
 exports.listUserForAdmin = (req, res) => {
     const search = req.query.search ? req.query.search : '';
-    const regex = search.split(' ').filter(w => w).join('|');
+    const regex = search
+        .split(' ')
+        .filter((w) => w)
+        .join('|');
     const sortBy = req.query.sortBy ? req.query.sortBy : '_id';
     const order =
         req.query.order &&
-            (req.query.order == 'asc' || req.query.order == 'desc')
+        (req.query.order == 'asc' || req.query.order == 'desc')
             ? req.query.order
             : 'asc'; //desc
     const limit =
@@ -482,7 +501,7 @@ exports.listUserForAdmin = (req, res) => {
         }
 
         User.find(filterArgs)
-            .sort({ [sortBy]: order, '_id': 1 })
+            .sort({ [sortBy]: order, _id: 1 })
             .skip(skip)
             .limit(limit)
             .exec()

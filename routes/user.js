@@ -6,11 +6,7 @@ const userValidator = require('../validators/user');
 const { validateHandler } = require('../helpers/validateHandler');
 
 //import controllers
-const {
-    isAuth,
-    isAdmin,
-    verifyPassword,
-} = require('../controllers/auth');
+const { isAuth, isAdmin, verifyPassword } = require('../controllers/auth');
 const { upload } = require('../controllers/upload');
 const {
     userById,
@@ -40,7 +36,14 @@ router.put(
     validateHandler,
     updateProfile,
 );
-router.put('/user/password/:userId', isAuth, userValidator.updateAccount(), validateHandler, verifyPassword, updatePassword);
+router.put(
+    '/user/password/:userId',
+    isAuth,
+    userValidator.updateAccount(),
+    validateHandler,
+    verifyPassword,
+    updatePassword,
+);
 
 router.get('/user/addresses/:userId', isAuth, listAddress);
 router.post(

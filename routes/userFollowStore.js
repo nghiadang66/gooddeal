@@ -4,10 +4,7 @@ const router = express.Router();
 //import controllers
 const { isAuth } = require('../controllers/auth');
 const { userById } = require('../controllers/user');
-const {
-    storeById,
-    updateNumberOfFollowers,
-} = require('../controllers/store');
+const { storeById, updateNumberOfFollowers } = require('../controllers/store');
 const {
     getNumberOfFollowers,
     followStore,
@@ -21,7 +18,11 @@ router.get('/store/number/of/followers/:storeId', getNumberOfFollowers);
 router.get('/follow/store/:storeId/:userId', isAuth, followStore);
 router.delete('/unfollow/store/:storeId/:userId', isAuth, unfollowStore);
 router.get('/following/stores/:userId', isAuth, listFollowingStoresByUser);
-router.get('/check/following/stores/:storeId/:userId', isAuth, checkFollowingStore);
+router.get(
+    '/check/following/stores/:storeId/:userId',
+    isAuth,
+    checkFollowingStore,
+);
 
 //params
 router.param('userId', userById);

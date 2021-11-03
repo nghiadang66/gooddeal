@@ -4,11 +4,14 @@ const { errorHandler } = require('../helpers/errorHandler');
 //?search=...&sortBy=...&order=...
 exports.listCommissions = (req, res) => {
     const search = req.query.search ? req.query.search : '';
-    const regex = search.split(' ').filter(w => w).join('|');
+    const regex = search
+        .split(' ')
+        .filter((w) => w)
+        .join('|');
     const sortBy = req.query.sortBy ? req.query.sortBy : '_id';
     const order =
         req.query.order &&
-            (req.query.order == 'asc' || req.query.order == 'desc')
+        (req.query.order == 'asc' || req.query.order == 'desc')
             ? req.query.order
             : 'asc'; //desc;
 
@@ -19,7 +22,7 @@ exports.listCommissions = (req, res) => {
     };
 
     Commission.find({ name: { $regex: regex, $options: 'i' } })
-        .sort({ [sortBy]: order, '_id': 1 })
+        .sort({ [sortBy]: order, _id: 1 })
         .exec()
         .then((commissions) => {
             return res.json({

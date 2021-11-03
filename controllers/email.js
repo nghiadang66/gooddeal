@@ -23,7 +23,9 @@ const sendEmail = (email, name, title, text, code = null) => {
                     <p>Hi ${name},</p>
                     <p>Thank you for choosing GoodDeal.</p>
                     <p>${text}</p>
-                    ${code ? `<button style="background-color:#0d6efd; border:none; border-radius:4px; padding:0;">
+                    ${
+                        code
+                            ? `<button style="background-color:#0d6efd; border:none; border-radius:4px; padding:0;">
                             <a 
                                 style="color:#fff; text-decoration:none; font-size:16px; padding: 16px 32px; display: inline-block;"
                                 href='http://localhost:${process.env.CLIENT_PORT_2}/verify/email/${code}'
@@ -31,7 +33,9 @@ const sendEmail = (email, name, title, text, code = null) => {
                             Verify now!
                             </a>
                         </button>
-                        ` : ''}
+                        `
+                            : ''
+                    }
                 </div>`,
     });
 };
@@ -80,8 +84,7 @@ exports.sendConfirmationEmail = (req, res) => {
                     return res.status(500).json({
                         error: 'User not found',
                     });
-                }
-                else {
+                } else {
                     const title = 'Verify your email address';
                     const text =
                         'To get access to your account please verify your email address by clicking the link below.';

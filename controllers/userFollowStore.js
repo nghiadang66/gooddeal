@@ -11,8 +11,7 @@ exports.followStore = (req, res) => {
             return res.status(400).json({
                 error: 'Follow is already exists',
             });
-        }
-        else {
+        } else {
             const numberOfFollowers = req.store.number_of_followers + 1;
             Store.findOneAndUpdate(
                 { _id: storeId },
@@ -21,7 +20,7 @@ exports.followStore = (req, res) => {
             )
                 .populate('commissionId')
                 .exec()
-                .then(store => {
+                .then((store) => {
                     if (!store) {
                         return res.status(404).json({
                             error: 'Store not found',
@@ -33,7 +32,7 @@ exports.followStore = (req, res) => {
                         store: cleanStore(store),
                     });
                 })
-                .catch(error => {
+                .catch((error) => {
                     return res.status(500).json({
                         error: 'Follow store failed',
                     });
@@ -53,8 +52,7 @@ exports.unfollowStore = (req, res) => {
                 return res.status(400).json({
                     error: 'Follow is already exists',
                 });
-            }
-            else {
+            } else {
                 const numberOfFollowers = req.store.number_of_followers - 1;
                 Store.findOneAndUpdate(
                     { _id: storeId },
@@ -63,7 +61,7 @@ exports.unfollowStore = (req, res) => {
                 )
                     .populate('commissionId')
                     .exec()
-                    .then(store => {
+                    .then((store) => {
                         if (!store) {
                             return res.status(404).json({
                                 error: 'Store not found',
@@ -75,7 +73,7 @@ exports.unfollowStore = (req, res) => {
                             store: cleanStore(store),
                         });
                     })
-                    .catch(error => {
+                    .catch((error) => {
                         return res.status(500).json({
                             error: 'Unfollow store failed',
                         });
@@ -95,24 +93,23 @@ exports.checkFollowingStore = (req, res) => {
 
     UserFollowStore.findOne({ userId: userId, storeId: storeId })
         .exec()
-        .then(follow => {
+        .then((follow) => {
             if (!follow) {
                 return res.json({
                     error: 'Following store not found',
                 });
-            }
-            else {
+            } else {
                 return res.json({
                     success: 'Following store',
                 });
             }
         })
-        .catch(error => {
+        .catch((error) => {
             return res.status(404).json({
                 error: 'Following store not found',
             });
         });
-}
+};
 
 exports.getNumberOfFollowers = (req, res) => {
     const storeId = req.store._id;
@@ -128,7 +125,7 @@ exports.getNumberOfFollowers = (req, res) => {
             count,
         });
     });
-}
+};
 
 //?limit=...&page=...
 exports.listFollowingStoresByUser = (req, res) => {
@@ -177,8 +174,10 @@ exports.listFollowingStoresByUser = (req, res) => {
             })
             .exec()
             .then((userFollowStores) => {
-                const stores = userFollowStores.map(userFollowStore => userFollowStore.storeId);
-                const cleanStores = stores.map(store => cleanStore(store));
+                const stores = userFollowStores.map(
+                    (userFollowStore) => userFollowStore.storeId,
+                );
+                const cleanStores = stores.map((store) => cleanStore(store));
 
                 return res.json({
                     success: 'Load list following stores successfully',

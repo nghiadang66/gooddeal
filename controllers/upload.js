@@ -3,6 +3,7 @@ const formidable = require('formidable');
 
 exports.upload = (req, res, next) => {
     console.log('---UPLOAD IMAGE---');
+    let flag = true;
     const form = new formidable.IncomingForm();
     form.keepExtensions = true;
 
@@ -18,7 +19,7 @@ exports.upload = (req, res, next) => {
         // console.log('---upload---', fields, listFiles);
         let listFilePaths = [];
         if (listFiles.length > 0) {
-            listFiles.forEach(file => {
+            listFiles.forEach((file) => {
                 //check type
                 const type = file.type;
                 if (
@@ -28,6 +29,7 @@ exports.upload = (req, res, next) => {
                     type !== 'image/gif'
                 ) {
                     console.log('---UPLOAD IMAGE FAILED---');
+                    flag = false;
                     return res.status(400).json({
                         error: 'Invalid type. Photo type must be png, jpg, jpeg or gif.',
                     });
@@ -37,6 +39,7 @@ exports.upload = (req, res, next) => {
                 const size = file.size;
                 if (size > 1000000) {
                     console.log('---UPLOAD IMAGE FAILED---');
+                    flag = false;
                     return res.status(400).json({
                         error: 'Image should be less than 1mb in size',
                     });
@@ -48,6 +51,7 @@ exports.upload = (req, res, next) => {
                     data = fs.readFileSync(path);
                 } catch (e) {
                     console.log('---UPLOAD IMAGE FAILED---');
+                    flag = false;
                     return res.status(500).json({
                         error: 'Can not read photo file',
                     });
@@ -57,13 +61,16 @@ exports.upload = (req, res, next) => {
                     'public/uploads/' +
                     Date.now() +
                     `${req.store && req.store.slug ? req.store.slug : ''}` +
-                    `${req.product && req.product.slug ? req.product.slug : ''}` +
+                    `${
+                        req.product && req.product.slug ? req.product.slug : ''
+                    }` +
                     file.name;
 
                 try {
                     fs.writeFileSync(newpath, data);
                 } catch (e) {
                     console.log('---UPLOAD IMAGE FAILED---');
+                    flag = false;
                     return res.status(500).json({
                         error: 'Photo could not be up load',
                     });
@@ -76,6 +83,7 @@ exports.upload = (req, res, next) => {
 
         req.filepaths = listFilePaths;
         req.fields = fields;
-        next();
+
+        if (flag) next();
     });
 };
