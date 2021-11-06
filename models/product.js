@@ -28,7 +28,7 @@ const productSchema = new mongoose.Schema(
             required: true,
             min: 0,
         },
-        promotional_price: {
+        promotionalPrice: {
             type: mongoose.Decimal128,
             required: true,
             min: 0,
@@ -45,39 +45,30 @@ const productSchema = new mongoose.Schema(
         },
         isActive: {
             type: Boolean,
-        },
-        isOpenStore: {
-            type: Boolean,
+            required: true,
         },
         isSelling: {
             type: Boolean,
             default: true,
         },
-        list_images: {
-            type: Array,
-            Element: String,
+        listImages: {
+            type: [String],
+            validate: [listImagesLimit, 'The limit is 6 images'],
             default: [],
-        },
-        video: {
-            type: String,
-            trim: true,
-            required: true,
         },
         categoryId: {
             type: ObjectId,
             ref: 'Category',
             required: true,
         },
-        brandId: {
-            type: ObjectId,
-            ref: 'Brand',
-            required: true,
-        },
         styleValueIds: {
-            type: Array,
-            Element: ObjectId,
+            type: [
+                {
+                    type: ObjectId,
+                    ref: 'StyleValue',
+                },
+            ],
             default: [],
-            ref: 'StyleValue',
         },
         storeId: {
             required,
@@ -90,12 +81,13 @@ const productSchema = new mongoose.Schema(
             min: 0,
             max: 5,
         },
-        number_of_reviews: {
-            type: Number,
-            default: 0,
-        },
     },
     { timestamps: true },
 );
+
+//validators
+function listImagesLimit(val) {
+    return val.length > 0 && val.length <= 6;
+}
 
 module.exports = mongoose.model('Product', productSchema);

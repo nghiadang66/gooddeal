@@ -11,7 +11,7 @@ exports.listCommissions = (req, res) => {
     const sortBy = req.query.sortBy ? req.query.sortBy : '_id';
     const order =
         req.query.order &&
-        (req.query.order == 'asc' || req.query.order == 'desc')
+            (req.query.order == 'asc' || req.query.order == 'desc')
             ? req.query.order
             : 'asc'; //desc;
 
@@ -59,9 +59,9 @@ exports.listActiveCommissions = (req, res) => {
 };
 
 exports.createCommission = (req, res) => {
-    const { name, cost } = req.body;
+    const { name, cost, description } = req.body;
 
-    const commission = new Commission({ name, cost });
+    const commission = new Commission({ name, cost, description });
     commission.save((error, commission) => {
         if (error || !commission) {
             return res.status(400).json({
@@ -77,9 +77,9 @@ exports.createCommission = (req, res) => {
 
 exports.updateCommission = (req, res) => {
     const commissionId = req.params.commissionId;
-    const { name, cost } = req.body;
+    const { name, cost, description } = req.body;
 
-    Commission.findOneAndUpdate({ _id: commissionId }, { $set: { name, cost } })
+    Commission.findOneAndUpdate({ _id: commissionId }, { $set: { name, cost, description } })
         .exec()
         .then((commission) => {
             if (!commission) {

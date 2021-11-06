@@ -50,6 +50,7 @@ exports.signin = (req, res, next) => {
                 });
             }
 
+            //create token
             req.auth = user;
             next();
         })
@@ -60,13 +61,15 @@ exports.signin = (req, res, next) => {
         });
 };
 
-exports.authToken = (req, res) => {
+exports.createToken = (req, res) => {
     const user = req.auth;
+
     const accessToken = jwt.sign(
         { _id: user._id },
         process.env.ACCESS_TOKEN_SECRET,
         { expiresIn: '48h' },
     );
+
     const refreshToken = jwt.sign(
         { _id: user._id },
         process.env.REFRESH_TOKEN_SECRET,
@@ -92,6 +95,7 @@ exports.authToken = (req, res) => {
 
 exports.signout = (req, res) => {
     const refreshToken = req.body.refreshToken;
+
     if (refreshToken == null)
         return res.status(401).json({ error: 'refreshToken is required' });
 
@@ -104,13 +108,14 @@ exports.signout = (req, res) => {
         })
         .catch((error) => {
             return res.status(500).json({
-                error: 'Sign out failed, try again later',
+                error: 'Sign out and remove refresh token failed',
             });
         });
 };
 
 exports.refreshToken = (req, res) => {
     const refreshToken = req.body.refreshToken;
+
     if (refreshToken == null)
         return res.status(401).json({ error: 'refreshToken is required' });
 
@@ -123,11 +128,13 @@ exports.refreshToken = (req, res) => {
                 });
             } else {
                 const decoded = jwt.decode(token.jwt);
+
                 const accessToken = jwt.sign(
                     { _id: decoded._id },
                     process.env.ACCESS_TOKEN_SECRET,
                     { expiresIn: '48h' },
                 );
+
                 const newRefreshToken = jwt.sign(
                     { _id: decoded._id },
                     process.env.REFRESH_TOKEN_SECRET,
@@ -249,25 +256,6 @@ exports.changePassword = (req, res) => {
         });
 };
 
-exports.verifyPassword = (req, res, next) => {
-    const { currentPassword } = req.body;
-    User.findById(req.user._id, (error, user) => {
-        if (error || !user) {
-            return res.status(404).json({
-                error: 'User not found',
-            });
-        }
-
-        if (!user.authenticate(currentPassword)) {
-            return res.status(401).json({
-                error: "Current password doesn't match",
-            });
-        }
-
-        next();
-    });
-};
-
 exports.authSocial = (req, res, next) => {
     const { googleId, facebookId } = req.body;
 
@@ -375,6 +363,26 @@ exports.authUpdate = (req, res, next) => {
                 });
         }
     }
+};
+
+//check current password
+exports.verifyPassword = (req, res, next) => {
+    const { currentPassword } = req.body;
+    User.findById(req.user._id, (error, user) => {
+        if (error || !user) {
+            return res.status(404).json({
+                error: 'User not found',
+            });
+        }
+
+        if (!user.authenticate(currentPassword)) {
+            return res.status(401).json({
+                error: "Current password doesn't match",
+            });
+        }
+
+        next();
+    });
 };
 
 exports.isAuth = (req, res, next) => {

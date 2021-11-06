@@ -20,18 +20,16 @@ exports.userById = (req, res, next, id) => {
 };
 
 exports.getUser = (req, res) => {
-    const user = cleanUser(req.user);
     return res.json({
         success: 'Get user successfully',
-        user,
+        user: cleanUser(req.user),
     });
 };
 
 exports.getUserProfile = (req, res) => {
-    const user = cleanUserLess(req.user);
     return res.json({
         success: 'Get user profile successfully',
-        user,
+        user: cleanUserLess(req.user),
     });
 };
 
@@ -45,9 +43,9 @@ exports.updateProfile = (req, res) => {
     }
 
     const isEmailActive =
-        email && req.user.email != email ? false : req.user.isEmailActive;
+        (email && req.user.email != email) ? false : req.user.isEmailActive;
     const isPhoneActive =
-        phone && req.user.phone != phone ? false : req.user.isPhoneActive;
+        (phone && req.user.phone != phone) ? false : req.user.isPhoneActive;
 
     User.findOneAndUpdate(
         { _id: req.user._id },
@@ -97,8 +95,8 @@ exports.updatePassword = (req, res) => {
         .exec()
         .then((user) => {
             if (!user) {
-                return res.status(400).json({
-                    error: errorHandler(error),
+                return res.status(500).json({
+                    error: 'User not found',
                 });
             }
 
@@ -107,8 +105,8 @@ exports.updatePassword = (req, res) => {
             });
         })
         .catch((error) => {
-            return res.status(500).json({
-                error: 'Update new password failed',
+            return res.status(400).json({
+                error: errorHandler(error),
             });
         });
 };
@@ -116,17 +114,9 @@ exports.updatePassword = (req, res) => {
 /*------
   ADDRESS
   ------*/
-exports.listAddress = (req, res) => {
-    // console.log('---REQUEST USER---: ', req.user);
-    const addresses = req.user.addresses;
-    return res.json({
-        success: 'Load list address successfully',
-        addresses: addresses,
-    });
-};
-
 exports.addAddress = (req, res) => {
     let addresses = req.user.addresses;
+
     if (addresses.length >= 6) {
         return res.status(400).json({
             error: 'The limit is 6 addresses',
@@ -138,7 +128,7 @@ exports.addAddress = (req, res) => {
 
     User.findOneAndUpdate(
         { _id: req.user._id },
-        { $set: { addresses: addresses } },
+        { $set: { addresses } },
         { new: true },
     )
         .exec()
@@ -162,33 +152,28 @@ exports.addAddress = (req, res) => {
 };
 
 exports.updateAddress = (req, res) => {
-    let addressIndex;
-    if (!req.query.index) {
+    const addressIndex = (req.query.index && req.query.index >= 0 && req.query.index <= 6) ? parseInt(req.query.index) : -1;
+    if (addressIndex == -1)
         return res.status(400).json({
             error: 'index not found',
         });
-    } else {
-        addressIndex = req.query.index;
-    }
 
     let addresses = req.user.addresses;
-    if (addresses.length <= addressIndex) {
+    if (addresses.length <= addressIndex)
         return res.status(404).json({
             error: 'Address not found',
         });
-    }
 
     const index = addresses.indexOf(req.body.address.trim());
-    if (index != -1 && index != addressIndex) {
+    if (index != -1 && index != addressIndex)
         return res.status(400).json({
             error: 'Address already exists',
         });
-    }
 
     addresses.splice(addressIndex, 1, req.body.address.trim());
     User.findOneAndUpdate(
         { _id: req.user._id },
-        { $set: { addresses: addresses } },
+        { $set: { addresses } },
         { new: true },
     )
         .exec()
@@ -212,26 +197,22 @@ exports.updateAddress = (req, res) => {
 };
 
 exports.removeAddress = (req, res) => {
-    let addressIndex;
-    if (!req.query.index) {
+    const addressIndex = (req.query.index && req.query.index >= 0 && req.query.index <= 6) ? parseInt(req.query.index) : -1;
+    if (addressIndex == -1)
         return res.status(400).json({
             error: 'index not found',
         });
-    } else {
-        addressIndex = req.query.index;
-    }
 
     let addresses = req.user.addresses;
-    if (addresses.length <= addressIndex) {
+    if (addresses.length <= addressIndex)
         return res.status(404).json({
             error: 'Address not found',
         });
-    }
 
     addresses.splice(addressIndex, 1);
     User.findOneAndUpdate(
         { _id: req.user._id },
-        { $set: { addresses: addresses } },
+        { $set: { addresses } },
         { new: true },
     )
         .exec()
@@ -270,7 +251,7 @@ exports.updateAvatar = (req, res) => {
             if (!user) {
                 try {
                     fs.unlinkSync('public' + req.filepaths[0]);
-                } catch {}
+                } catch { }
 
                 return res.status(500).json({
                     error: 'User not found',
@@ -280,7 +261,7 @@ exports.updateAvatar = (req, res) => {
             if (oldpath != '/uploads/default.jpg') {
                 try {
                     fs.unlinkSync('public' + oldpath);
-                } catch {}
+                } catch { }
             }
 
             return res.json({
@@ -291,7 +272,7 @@ exports.updateAvatar = (req, res) => {
         .catch((error) => {
             try {
                 fs.unlinkSync('public' + req.filepaths[0]);
-            } catch {}
+            } catch { }
 
             return res.status(400).json({
                 error: errorHandler(error),
@@ -302,14 +283,6 @@ exports.updateAvatar = (req, res) => {
 /*------
   COVER
   ------*/
-// exports.getCover = (req, res) => {
-//     let cover = req.user.cover;
-//     return res.json({
-//         success: 'load cover successfully',
-//         cover,
-//     });
-// };
-
 exports.updateCover = (req, res) => {
     const oldpath = req.user.cover;
 
@@ -323,7 +296,7 @@ exports.updateCover = (req, res) => {
             if (!user) {
                 try {
                     fs.unlinkSync('public' + req.filepaths[0]);
-                } catch {}
+                } catch { }
 
                 return res.status(500).json({
                     error: 'User not found',
@@ -333,7 +306,7 @@ exports.updateCover = (req, res) => {
             if (oldpath != '/uploads/default.jpg') {
                 try {
                     fs.unlinkSync('public' + oldpath);
-                } catch {}
+                } catch { }
             }
 
             return res.json({
@@ -344,7 +317,7 @@ exports.updateCover = (req, res) => {
         .catch((error) => {
             try {
                 fs.unlinkSync('public' + req.filepaths[0]);
-            } catch {}
+            } catch { }
 
             return res.status(400).json({
                 error: errorHandler(error),
@@ -365,7 +338,7 @@ exports.listUser = (req, res) => {
     const sortBy = req.query.sortBy ? req.query.sortBy : '_id';
     const order =
         req.query.order &&
-        (req.query.order == 'asc' || req.query.order == 'desc')
+            (req.query.order == 'asc' || req.query.order == 'desc')
             ? req.query.order
             : 'asc'; //desc
 
@@ -419,6 +392,7 @@ exports.listUser = (req, res) => {
             .sort({ [sortBy]: order, _id: 1 })
             .limit(limit)
             .skip(skip)
+            .exec()
             .then((users) => {
                 users.forEach((user) => {
                     user = cleanUser(user);
@@ -449,7 +423,7 @@ exports.listUserForAdmin = (req, res) => {
     const sortBy = req.query.sortBy ? req.query.sortBy : '_id';
     const order =
         req.query.order &&
-        (req.query.order == 'asc' || req.query.order == 'desc')
+            (req.query.order == 'asc' || req.query.order == 'desc')
             ? req.query.order
             : 'asc'; //desc
     const limit =

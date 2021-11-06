@@ -49,17 +49,16 @@ const storeSchema = new mongoose.Schema(
         },
         avatar: {
             type: String,
-            default: '/uploads/default.jpg',
             required: true,
         },
         cover: {
             type: String,
-            default: '/uploads/default.jpg',
             required: true,
         },
         featured_images: {
             type: [String],
             validate: [featured_imagesLimit, 'The limit is 6 images'],
+            default: [],
         },
         commissionId: {
             type: ObjectId,
@@ -75,36 +74,11 @@ const storeSchema = new mongoose.Schema(
             type: Number,
             default: 0,
         },
-        number_of_successful_orders: {
-            type: Number,
-            default: 0,
-            min: 0,
-        },
-        number_of_failed_orders: {
-            type: Number,
-            default: 0,
-            min: 0,
-        },
-        total_revenue: {
-            type: mongoose.Decimal128,
-            default: 0,
-            min: 0,
-        },
         rating: {
             type: Number,
             default: 0,
             min: 0,
             max: 5,
-        },
-        number_of_reviews: {
-            type: Number,
-            default: 0,
-            min: 0,
-        },
-        number_of_followers: {
-            type: Number,
-            min: 0,
-            default: 0,
         },
     },
     { timestamps: true },

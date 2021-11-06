@@ -15,7 +15,7 @@ const {
     refreshToken,
     signout,
     authSocial,
-    authToken,
+    createToken,
     authUpdate,
 } = require('../controllers/auth');
 const { userById } = require('../controllers/user');
@@ -37,20 +37,18 @@ router.post(
     authValidator.signin(),
     validateHandler,
     signin,
-    authToken,
+    createToken,
 );
-router.post('/signout', signout);
 router.post(
     '/auth/social',
     authValidator.authSocial(),
     validateHandler,
     authSocial,
     authUpdate,
-    authToken,
+    createToken,
 );
-
+router.post('/signout', signout);
 router.post('/refresh/token', refreshToken);
-
 router.post(
     '/forgot/password',
     authValidator.forgotPassword(),
@@ -65,7 +63,6 @@ router.put(
     validateHandler,
     changePassword,
 );
-
 router.get('/confirm/email/:userId', isAuth, sendConfirmationEmail);
 router.get('/verify/email/:emailCode', verifyEmail);
 

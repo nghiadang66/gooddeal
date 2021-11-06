@@ -9,7 +9,7 @@ const userFollowStoreSchema = new mongoose.Schema(
         },
         productId: {
             type: ObjectId,
-            ref: 'Produc',
+            ref: 'Product',
         },
     },
     { timestamps: true },

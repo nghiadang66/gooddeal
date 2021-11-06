@@ -10,9 +10,13 @@ require('dotenv').config();
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/user');
 const storeRoutes = require('./routes/store');
-const levelRoutes = require('./routes/level');
+const userLevelRoutes = require('./routes/userLevel');
+const storeLevelRoutes = require('./routes/storeLevel');
 const commissionRoutes = require('./routes/commission');
 const userFollowStoreRoutes = require('./routes/userFollowStore');
+const categoryRoutes = require('./routes/category');
+const styleRoutes = require('./routes/style');
+const styleValueRoutes = require('./routes/styleValue');
 
 //app
 const app = express();
@@ -44,9 +48,13 @@ app.use(
 app.use('/api', authRoutes);
 app.use('/api', userRoutes);
 app.use('/api', storeRoutes);
-app.use('/api', levelRoutes);
+app.use('/api', userLevelRoutes);
+app.use('/api', storeLevelRoutes);
 app.use('/api', commissionRoutes);
 app.use('/api', userFollowStoreRoutes);
+app.use('/api', categoryRoutes);
+app.use('/api', styleRoutes);
+app.use('/api', styleValueRoutes);
 
 //port
 const port = process.env.PORT || 8000;

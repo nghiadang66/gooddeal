@@ -1,14 +1,15 @@
 const mongoose = require('mongoose');
+const { ObjectId } = mongoose.Schema;
 const slug = require('mongoose-slug-generator');
+
 mongoose.plugin(slug);
 
-const brandSchema = new mongoose.Schema(
+const categorySchema = new mongoose.Schema(
     {
         name: {
             type: String,
             trim: true,
             required: true,
-            unique: true,
             maxLength: 32,
         },
         slug: {
@@ -20,15 +21,20 @@ const brandSchema = new mongoose.Schema(
             type: String,
             trim: true,
             required: true,
-            unique: true,
+        },
+        categoryId: {
+            type: ObjectId,
+            ref: 'Category',
+            default: null,
         },
         isDeleted: {
             type: Boolean,
-            required: true,
             default: false,
         },
     },
     { timestamps: true },
 );
 
-module.exports = mongoose.model('Brand', brandSchema);
+categorySchema.index({ name: 1, categoryId: 1 }, { unique: true });
+
+module.exports = mongoose.model('Category', categorySchema);

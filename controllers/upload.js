@@ -2,14 +2,14 @@ const fs = require('fs');
 const formidable = require('formidable');
 
 exports.upload = (req, res, next) => {
-    console.log('---UPLOAD IMAGE---');
+    // console.log('---UPLOAD IMAGE---');
     let flag = true;
     const form = new formidable.IncomingForm();
     form.keepExtensions = true;
 
     form.parse(req, (error, fields, files) => {
         if (error) {
-            console.log('---UPLOAD IMAGE FAILED---');
+            // console.log('---UPLOAD IMAGE FAILED---');
             return res.status(400).json({
                 error: 'Photo could not be up load',
             });
@@ -28,7 +28,7 @@ exports.upload = (req, res, next) => {
                     type !== 'image/jpeg' &&
                     type !== 'image/gif'
                 ) {
-                    console.log('---UPLOAD IMAGE FAILED---');
+                    // console.log('---UPLOAD IMAGE FAILED---');
                     flag = false;
                     return res.status(400).json({
                         error: 'Invalid type. Photo type must be png, jpg, jpeg or gif.',
@@ -38,7 +38,7 @@ exports.upload = (req, res, next) => {
                 //check size
                 const size = file.size;
                 if (size > 1000000) {
-                    console.log('---UPLOAD IMAGE FAILED---');
+                    // console.log('---UPLOAD IMAGE FAILED---');
                     flag = false;
                     return res.status(400).json({
                         error: 'Image should be less than 1mb in size',
@@ -50,7 +50,7 @@ exports.upload = (req, res, next) => {
                 try {
                     data = fs.readFileSync(path);
                 } catch (e) {
-                    console.log('---UPLOAD IMAGE FAILED---');
+                    // console.log('---UPLOAD IMAGE FAILED---');
                     flag = false;
                     return res.status(500).json({
                         error: 'Can not read photo file',
@@ -61,22 +61,21 @@ exports.upload = (req, res, next) => {
                     'public/uploads/' +
                     Date.now() +
                     `${req.store && req.store.slug ? req.store.slug : ''}` +
-                    `${
-                        req.product && req.product.slug ? req.product.slug : ''
+                    `${req.product && req.product.slug ? req.product.slug : ''
                     }` +
                     file.name;
 
                 try {
                     fs.writeFileSync(newpath, data);
                 } catch (e) {
-                    console.log('---UPLOAD IMAGE FAILED---');
+                    // console.log('---UPLOAD IMAGE FAILED---');
                     flag = false;
                     return res.status(500).json({
                         error: 'Photo could not be up load',
                     });
                 }
 
-                console.log('---UPLOAD IMAGE SUCCESSFULLY---');
+                // console.log('---UPLOAD IMAGE SUCCESSFULLY---');
                 listFilePaths.push(newpath.replace('public', ''));
             });
         }

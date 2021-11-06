@@ -98,21 +98,6 @@ const userSchema = new mongoose.Schema(
             type: Number,
             default: 0,
         },
-        number_of_successful_orders: {
-            type: Number,
-            default: 0,
-            min: 0,
-        },
-        number_of_failed_orders: {
-            type: Number,
-            default: 0,
-            min: 0,
-        },
-        total_spending: {
-            type: Number,
-            default: 0,
-            min: 0,
-        },
         googleId: {
             type: String,
             trim: true,
@@ -125,6 +110,7 @@ const userSchema = new mongoose.Schema(
             unique: true,
             sparse: true,
         },
+        //cart
     },
     { timestamps: true },
 );

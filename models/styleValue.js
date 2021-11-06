@@ -7,22 +7,21 @@ const styleValueSchema = new mongoose.Schema(
             type: String,
             trim: true,
             required: true,
-            unique: true,
             maxLength: 32,
         },
         styleId: {
             type: ObjectId,
             ref: 'Style',
             required: true,
-            unique: true,
         },
         isDeleted: {
             type: Boolean,
-            required: true,
             default: false,
         },
     },
     { timestamps: true },
 );
+
+styleValueSchema.index({ name: 1, styleId: 1 }, { unique: true });
 
 module.exports = mongoose.model('StyleValue', styleValueSchema);

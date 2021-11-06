@@ -12,7 +12,6 @@ const {
     userById,
     getUser,
     updateProfile,
-    listAddress,
     addAddress,
     updateAddress,
     removeAddress,
@@ -27,8 +26,6 @@ const {
 //routes
 router.get('/user/:userId', getUser);
 router.get('/user/profile/:userId', isAuth, getUserProfile);
-router.get('/users', listUser);
-router.get('/users/for/admin/:userId', isAuth, isAdmin, listUserForAdmin);
 router.put(
     '/user/profile/:userId',
     isAuth,
@@ -45,7 +42,11 @@ router.put(
     updatePassword,
 );
 
-router.get('/user/addresses/:userId', isAuth, listAddress);
+//list
+router.get('/users', listUser);
+router.get('/users/for/admin/:userId', isAuth, isAdmin, listUserForAdmin);
+
+//address
 router.post(
     '/user/address/:userId',
     isAuth,
@@ -62,8 +63,9 @@ router.put(
 );
 router.delete('/user/address/:userId', isAuth, removeAddress);
 
+//avatar
 router.put('/user/avatar/:userId', isAuth, upload, updateAvatar);
-
+//cover
 router.put('/user/cover/:userId', isAuth, upload, updateCover);
 
 //router params

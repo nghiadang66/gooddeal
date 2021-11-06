@@ -81,10 +81,16 @@ exports.createStore = (req, res) => {
     const avatar = req.filepaths[0];
     const cover = req.filepaths[1];
 
-    if (!name || !bio || !commissionId || !avatar || !cover)
+    if (!name || !bio || !commissionId || !avatar || !cover) {
+        try {
+            fs.unlinkSync('public' + req.filepaths[0]);
+            fs.unlinkSync('public' + req.filepaths[1]);
+        } catch { }
+
         return res.status(400).json({
             error: 'All fields are required',
         });
+    }
 
     const store = new Store({
         name,
@@ -96,6 +102,11 @@ exports.createStore = (req, res) => {
     });
     store.save((error, store) => {
         if (error || !store) {
+            try {
+                fs.unlinkSync('public' + req.filepaths[0]);
+                fs.unlinkSync('public' + req.filepaths[1]);
+            } catch { }
+
             return res.status(400).json({
                 error: errorHandler(error),
             });
@@ -170,10 +181,10 @@ exports.activeStore = (req, res) => {
             store.staffIds.forEach((staff) => {
                 staff = cleanUser(staff);
             });
-            return res.json({
-                success: 'Active/inactive store successfully',
-                store: store,
-            });
+
+            //activeAllProducts
+            req.store = store;
+            next();
         })
         .catch((error) => {
             return res.status(400).json({
@@ -275,7 +286,7 @@ exports.updateAvatar = (req, res) => {
             if (!store) {
                 try {
                     fs.unlinkSync('public' + req.filepaths[0]);
-                } catch {}
+                } catch { }
 
                 return res.status(500).json({
                     error: 'Store not found',
@@ -285,7 +296,7 @@ exports.updateAvatar = (req, res) => {
             if (oldpath != '/uploads/default.jpg') {
                 try {
                     fs.unlinkSync('public' + oldpath);
-                } catch {}
+                } catch { }
             }
 
             store.ownerId = cleanUser(store.ownerId);
@@ -301,7 +312,7 @@ exports.updateAvatar = (req, res) => {
         .catch((error) => {
             try {
                 fs.unlinkSync('public' + req.filepaths[0]);
-            } catch {}
+            } catch { }
 
             return res.status(500).json({
                 error: errorHandler(error),
@@ -325,7 +336,7 @@ exports.updateCover = (req, res) => {
             if (!store) {
                 try {
                     fs.unlinkSync('public' + req.filepaths[0]);
-                } catch {}
+                } catch { }
 
                 return res.status(500).json({
                     error: 'Store not found',
@@ -335,7 +346,7 @@ exports.updateCover = (req, res) => {
             if (oldpath != '/uploads/default.jpg') {
                 try {
                     fs.unlinkSync('public' + oldpath);
-                } catch {}
+                } catch { }
             }
 
             store.ownerId = cleanUser(store.ownerId);
@@ -351,7 +362,7 @@ exports.updateCover = (req, res) => {
         .catch((error) => {
             try {
                 fs.unlinkSync('public' + req.filepaths[0]);
-            } catch {}
+            } catch { }
 
             return res.status(500).json({
                 error: errorHandler(error),
@@ -377,7 +388,7 @@ exports.addFeatureImage = (req, res) => {
     if (index >= 6) {
         try {
             fs.unlinkSync('public' + req.filepaths[0]);
-        } catch {}
+        } catch { }
 
         return res.status(400).json({
             error: 'The limit is 6 images',
@@ -397,7 +408,7 @@ exports.addFeatureImage = (req, res) => {
             if (!store) {
                 try {
                     fs.unlinkSync('public' + req.filepaths[0]);
-                } catch {}
+                } catch { }
 
                 return res.status(500).json({
                     error: 'Store not found',
@@ -416,7 +427,7 @@ exports.addFeatureImage = (req, res) => {
         .catch((error) => {
             try {
                 fs.unlinkSync('public' + req.filepaths[0]);
-            } catch {}
+            } catch { }
 
             return res.status(500).json({
                 error: errorHandler(error),
@@ -437,7 +448,7 @@ exports.updateFeatureImage = (req, res) => {
     if (index >= featured_images.length) {
         try {
             fs.unlinkSync('public' + image);
-        } catch {}
+        } catch { }
 
         return res.status(404).json({
             error: 'Feature image not found',
@@ -459,7 +470,7 @@ exports.updateFeatureImage = (req, res) => {
             if (!store) {
                 try {
                     fs.unlinkSync('public' + image);
-                } catch {}
+                } catch { }
 
                 return res.status(500).json({
                     error: 'Store not found',
@@ -469,7 +480,7 @@ exports.updateFeatureImage = (req, res) => {
             if (oldpath != '/uploads/default.jpg') {
                 try {
                     fs.unlinkSync('public' + oldpath);
-                } catch {}
+                } catch { }
             }
 
             store.ownerId = cleanUser(store.ownerId);
@@ -484,7 +495,7 @@ exports.updateFeatureImage = (req, res) => {
         .catch((error) => {
             try {
                 fs.unlinkSync('public' + image);
-            } catch {}
+            } catch { }
 
             return res.status(400).json({
                 error: errorHandler(error),
@@ -794,7 +805,7 @@ exports.listStores = (req, res) => {
     const sortMoreBy = req.query.sortMoreBy ? req.query.sortMoreBy : '_id';
     const order =
         req.query.order &&
-        (req.query.order == 'asc' || req.query.order == 'desc')
+            (req.query.order == 'asc' || req.query.order == 'desc')
             ? req.query.order
             : 'asc';
 
@@ -897,7 +908,7 @@ exports.listStoresByUser = (req, res) => {
     const sortMoreBy = req.query.sortMoreBy ? req.query.sortMoreBy : '_id';
     const order =
         req.query.order &&
-        (req.query.order == 'asc' || req.query.order == 'desc')
+            (req.query.order == 'asc' || req.query.order == 'desc')
             ? req.query.order
             : 'asc';
 
@@ -1001,7 +1012,7 @@ exports.listStoresForAdmin = (req, res) => {
     const sortMoreBy = req.query.sortMoreBy ? req.query.sortMoreBy : '_id';
     const order =
         req.query.order &&
-        (req.query.order == 'asc' || req.query.order == 'desc')
+            (req.query.order == 'asc' || req.query.order == 'desc')
             ? req.query.order
             : 'asc';
 
