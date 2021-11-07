@@ -519,11 +519,7 @@ exports.removeFeaturedImage = (req, res) => {
 
     try {
         fs.unlinkSync('public' + featured_images[index]);
-    } catch (e) {
-        return res.status(500).json({
-            error: 'Remove featured image failed',
-        });
-    }
+    } catch (e) { }
 
     //update db
     featured_images.splice(index, 1);
@@ -748,32 +744,6 @@ exports.removeStaff = (req, res, next) => {
 };
 
 /*------
-  FOLLOWERS
-  ------*/
-exports.updateNumberOfFollowers = (req, res) => {
-    console.log('---UPDATE NUMEBER OF FOLLOWERS---');
-    let numberOfFollowers = req.store.number_of_followers;
-    numberOfFollowers = numberOfFollowers + req.updateNumberOfFollowers;
-
-    Store.findOneAndUpdate(
-        { _id: req.store._id },
-        { $set: { number_of_followers: numberOfFollowers } },
-        { new: true },
-    )
-        .exec()
-        .then((store) => {
-            if (!store) {
-                console.log('---UPDATE NUMEBER OF FOLLOWERS FAILED---');
-            }
-
-            console.log('---UPDATE NUMEBER OF FOLLOWERS SUCCESSFULLY---');
-        })
-        .catch((error) => {
-            console.log('---UPDATE NUMEBER OF FOLLOWERS FAILED---');
-        });
-};
-
-/*------
   LIST STORES
   ------*/
 exports.listStoreCommissions = (req, res, next) => {
@@ -789,17 +759,13 @@ exports.listStoreCommissions = (req, res, next) => {
     });
 };
 
-//?search=...&sortBy=...&order=...&limit=...&commissionId=...&isActive=...&page=...
+//?search=...&sortBy=...&order=...&limit=...&commissionId=&page=...
 exports.listStores = (req, res) => {
     const search = req.query.search ? req.query.search : '';
     const regex = search
         .split(' ')
         .filter((w) => w)
         .join('|');
-
-    let isActive = [true, false];
-    if (req.query.isActive == 'true') isActive = [true];
-    if (req.query.isActive == 'false') isActive = [false];
 
     const sortBy = req.query.sortBy ? req.query.sortBy : '_id';
     const sortMoreBy = req.query.sortMoreBy ? req.query.sortMoreBy : '_id';
@@ -824,7 +790,6 @@ exports.listStores = (req, res) => {
         sortBy,
         sortMoreBy,
         order,
-        isActive,
         commissionId,
         limit,
         pageCurrent: page,
@@ -833,7 +798,7 @@ exports.listStores = (req, res) => {
     const filterArgs = {
         name: { $regex: regex, $options: 'i' },
         bio: { $regex: regex, $options: 'i' },
-        isActive: { $in: isActive },
+        isActive: true,
         commissionId: { $in: commissionId },
     };
 
@@ -887,7 +852,7 @@ exports.listStores = (req, res) => {
             })
             .catch((error) => {
                 return res.status(500).json({
-                    error: 'Load list users failed',
+                    error: 'Load list stores failed',
                 });
             });
     });
@@ -991,7 +956,7 @@ exports.listStoresByUser = (req, res) => {
             })
             .catch((error) => {
                 return res.status(500).json({
-                    error: 'Load list users failed',
+                    error: 'Load list stores failed',
                 });
             });
     });
@@ -1094,7 +1059,7 @@ exports.listStoresForAdmin = (req, res) => {
             })
             .catch((error) => {
                 return res.status(500).json({
-                    error: 'Load list users failed',
+                    error: 'Load list stores failed',
                 });
             });
     });

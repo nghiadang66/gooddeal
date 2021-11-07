@@ -11,13 +11,9 @@ exports.followStore = (req, res) => {
             return res.status(400).json({
                 error: 'Follow is already exists',
             });
-        } else {
-            const numberOfFollowers = req.store.number_of_followers + 1;
-            Store.findOneAndUpdate(
-                { _id: storeId },
-                { $set: { number_of_followers: numberOfFollowers } },
-                { new: true },
-            )
+        }
+        else {
+            Store.findOne({ _id: storeId })
                 .populate('commissionId')
                 .exec()
                 .then((store) => {
@@ -52,13 +48,9 @@ exports.unfollowStore = (req, res) => {
                 return res.status(400).json({
                     error: 'Follow is already exists',
                 });
-            } else {
-                const numberOfFollowers = req.store.number_of_followers - 1;
-                Store.findOneAndUpdate(
-                    { _id: storeId },
-                    { $set: { number_of_followers: numberOfFollowers } },
-                    { new: true },
-                )
+            }
+            else {
+                Store.findOne({ _id: storeId })
                     .populate('commissionId')
                     .exec()
                     .then((store) => {
@@ -69,13 +61,13 @@ exports.unfollowStore = (req, res) => {
                         }
 
                         return res.json({
-                            success: 'Unfollow store successfully',
+                            success: 'UnFollow store successfully',
                             store: cleanStore(store),
                         });
                     })
                     .catch((error) => {
                         return res.status(500).json({
-                            error: 'Unfollow store failed',
+                            error: 'UnFollow store failed',
                         });
                     });
             }

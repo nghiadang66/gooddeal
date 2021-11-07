@@ -47,16 +47,27 @@ exports.checkCategory = (req, res, next) => {
 }
 
 exports.checkCategoryChild = (req, res, next) => {
-    const { categoryId } = req.body;
+    let { categoryId } = req.body;
+
+    try {
+        if (!categoryId) categoryId = req.fields.categoryId;
+    } catch { }
 
     Category.findOne({ categoryId })
         .exec()
         .then(category => {
             if (!category) next();
-            else
+            else {
+                try {
+                    req.filepaths.forEach(path => {
+                        fs.unlinkSync('public' + path);
+                    });
+                } catch (err) { }
+
                 return res.status(400).json({
                     error: 'categoryId invalid',
                 });
+            }
         })
         .catch(error => next());
 }
@@ -133,6 +144,10 @@ exports.updateCategory = (req, res) => {
         { $set: { name, image } },
         { new: true },
     )
+        .populate({
+            path: 'categoryId',
+            populate: { path: 'categoryId' },
+        })
         .exec()
         .then((category) => {
             if (!category) {
@@ -165,7 +180,12 @@ exports.removeCategory = (req, res) => {
     Category.findOneAndUpdate(
         { _id: req.category._id },
         { $set: { isDeleted: true } },
+        { new: true },
     )
+        .populate({
+            path: 'categoryId',
+            populate: { path: 'categoryId' },
+        })
         .exec()
         .then(category => {
             if (!category) {
@@ -189,7 +209,12 @@ exports.restoreCategory = (req, res) => {
     Category.findOneAndUpdate(
         { _id: req.category._id },
         { $set: { isDeleted: false } },
+        { new: true },
     )
+        .populate({
+            path: 'categoryId',
+            populate: { path: 'categoryId' },
+        })
         .exec()
         .then(category => {
             if (!category) {
@@ -274,7 +299,10 @@ exports.listActiveCategories = (req, res) => {
             .sort({ [sortBy]: order, _id: 1 })
             .skip(skip)
             .limit(limit)
-            .populate('categoryId')
+            .populate({
+                path: 'categoryId',
+                populate: { path: 'categoryId' },
+            })
             .exec()
             .then((categories) => {
                 return res.json({
@@ -312,11 +340,10 @@ exports.listCategories = (req, res) => {
         req.query.page && req.query.page > 0 ? parseInt(req.query.page) : 1;
     let skip = limit * (page - 1);
 
-    const categoryId = req.query.categoryId || null;
+    // const categoryId = req.query.categoryId || null;
 
     const filter = {
         search,
-        categoryId,
         sortBy,
         order,
         limit,
@@ -325,7 +352,6 @@ exports.listCategories = (req, res) => {
 
     const filterArgs = {
         name: { $regex: regex, $options: 'i' },
-        categoryId: categoryId,
     };
 
     Category.countDocuments(filterArgs, (error, count) => {
@@ -356,7 +382,10 @@ exports.listCategories = (req, res) => {
             .sort({ [sortBy]: order, _id: 1 })
             .skip(skip)
             .limit(limit)
-            .populate('categoryId')
+            .populate({
+                path: 'categoryId',
+                populate: { path: 'categoryId' },
+            })
             .exec()
             .then((categories) => {
                 return res.json({
@@ -373,3 +402,25 @@ exports.listCategories = (req, res) => {
             });
     });
 };
+
+exports.listCategoriesByStore = (req, res) => {
+    Category.find({ _id: { $in: req.loadedCategories }, isDeleted: false })
+        .populate({
+            path: 'categoryId',
+            populate: {
+                path: 'categoryId'
+            }
+        })
+        .exec()
+        .then(categories => {
+            return res.json({
+                success: 'Load list categories of store successfully',
+                categories,
+            });
+        })
+        .catch(error => {
+            return res.status(500).json({
+                success: 'Load list categories of store failed',
+            });
+        })
+}

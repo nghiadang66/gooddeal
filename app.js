@@ -17,6 +17,7 @@ const userFollowStoreRoutes = require('./routes/userFollowStore');
 const categoryRoutes = require('./routes/category');
 const styleRoutes = require('./routes/style');
 const styleValueRoutes = require('./routes/styleValue');
+const productRoutes = require('./routes/product');
 
 //app
 const app = express();
@@ -55,6 +56,7 @@ app.use('/api', userFollowStoreRoutes);
 app.use('/api', categoryRoutes);
 app.use('/api', styleRoutes);
 app.use('/api', styleValueRoutes);
+app.use('/api', productRoutes);
 
 //port
 const port = process.env.PORT || 8000;

@@ -33,6 +33,9 @@ const {
     listStoresByUser,
     listStoresForAdmin,
 } = require('../controllers/store');
+const {
+    activeAllProduct,
+} = require('../controllers/product');
 
 //routes
 router.get('/store/:storeId', getStore);
@@ -73,6 +76,7 @@ router.put(
     storeValidator.activeStore(),
     validateHandler,
     activeStore,
+    activeAllProduct,
 );
 
 router.put(

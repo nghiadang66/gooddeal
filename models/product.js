@@ -17,7 +17,7 @@ const productSchema = new mongoose.Schema(
             slug: 'name',
             unique: true,
         },
-        descripton: {
+        description: {
             type: String,
             trim: true,
             required: true,
@@ -71,13 +71,13 @@ const productSchema = new mongoose.Schema(
             default: [],
         },
         storeId: {
-            required,
+            required: true,
             type: ObjectId,
             ref: 'Store',
         },
         rating: {
             type: Number,
-            default: 0,
+            default: 3,
             min: 0,
             max: 5,
         },
