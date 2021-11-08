@@ -23,10 +23,36 @@ const {
 //routes
 router.get('/active/styles', listActiveStyles);
 router.get('/styles/:userId', isAuth, isAdmin, listStyles);
-router.post('/style/create/:userId', isAuth, isAdmin, checkListCategoriesChild, checkStyle, createStyle);
-router.put('/style/:styleId/:userId', isAuth, isAdmin, checkListCategoriesChild, checkStyle, updateStyle);
-router.delete('/style/:styleId/:userId', isAuth, isAdmin, removeStyle, removeAllStyleValue);
-router.get('/style/restore/:styleId/:userId', isAuth, isAdmin, restoreStyle, restoreAllStyleValue);
+router.post(
+    '/style/create/:userId',
+    isAuth,
+    isAdmin,
+    checkListCategoriesChild,
+    checkStyle,
+    createStyle,
+);
+router.put(
+    '/style/:styleId/:userId',
+    isAuth,
+    isAdmin,
+    checkListCategoriesChild,
+    checkStyle,
+    updateStyle,
+);
+router.delete(
+    '/style/:styleId/:userId',
+    isAuth,
+    isAdmin,
+    removeStyle,
+    removeAllStyleValue,
+);
+router.get(
+    '/style/restore/:styleId/:userId',
+    isAuth,
+    isAdmin,
+    restoreStyle,
+    restoreAllStyleValue,
+);
 
 //router params
 router.param('styleId', styleById);

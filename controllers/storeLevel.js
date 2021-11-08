@@ -29,6 +29,7 @@ exports.getStoreLevel = (req, res) => {
                     name: lvs[0].name,
                     minPoint: lvs[0].minPoint,
                     discount: lvs[0].discount,
+                    color: lvs[0].color,
                 },
             });
         })
@@ -40,9 +41,9 @@ exports.getStoreLevel = (req, res) => {
 };
 
 exports.createStoreLevel = (req, res) => {
-    const { name, minPoint, discount } = req.body;
+    const { name, minPoint, discount, color } = req.body;
 
-    const storeLevel = new StoreLevel({ name, minPoint, discount });
+    const storeLevel = new StoreLevel({ name, minPoint, discount, color });
     storeLevel.save((error, level) => {
         if (error || !level) {
             return res.status(400).json({
@@ -57,11 +58,11 @@ exports.createStoreLevel = (req, res) => {
 };
 
 exports.updateStoreLevel = (req, res) => {
-    const { name, minPoint, discount } = req.body;
+    const { name, minPoint, discount, color } = req.body;
 
     StoreLevel.findOneAndUpdate(
         { _id: req.storeLevel._id },
-        { $set: { name, minPoint, discount } },
+        { $set: { name, minPoint, discount, color } },
     )
         .exec()
         .then((level) => {
@@ -150,49 +151,52 @@ exports.listStoreLevel = (req, res) => {
         pageCurrent: page,
     };
 
-    StoreLevel.countDocuments({ name: { $regex: search, $options: 'i' } }, (error, count) => {
-        if (error) {
-            return res.status(404).json({
-                error: 'Store Level not found',
-            });
-        }
+    StoreLevel.countDocuments(
+        { name: { $regex: search, $options: 'i' } },
+        (error, count) => {
+            if (error) {
+                return res.status(404).json({
+                    error: 'Store Level not found',
+                });
+            }
 
-        const size = count;
-        const pageCount = Math.ceil(size / limit);
-        filter.pageCount = pageCount;
+            const size = count;
+            const pageCount = Math.ceil(size / limit);
+            filter.pageCount = pageCount;
 
-        if (page > pageCount) {
-            skip = (pageCount - 1) * limit;
-        }
+            if (page > pageCount) {
+                skip = (pageCount - 1) * limit;
+            }
 
-        if (count <= 0) {
-            return res.json({
-                success: 'Load list store levels successfully',
-                filter,
-                size,
-                levels: [],
-            });
-        }
-
-        StoreLevel.find({ name: { $regex: search, $options: 'i' } })
-            .sort({ [sortBy]: order, _id: 1 })
-            .skip(skip)
-            .limit(limit)
-            .exec()
-            .then((levels) => {
+            if (count <= 0) {
                 return res.json({
                     success: 'Load list store levels successfully',
                     filter,
                     size,
-                    levels,
+                    levels: [],
                 });
-            })
-            .catch((error) => {
-                return res.status(500).json({
-                    error: 'Load list store levels failed',
+            }
+
+            StoreLevel.find({ name: { $regex: search, $options: 'i' } })
+                .sort({ [sortBy]: order, _id: 1 })
+                .skip(skip)
+                .limit(limit)
+                .exec()
+                .then((levels) => {
+                    return res.json({
+                        success: 'Load list store levels successfully',
+                        filter,
+                        size,
+                        levels,
+                    });
+                })
+                .catch((error) => {
+                    return res.status(500).json({
+                        error: 'Load list store levels failed',
+                    });
                 });
-            });
-    });
+        },
+    );
 };
 
 exports.listActiveStoreLevel = (req, res) => {

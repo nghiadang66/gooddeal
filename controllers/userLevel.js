@@ -1,7 +1,7 @@
 const UserLevel = require('../models/userLevel');
 const { errorHandler } = require('../helpers/errorHandler');
 
-exports.userLevelById = (req, res, next) => {
+exports.userLevelById = (req, res, next, id) => {
     UserLevel.findById(id, (error, userLevel) => {
         if (error || !userLevel) {
             return res.status(404).json({
@@ -12,7 +12,7 @@ exports.userLevelById = (req, res, next) => {
         req.userLevel = userLevel;
         next();
     });
-}
+};
 
 exports.getUserLevel = (req, res) => {
     const point = req.user.point >= 0 ? req.user.point : 0;
@@ -29,6 +29,7 @@ exports.getUserLevel = (req, res) => {
                     name: lvs[0].name,
                     minPoint: lvs[0].minPoint,
                     discount: lvs[0].discount,
+                    color: lvs[0].color,
                 },
             });
         })
@@ -37,12 +38,12 @@ exports.getUserLevel = (req, res) => {
                 error: 'Get user level failed',
             });
         });
-}
+};
 
 exports.createUserLevel = (req, res) => {
-    const { name, minPoint, discount } = req.body;
+    const { name, minPoint, discount, color } = req.body;
 
-    const level = new UserLevel({ name, minPoint, discount });
+    const level = new UserLevel({ name, minPoint, discount, color });
     level.save((error, level) => {
         if (error || !level) {
             return res.status(400).json({
@@ -57,11 +58,11 @@ exports.createUserLevel = (req, res) => {
 };
 
 exports.updateUserLevel = (req, res) => {
-    const { name, minPoint, discount } = req.body;
+    const { name, minPoint, discount, color } = req.body;
 
     UserLevel.findOneAndUpdate(
         { _id: req.userLevel._id },
-        { $set: { name, minPoint, discount } },
+        { $set: { name, minPoint, discount, color } },
     )
         .exec()
         .then((level) => {
@@ -133,6 +134,11 @@ exports.restoreUserLevel = (req, res) => {
 //?search=...&sortBy=...&order=...
 exports.listUserLevel = (req, res) => {
     const search = req.query.search ? req.query.search : '';
+    const regex = search
+        .split(' ')
+        .filter((w) => w)
+        .join('|');
+
     const sortBy = req.query.sortBy ? req.query.sortBy : '_id';
     const order =
         req.query.order &&
@@ -154,49 +160,52 @@ exports.listUserLevel = (req, res) => {
         pageCurrent: page,
     };
 
-    UserLevel.countDocuments({ name: { $regex: search, $options: 'i' } }, (error, count) => {
-        if (error) {
-            return res.status(404).json({
-                error: 'List user level not found',
-            });
-        }
+    UserLevel.countDocuments(
+        { name: { $regex: regex, $options: 'i' } },
+        (error, count) => {
+            if (error) {
+                return res.status(404).json({
+                    error: 'List user level not found',
+                });
+            }
 
-        const size = count;
-        const pageCount = Math.ceil(size / limit);
-        filter.pageCount = pageCount;
+            const size = count;
+            const pageCount = Math.ceil(size / limit);
+            filter.pageCount = pageCount;
 
-        if (page > pageCount) {
-            skip = (pageCount - 1) * limit;
-        }
+            if (page > pageCount) {
+                skip = (pageCount - 1) * limit;
+            }
 
-        if (count <= 0) {
-            return res.json({
-                success: 'Load list user levels successfully',
-                filter,
-                size,
-                levels: [],
-            });
-        }
-
-        UserLevel.find({ name: { $regex: regex, $options: 'i' } })
-            .sort({ [sortBy]: order, _id: 1 })
-            .skip(skip)
-            .limit(limit)
-            .exec()
-            .then((lvs) => {
+            if (count <= 0) {
                 return res.json({
                     success: 'Load list user levels successfully',
                     filter,
                     size,
-                    levels,
+                    levels: [],
                 });
-            })
-            .catch((error) => {
-                return res.status(500).json({
-                    error: 'Load list user levels failed',
+            }
+
+            UserLevel.find({ name: { $regex: regex, $options: 'i' } })
+                .sort({ [sortBy]: order, _id: 1 })
+                .skip(skip)
+                .limit(limit)
+                .exec()
+                .then((levels) => {
+                    return res.json({
+                        success: 'Load list user levels successfully',
+                        filter,
+                        size,
+                        levels,
+                    });
+                })
+                .catch((error) => {
+                    return res.status(500).json({
+                        error: 'Load list user levels failed',
+                    });
                 });
-            });
-    });
+        },
+    );
 };
 
 exports.listActiveUserLevel = (req, res) => {

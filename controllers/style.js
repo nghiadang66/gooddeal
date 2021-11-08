@@ -20,14 +20,14 @@ exports.checkStyle = (req, res, next) => {
 
     Style.findOne({ _id: { $ne: styleId }, name, categoryIds })
         .exec()
-        .then(category => {
+        .then((category) => {
             if (!category) next();
             else
                 return res.status(400).json({
                     error: 'Style already exists',
                 });
         })
-        .catch(error => {
+        .catch((error) => {
             next();
         });
 };
@@ -57,7 +57,7 @@ exports.createStyle = (req, res) => {
             style,
         });
     });
-}
+};
 
 exports.updateStyle = (req, res, next) => {
     const { name, categoryIds } = req.body;
@@ -70,10 +70,10 @@ exports.updateStyle = (req, res, next) => {
     Style.findOneAndUpdate(
         { _id: req.style._id },
         { $set: { name, categoryIds } },
-        { new: true }
+        { new: true },
     )
         .exec()
-        .then(style => {
+        .then((style) => {
             if (!style) {
                 return res.status(500).json({
                     error: 'style not found',
@@ -90,7 +90,7 @@ exports.updateStyle = (req, res, next) => {
                 error: errorHandler(error),
             });
         });
-}
+};
 
 exports.removeStyle = (req, res, next) => {
     Style.findOneAndUpdate(
@@ -99,7 +99,7 @@ exports.removeStyle = (req, res, next) => {
         { new: true },
     )
         .exec()
-        .then(style => {
+        .then((style) => {
             if (!style) {
                 return res.status(500).json({
                     error: 'style not found',
@@ -123,7 +123,7 @@ exports.restoreStyle = (req, res, next) => {
         { new: true },
     )
         .exec()
-        .then(style => {
+        .then((style) => {
             if (!style) {
                 return res.status(500).json({
                     error: 'style not found',
@@ -150,7 +150,7 @@ exports.listActiveStyles = (req, res) => {
     const sortBy = req.query.sortBy ? req.query.sortBy : '_id';
     const order =
         req.query.order &&
-            (req.query.order == 'asc' || req.query.order == 'desc')
+        (req.query.order == 'asc' || req.query.order == 'desc')
             ? req.query.order
             : 'asc';
 
@@ -232,7 +232,7 @@ exports.listStyles = (req, res) => {
     const sortBy = req.query.sortBy ? req.query.sortBy : '_id';
     const order =
         req.query.order &&
-            (req.query.order == 'asc' || req.query.order == 'desc')
+        (req.query.order == 'asc' || req.query.order == 'desc')
             ? req.query.order
             : 'asc';
 

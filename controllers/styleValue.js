@@ -36,7 +36,7 @@ exports.createStyleValue = (req, res, next) => {
             styleValue,
         });
     });
-}
+};
 
 exports.updateStyleValue = (req, res) => {
     const { name } = req.body;
@@ -52,7 +52,7 @@ exports.updateStyleValue = (req, res) => {
         { new: true },
     )
         .exec()
-        .then(styleValue => {
+        .then((styleValue) => {
             if (!styleValue) {
                 return res.status(500).json({
                     error: 'style value not found',
@@ -69,7 +69,7 @@ exports.updateStyleValue = (req, res) => {
                 error: errorHandler(error),
             });
         });
-}
+};
 
 exports.removeStyleValue = (req, res) => {
     StyleValue.findOneAndUpdate(
@@ -78,7 +78,7 @@ exports.removeStyleValue = (req, res) => {
         { new: true },
     )
         .exec()
-        .then(styleValue => {
+        .then((styleValue) => {
             if (!styleValue) {
                 return res.status(500).json({
                     error: 'style value not found',
@@ -95,7 +95,7 @@ exports.removeStyleValue = (req, res) => {
                 error: errorHandler(error),
             });
         });
-}
+};
 
 exports.restoreStyleValue = (req, res) => {
     StyleValue.findOneAndUpdate(
@@ -104,7 +104,7 @@ exports.restoreStyleValue = (req, res) => {
         { new: true },
     )
         .exec()
-        .then(styleValue => {
+        .then((styleValue) => {
             if (!styleValue) {
                 return res.status(500).json({
                     error: 'style value not found',
@@ -121,7 +121,7 @@ exports.restoreStyleValue = (req, res) => {
                 error: errorHandler(error),
             });
         });
-}
+};
 
 exports.removeAllStyleValue = (req, res) => {
     StyleValue.updateMany(
@@ -162,33 +162,33 @@ exports.restoreAllStyleValue = (req, res) => {
 };
 
 exports.listActiveStyleValuesByStyle = (req, res) => {
-    StyleValue.find({ styleId: req.style._id, isDeleted: false, })
+    StyleValue.find({ styleId: req.style._id, isDeleted: false })
         .exec()
-        .then(values => {
+        .then((values) => {
             return res.json({
                 success: 'Load list values of style successfully',
                 styleValues: values,
             });
         })
-        .catch(error => {
+        .catch((error) => {
             return res.status(500).json({
                 error: 'Load list values of style failed',
             });
-        })
+        });
 };
 
 exports.listStyleValuesByStyle = (req, res) => {
     StyleValue.find({ styleId: req.style._id })
         .exec()
-        .then(values => {
+        .then((values) => {
             return res.json({
                 success: 'Load list values of style successfully',
                 styleValues: values,
             });
         })
-        .catch(error => {
+        .catch((error) => {
             return res.status(500).json({
                 error: 'Load list values of style failed',
             });
-        })
+        });
 };

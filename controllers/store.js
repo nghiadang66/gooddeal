@@ -593,6 +593,13 @@ exports.listStaffs = (req, res) => {
 
 exports.addStaffs = (req, res) => {
     const { staffs } = req.body;
+    let staffIds = req.store.staffIds;
+
+    if (staffs.length > 12 - staffIds.length)
+        return res.status(400).json({
+            error: 'The limit is 6 staffs',
+        });
+
     User.countDocuments(
         { _id: { $in: staffs }, role: 'user' },
         (error, count) => {
@@ -608,7 +615,7 @@ exports.addStaffs = (req, res) => {
                 });
             }
 
-            let staffIds = req.store.staffIds;
+
             for (let i = 0; i < staffs.length; i++) {
                 let flag = false;
                 for (let j = 0; j < staffIds.length; j++) {
@@ -796,8 +803,10 @@ exports.listStores = (req, res) => {
     };
 
     const filterArgs = {
-        name: { $regex: regex, $options: 'i' },
-        bio: { $regex: regex, $options: 'i' },
+        $or: [
+            { name: { $regex: regex, $options: 'i' }, },
+            { bio: { $regex: regex, $options: 'i' }, }
+        ],
         isActive: true,
         commissionId: { $in: commissionId },
     };
@@ -899,8 +908,10 @@ exports.listStoresByUser = (req, res) => {
     };
 
     const filterArgs = {
-        name: { $regex: regex, $options: 'i' },
-        bio: { $regex: regex, $options: 'i' },
+        $or: [
+            { name: { $regex: regex, $options: 'i' }, },
+            { bio: { $regex: regex, $options: 'i' }, }
+        ],
         isActive: { $in: isActive },
         commissionId: { $in: commissionId },
         $or: [{ ownerId: req.user._id }, { staffIds: req.user._id }],
@@ -1003,8 +1014,10 @@ exports.listStoresForAdmin = (req, res) => {
     };
 
     const filterArgs = {
-        name: { $regex: regex, $options: 'i' },
-        bio: { $regex: regex, $options: 'i' },
+        $or: [
+            { name: { $regex: regex, $options: 'i' }, },
+            { bio: { $regex: regex, $options: 'i' }, }
+        ],
         isActive: { $in: isActive },
         commissionId: { $in: commissionId },
     };

@@ -20,6 +20,12 @@ const userLevelSchema = new mongoose.Schema(
             required: true,
             min: 0,
         },
+        color: {
+            type: String,
+            trim: true,
+            required: true,
+            maxLength: 32,
+        },
         isDeleted: {
             type: Boolean,
             required: true,

@@ -15,27 +15,66 @@ exports.listCommissions = (req, res) => {
             ? req.query.order
             : 'asc'; //desc;
 
-    const filter = {
+    const limit =
+        req.query.limit && req.query.limit > 0 ? parseInt(req.query.limit) : 6;
+    const page =
+        req.query.page && req.query.page > 0 ? parseInt(req.query.page) : 1;
+    let skip = limit * (page - 1);
+
+    let filter = {
         search,
         sortBy,
         order,
+        limit,
+        pageCurrent: page,
     };
 
-    Commission.find({ name: { $regex: regex, $options: 'i' } })
-        .sort({ [sortBy]: order, _id: 1 })
-        .exec()
-        .then((commissions) => {
-            return res.json({
-                success: 'Load list commissions successfully',
-                filter,
-                commissions,
-            });
-        })
-        .catch((error) => {
-            return res.status(500).json({
-                error: 'Load list commissions failed',
-            });
-        });
+    Commission.countDocuments(
+        { name: { $regex: regex, $options: 'i' } },
+        (error, count) => {
+            if (error) {
+                return res.status(404).json({
+                    error: 'List commissions not found',
+                });
+            }
+
+            const size = count;
+            const pageCount = Math.ceil(size / limit);
+            filter.pageCount = pageCount;
+
+            if (page > pageCount) {
+                skip = (pageCount - 1) * limit;
+            }
+
+            if (count <= 0) {
+                return res.json({
+                    success: 'Load list commissions successfully',
+                    filter,
+                    size,
+                    commissions: [],
+                });
+            }
+
+            Commission.find({ name: { $regex: regex, $options: 'i' } })
+                .sort({ [sortBy]: order, _id: 1 })
+                .skip(skip)
+                .limit(limit)
+                .exec()
+                .then((commissions) => {
+                    return res.json({
+                        success: 'Load list commissions successfully',
+                        filter,
+                        size,
+                        commissions,
+                    });
+                })
+                .catch((error) => {
+                    return res.status(500).json({
+                        error: 'Load list commissions failed',
+                    });
+                });
+        },
+    );
 };
 
 exports.listActiveCommissions = (req, res) => {
@@ -79,7 +118,10 @@ exports.updateCommission = (req, res) => {
     const commissionId = req.params.commissionId;
     const { name, cost, description } = req.body;
 
-    Commission.findOneAndUpdate({ _id: commissionId }, { $set: { name, cost, description } })
+    Commission.findOneAndUpdate(
+        { _id: commissionId },
+        { $set: { name, cost, description } },
+    )
         .exec()
         .then((commission) => {
             if (!commission) {

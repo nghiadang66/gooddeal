@@ -61,7 +61,8 @@ exports.upload = (req, res, next) => {
                     'public/uploads/' +
                     Date.now() +
                     `${req.store && req.store.slug ? req.store.slug : ''}` +
-                    `${req.product && req.product.slug ? req.product.slug : ''
+                    `${
+                        req.product && req.product.slug ? req.product.slug : ''
                     }` +
                     file.name;
 

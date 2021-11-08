@@ -11,8 +11,7 @@ exports.followStore = (req, res) => {
             return res.status(400).json({
                 error: 'Follow is already exists',
             });
-        }
-        else {
+        } else {
             Store.findOne({ _id: storeId })
                 .populate('commissionId')
                 .exec()
@@ -48,8 +47,7 @@ exports.unfollowStore = (req, res) => {
                 return res.status(400).json({
                     error: 'Follow is already exists',
                 });
-            }
-            else {
+            } else {
                 Store.findOne({ _id: storeId })
                     .populate('commissionId')
                     .exec()

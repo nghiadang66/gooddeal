@@ -16,12 +16,35 @@ const {
 } = require('../controllers/styleValue');
 
 //routes
-router.get('/active/style/values/by/style/:styleId', listActiveStyleValuesByStyle);
-router.get('/style/values/by/style/:styleId/:userId', isAuth, isAdmin, listStyleValuesByStyle);
+router.get(
+    '/active/style/values/by/style/:styleId',
+    listActiveStyleValuesByStyle,
+);
+router.get(
+    '/style/values/by/style/:styleId/:userId',
+    isAuth,
+    isAdmin,
+    listStyleValuesByStyle,
+);
 router.post('/style/value/create/:userId', isAuth, isAdmin, createStyleValue);
-router.put('/style/value/:styleValueId/:userId', isAuth, isAdmin, updateStyleValue);
-router.delete('/style/value/:styleValueId/:userId', isAuth, isAdmin, removeStyleValue);
-router.get('/style/value/restore/:styleValueId/:userId', isAuth, isAdmin, restoreStyleValue);
+router.put(
+    '/style/value/:styleValueId/:userId',
+    isAuth,
+    isAdmin,
+    updateStyleValue,
+);
+router.delete(
+    '/style/value/:styleValueId/:userId',
+    isAuth,
+    isAdmin,
+    removeStyleValue,
+);
+router.get(
+    '/style/value/restore/:styleValueId/:userId',
+    isAuth,
+    isAdmin,
+    restoreStyleValue,
+);
 
 //router params
 router.param('styleValueId', styleValueById);
@@ -29,4 +52,3 @@ router.param('styleId', styleById);
 router.param('userId', userById);
 
 module.exports = router;
-

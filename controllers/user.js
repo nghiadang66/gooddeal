@@ -43,9 +43,9 @@ exports.updateProfile = (req, res) => {
     }
 
     const isEmailActive =
-        (email && req.user.email != email) ? false : req.user.isEmailActive;
+        email && req.user.email != email ? false : req.user.isEmailActive;
     const isPhoneActive =
-        (phone && req.user.phone != phone) ? false : req.user.isPhoneActive;
+        phone && req.user.phone != phone ? false : req.user.isPhoneActive;
 
     User.findOneAndUpdate(
         { _id: req.user._id },
@@ -152,7 +152,10 @@ exports.addAddress = (req, res) => {
 };
 
 exports.updateAddress = (req, res) => {
-    const addressIndex = (req.query.index && req.query.index >= 0 && req.query.index <= 6) ? parseInt(req.query.index) : -1;
+    const addressIndex =
+        req.query.index && req.query.index >= 0 && req.query.index <= 6
+            ? parseInt(req.query.index)
+            : -1;
     if (addressIndex == -1)
         return res.status(400).json({
             error: 'index not found',
@@ -197,7 +200,10 @@ exports.updateAddress = (req, res) => {
 };
 
 exports.removeAddress = (req, res) => {
-    const addressIndex = (req.query.index && req.query.index >= 0 && req.query.index <= 6) ? parseInt(req.query.index) : -1;
+    const addressIndex =
+        req.query.index && req.query.index >= 0 && req.query.index <= 6
+            ? parseInt(req.query.index)
+            : -1;
     if (addressIndex == -1)
         return res.status(400).json({
             error: 'index not found',
@@ -421,6 +427,7 @@ exports.listUserForAdmin = (req, res) => {
         .filter((w) => w)
         .join('|');
     const sortBy = req.query.sortBy ? req.query.sortBy : '_id';
+
     const order =
         req.query.order &&
             (req.query.order == 'asc' || req.query.order == 'desc')

@@ -1,4 +1,5 @@
 const Product = require('../models/product');
+const Category = require('../models/category');
 const fs = require('fs');
 const { errorHandler } = require('../helpers/errorHandler');
 
@@ -13,7 +14,7 @@ exports.productById = (req, res, next, id) => {
         req.product = product;
         next();
     });
-}
+};
 
 exports.getProduct = (req, res) => {
     if (!req.product.isActive || !req.product.isSelling)
@@ -35,7 +36,7 @@ exports.getProduct = (req, res) => {
         })
         .populate('storeId', '_id name avatar isActive isOpen')
         .exec()
-        .then(product => {
+        .then((product) => {
             if (!product) {
                 return res.status(500).json({
                     error: 'Product not found',
@@ -47,22 +48,48 @@ exports.getProduct = (req, res) => {
                 product,
             });
         })
-        .catch(error => {
+        .catch((error) => {
             return res.status(500).json({
                 error: 'Product not found',
             });
         });
-}
+};
 
 exports.createProduct = (req, res) => {
-    const { name, description, price, promotionalPrice, quantity, categoryId, styleValueIds } = req.fields;
+    const {
+        name,
+        description,
+        price,
+        promotionalPrice,
+        quantity,
+        categoryId,
+        styleValueIds,
+    } = req.fields;
     const listImages = req.filepaths;
 
-    console.log(name, description, price, promotionalPrice, quantity, categoryId, styleValueIds, listImages);
+    console.log(
+        name,
+        description,
+        price,
+        promotionalPrice,
+        quantity,
+        categoryId,
+        styleValueIds,
+        listImages,
+    );
 
-    if (!name || !description || !price || !promotionalPrice || !quantity || !categoryId || !listImages || listImages.length <= 0) {
+    if (
+        !name ||
+        !description ||
+        !price ||
+        !promotionalPrice ||
+        !quantity ||
+        !categoryId ||
+        !listImages ||
+        listImages.length <= 0
+    ) {
         try {
-            listImages.forEach(image => {
+            listImages.forEach((image) => {
                 fs.unlinkSync('public' + image);
             });
         } catch { }
@@ -78,14 +105,22 @@ exports.createProduct = (req, res) => {
     }
 
     const product = new Product({
-        name, description, price, promotionalPrice, quantity, categoryId, styleValueIds: styleValueIdsArray,
-        isActive: req.store.isActive, storeId: req.store._id, listImages,
+        name,
+        description,
+        price,
+        promotionalPrice,
+        quantity,
+        categoryId,
+        styleValueIds: styleValueIdsArray,
+        isActive: req.store.isActive,
+        storeId: req.store._id,
+        listImages,
     });
 
     product.save((error, product) => {
         if (error || !product) {
             try {
-                listImages.forEach(image => {
+                listImages.forEach((image) => {
                     fs.unlinkSync('public' + image);
                 });
             } catch { }
@@ -100,12 +135,27 @@ exports.createProduct = (req, res) => {
             product,
         });
     });
-}
+};
 
 exports.updateProduct = (req, res) => {
-    const { name, description, price, promotionalPrice, quantity, categoryId, styleValueIds } = req.fields;
+    const {
+        name,
+        description,
+        price,
+        promotionalPrice,
+        quantity,
+        categoryId,
+        styleValueIds,
+    } = req.fields;
 
-    if (!name || !description || !price || !promotionalPrice || !quantity || !categoryId) {
+    if (
+        !name ||
+        !description ||
+        !price ||
+        !promotionalPrice ||
+        !quantity ||
+        !categoryId
+    ) {
         return res.status(400).json({
             error: 'All fields are required',
         });
@@ -119,7 +169,13 @@ exports.updateProduct = (req, res) => {
     Product.findOneAndUpdate(
         { _id: req.product._id },
         {
-            name, description, price, promotionalPrice, quantity, categoryId, styleValueIds: styleValueIdsArray,
+            name,
+            description,
+            price,
+            promotionalPrice,
+            quantity,
+            categoryId,
+            styleValueIds: styleValueIdsArray,
         },
         { new: true },
     )
@@ -136,7 +192,7 @@ exports.updateProduct = (req, res) => {
         })
         .populate('storeId', '_id name avatar isActive isOpen')
         .exec()
-        .then(product => {
+        .then((product) => {
             if (!product)
                 return res.status(500).json({
                     error: 'Product not found',
@@ -146,14 +202,13 @@ exports.updateProduct = (req, res) => {
                 success: 'Update product successfully',
                 product,
             });
-
         })
-        .catch(error => {
+        .catch((error) => {
             return res.status(400).json({
                 error: errorHandler(error),
             });
         });
-}
+};
 
 /*------
   ACTIVE
@@ -471,29 +526,75 @@ exports.removefromListImages = (req, res) => {
   LIST PRODUCTS
   ------*/
 exports.listProductCategories = (req, res, next) => {
-    Product.distinct('categoryId', { isActive: true, isSelling: true }, (error, categories) => {
-        if (error) {
-            return res.status(400).json({
-                error: 'Commissions not found',
-            });
-        }
+    Product.distinct(
+        'categoryId',
+        { isActive: true, isSelling: true },
+        (error, categories) => {
+            if (error) {
+                return res.status(400).json({
+                    error: 'Commissions not found',
+                });
+            }
 
-        req.loadedCategories = categories;
-        next();
-    });
+            const categoryId = req.query.categoryId;
+            console.log(categoryId, categories);
+
+            if (categoryId) {
+                const filterCategories = categories.filter(category => category.equals(categoryId));
+
+                if (filterCategories.length > 0) {
+                    req.loadedCategories = filterCategories;
+                    next();
+                }
+                else {
+                    Category.find({ _id: { $in: categories } })
+                        .populate({
+                            path: 'categoryId',
+                            populate: { path: 'categoryId' },
+                        })
+                        .exec()
+                        .then(newCategories => {
+                            const filterCategories = newCategories
+                                .filter(category =>
+                                    (category.categoryId && category.categoryId._id == categoryId) ||
+                                    (category.categoryId && category.categoryId.categoryId &&
+                                        category.categoryId.categoryId._id == categoryId))
+                                .map(category => category._id);
+
+                            console.log(filterCategories);
+
+                            req.loadedCategories = filterCategories;
+                            next();
+                        })
+                        .catch(error => {
+                            req.loadedCategories = [];
+                            next();
+                        });
+                }
+            }
+            else {
+                req.loadedCategories = categories;
+                next();
+            }
+        },
+    );
 };
 
 exports.listProductCategoriesByStore = (req, res, next) => {
-    Product.distinct('categoryId', { storeId: req.store._id, isActive: true, isSelling: true }, (error, categories) => {
-        if (error) {
-            return res.status(400).json({
-                error: 'Commissions not found',
-            });
-        }
+    Product.distinct(
+        'categoryId',
+        { storeId: req.store._id, isActive: true, isSelling: true },
+        (error, categories) => {
+            if (error) {
+                return res.status(400).json({
+                    error: 'Commissions not found',
+                });
+            }
 
-        req.loadedCategories = categories;
-        next();
-    });
+            req.loadedCategories = categories;
+            next();
+        },
+    );
 };
 
 exports.listProducts = (req, res) => {
@@ -516,13 +617,20 @@ exports.listProducts = (req, res) => {
         req.query.page && req.query.page > 0 ? parseInt(req.query.page) : 1;
     let skip = limit * (page - 1);
 
-    const categoryId = req.query.categoryId
-        ? [req.query.categoryId]
-        : req.loadedCategories;
+    const categoryId = req.loadedCategories;
 
-    const rating = req.query.rating && req.query.rating > 0 && req.query.rating < 6 ? parseInt(req.query.rating) : -1;
-    const minPrice = req.query.minPrice && req.query.minPrice > 0 ? parseInt(req.query.minPrice) : -1;
-    const maxPrice = req.query.maxPrice && req.query.maxPrice > 0 ? parseInt(req.query.maxPrice) : -1;
+    const rating =
+        req.query.rating && req.query.rating > 0 && req.query.rating < 6
+            ? parseInt(req.query.rating)
+            : -1;
+    const minPrice =
+        req.query.minPrice && req.query.minPrice > 0
+            ? parseInt(req.query.minPrice)
+            : -1;
+    const maxPrice =
+        req.query.maxPrice && req.query.maxPrice > 0
+            ? parseInt(req.query.maxPrice)
+            : -1;
 
     const filter = {
         search,
@@ -537,12 +645,14 @@ exports.listProducts = (req, res) => {
     };
 
     const filterArgs = {
-        name: { $regex: regex, $options: 'i' },
-        description: { $regex: regex, $options: 'i' },
+        $or: [
+            { name: { $regex: regex, $options: 'i' }, },
+            { description: { $regex: regex, $options: 'i' }, }
+        ],
         categoryId: { $in: categoryId },
         isActive: true,
         isSelling: true,
-        promotionalPrice: { $lte: 0 },
+        promotionalPrice: { $gte: 0 },
     };
 
     if (rating !== -1) filterArgs.rating = rating;
@@ -630,9 +740,18 @@ exports.listProductsByStore = (req, res) => {
         ? [req.query.categoryId]
         : req.loadedCategories;
 
-    const rating = req.query.rating && req.query.rating > 0 && req.query.rating < 6 ? parseInt(req.query.rating) : -1;
-    const minPrice = req.query.minPrice && req.query.minPrice > 0 ? parseInt(req.query.minPrice) : -1;
-    const maxPrice = req.query.maxPrice && req.query.maxPrice > 0 ? parseInt(req.query.maxPrice) : -1;
+    const rating =
+        req.query.rating && req.query.rating > 0 && req.query.rating < 6
+            ? parseInt(req.query.rating)
+            : -1;
+    const minPrice =
+        req.query.minPrice && req.query.minPrice > 0
+            ? parseInt(req.query.minPrice)
+            : -1;
+    const maxPrice =
+        req.query.maxPrice && req.query.maxPrice > 0
+            ? parseInt(req.query.maxPrice)
+            : -1;
 
     const filter = {
         search,
@@ -648,13 +767,15 @@ exports.listProductsByStore = (req, res) => {
     };
 
     const filterArgs = {
-        name: { $regex: regex, $options: 'i' },
-        description: { $regex: regex, $options: 'i' },
+        $or: [
+            { name: { $regex: regex, $options: 'i' }, },
+            { description: { $regex: regex, $options: 'i' }, }
+        ],
         categoryId: { $in: categoryId },
         isSelling: true,
         isActive: true,
         storeId: req.store._id,
-        promotionalPrice: { $lte: 0 },
+        promotionalPrice: { $gte: 0 },
     };
 
     if (rating !== -1) filterArgs.rating = rating;
@@ -739,10 +860,6 @@ exports.listProductsByStoreForManager = (req, res) => {
         req.query.page && req.query.page > 0 ? parseInt(req.query.page) : 1;
     let skip = limit * (page - 1);
 
-    const categoryId = req.query.categoryId
-        ? [req.query.categoryId]
-        : req.loadedCategories;
-
     let isSelling = [true, false];
     if (req.query.isSelling == 'true') isSelling = [true];
     if (req.query.isSelling == 'false') isSelling = [false];
@@ -751,7 +868,6 @@ exports.listProductsByStoreForManager = (req, res) => {
         search,
         sortBy,
         order,
-        categoryId,
         isSelling,
         limit,
         pageCurrent: page,
@@ -759,9 +875,10 @@ exports.listProductsByStoreForManager = (req, res) => {
     };
 
     const filterArgs = {
-        name: { $regex: regex, $options: 'i' },
-        description: { $regex: regex, $options: 'i' },
-        categoryId: { $in: categoryId },
+        $or: [
+            { name: { $regex: regex, $options: 'i' }, },
+            { description: { $regex: regex, $options: 'i' }, }
+        ],
         isSelling: { $in: isSelling },
         storeId: req.store._id,
     };

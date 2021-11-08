@@ -33,9 +33,7 @@ const {
     listStoresByUser,
     listStoresForAdmin,
 } = require('../controllers/store');
-const {
-    activeAllProduct,
-} = require('../controllers/product');
+const { activeAllProduct } = require('../controllers/product');
 
 //routes
 router.get('/store/:storeId', getStore);

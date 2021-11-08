@@ -21,71 +21,73 @@ exports.checkCategory = (req, res, next) => {
         Category.findOne({ _id: categoryId })
             .populate('categoryId')
             .exec()
-            .then(category => {
-                if (!category || (category.categoryId != null && category.categoryId.categoryId != null)) {
+            .then((category) => {
+                if (
+                    !category ||
+                    (category.categoryId != null &&
+                        category.categoryId.categoryId != null)
+                ) {
                     try {
                         fs.unlinkSync('public' + req.filepaths[0]);
-                    } catch { }
+                    } catch {}
 
                     return res.status(400).json({
                         error: 'categoryId invalid',
                     });
-                }
-                else next();
+                } else next();
             })
-            .catch(error => {
+            .catch((error) => {
                 try {
                     fs.unlinkSync('public' + req.filepaths[0]);
-                } catch { }
+                } catch {}
 
                 return res.status(400).json({
                     error: 'categoryId invalid',
                 });
             });
-    }
-    else next();
-}
+    } else next();
+};
 
 exports.checkCategoryChild = (req, res, next) => {
     let { categoryId } = req.body;
 
     try {
         if (!categoryId) categoryId = req.fields.categoryId;
-    } catch { }
+    } catch {}
 
     Category.findOne({ categoryId })
         .exec()
-        .then(category => {
+        .then((category) => {
             if (!category) next();
             else {
                 try {
-                    req.filepaths.forEach(path => {
+                    req.filepaths.forEach((path) => {
                         fs.unlinkSync('public' + path);
                     });
-                } catch (err) { }
+                } catch (err) {}
 
                 return res.status(400).json({
                     error: 'categoryId invalid',
                 });
             }
         })
-        .catch(error => next());
-}
+        .catch((error) => next());
+};
 
 exports.checkListCategoriesChild = (req, res, next) => {
     const { categoryIds } = req.body;
 
     Category.findOne({ categoryId: { $in: categoryIds } })
         .exec()
-        .then(category => {
+        .then((category) => {
             if (!category) next();
             else
                 return res.status(400).json({
                     error: 'categoryIds invalid',
                 });
         })
-        .catch(error => next());
-}
+        .catch((error) => next());
+};
 
 exports.createCategory = (req, res) => {
     const { name, categoryId } = req.fields;
@@ -94,7 +96,7 @@ exports.createCategory = (req, res) => {
     if (!name || !image) {
         try {
             fs.unlinkSync('public' + req.filepaths[0]);
-        } catch { }
+        } catch {}
 
         return res.status(400).json({
             error: 'All fields are required',
@@ -111,7 +113,7 @@ exports.createCategory = (req, res) => {
         if (error || !category) {
             try {
                 fs.unlinkSync('public' + req.filepaths[0]);
-            } catch { }
+            } catch {}
 
             return res.status(400).json({
                 error: errorHandler(error),
@@ -132,7 +134,7 @@ exports.updateCategory = (req, res) => {
     if (!name || !image) {
         try {
             fs.unlinkSync('public' + req.filepaths[0]);
-        } catch { }
+        } catch {}
 
         return res.status(400).json({
             error: 'All fields are required',
@@ -153,7 +155,7 @@ exports.updateCategory = (req, res) => {
             if (!category) {
                 try {
                     fs.unlinkSync('public' + req.filepaths[0]);
-                } catch { }
+                } catch {}
 
                 return res.status(400).json({
                     error: errorHandler(error),
@@ -168,7 +170,7 @@ exports.updateCategory = (req, res) => {
         .catch((error) => {
             try {
                 fs.unlinkSync('public' + req.filepaths[0]);
-            } catch { }
+            } catch {}
 
             return res.status(500).json({
                 error: errorHandler(error),
@@ -187,7 +189,7 @@ exports.removeCategory = (req, res) => {
             populate: { path: 'categoryId' },
         })
         .exec()
-        .then(category => {
+        .then((category) => {
             if (!category) {
                 return res.status(404).json({
                     error: 'category not found',
@@ -216,7 +218,7 @@ exports.restoreCategory = (req, res) => {
             populate: { path: 'categoryId' },
         })
         .exec()
-        .then(category => {
+        .then((category) => {
             if (!category) {
                 return res.status(404).json({
                     error: 'category not found',
@@ -244,7 +246,7 @@ exports.listActiveCategories = (req, res) => {
     const sortBy = req.query.sortBy ? req.query.sortBy : '_id';
     const order =
         req.query.order &&
-            (req.query.order == 'asc' || req.query.order == 'desc')
+        (req.query.order == 'asc' || req.query.order == 'desc')
             ? req.query.order
             : 'asc';
 
@@ -330,7 +332,7 @@ exports.listCategories = (req, res) => {
     const sortBy = req.query.sortBy ? req.query.sortBy : '_id';
     const order =
         req.query.order &&
-            (req.query.order == 'asc' || req.query.order == 'desc')
+        (req.query.order == 'asc' || req.query.order == 'desc')
             ? req.query.order
             : 'asc';
 
@@ -408,19 +410,19 @@ exports.listCategoriesByStore = (req, res) => {
         .populate({
             path: 'categoryId',
             populate: {
-                path: 'categoryId'
-            }
+                path: 'categoryId',
+            },
         })
         .exec()
-        .then(categories => {
+        .then((categories) => {
             return res.json({
                 success: 'Load list categories of store successfully',
                 categories,
             });
         })
-        .catch(error => {
+        .catch((error) => {
             return res.status(500).json({
                 success: 'Load list categories of store failed',
             });
-        })
-}
+        });
+};

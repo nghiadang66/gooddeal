@@ -28,16 +28,72 @@ const {
 //routes
 router.get('/product/:productId', getProduct);
 router.get('/active/products', listProductCategories, listProducts);
-router.get('/selling/products/by/store/:storeId', listProductCategoriesByStore, listProductsByStore);
-router.get('/products/by/store/:storeId/:userId', isAuth, isManager, listProductCategoriesByStore, listProductsByStoreForManager);
-router.get('/products/:userId', isAuth, isAdmin, listProductCategories, listProductsForAdmin);
-router.post('/product/create/:storeId/:userId', isAuth, isManager, upload, checkCategoryChild, createProduct);
-router.put('/product/update/:productId/:storeId/:userId', isAuth, isManager, upload, checkCategoryChild, updateProduct);
-router.put('/product/selling/:productId/:storeId/:userId', isAuth, isManager, sellingProduct);
-router.put('/product/active/:productId/:userId', isAuth, isAdmin, activeProduct);
-router.post('/product/images/:productId/:storeId/:userId', isAuth, isManager, upload, addToListImages);
-router.put('/product/images/:productId/:storeId/:userId', isAuth, isManager, upload, updateListImages);
-router.delete('/product/images/:productId/:storeId/:userId', isAuth, isManager, removefromListImages);
+router.get(
+    '/selling/products/by/store/:storeId',
+    listProductCategoriesByStore,
+    listProductsByStore,
+);
+router.get(
+    '/products/by/store/:storeId/:userId',
+    isAuth,
+    isManager,
+    listProductCategoriesByStore,
+    listProductsByStoreForManager,
+);
+router.get(
+    '/products/:userId',
+    isAuth,
+    isAdmin,
+    listProductsForAdmin,
+);
+router.post(
+    '/product/create/:storeId/:userId',
+    isAuth,
+    isManager,
+    upload,
+    checkCategoryChild,
+    createProduct,
+);
+router.put(
+    '/product/update/:productId/:storeId/:userId',
+    isAuth,
+    isManager,
+    upload,
+    checkCategoryChild,
+    updateProduct,
+);
+router.put(
+    '/product/selling/:productId/:storeId/:userId',
+    isAuth,
+    isManager,
+    sellingProduct,
+);
+router.put(
+    '/product/active/:productId/:userId',
+    isAuth,
+    isAdmin,
+    activeProduct,
+);
+router.post(
+    '/product/images/:productId/:storeId/:userId',
+    isAuth,
+    isManager,
+    upload,
+    addToListImages,
+);
+router.put(
+    '/product/images/:productId/:storeId/:userId',
+    isAuth,
+    isManager,
+    upload,
+    updateListImages,
+);
+router.delete(
+    '/product/images/:productId/:storeId/:userId',
+    isAuth,
+    isManager,
+    removefromListImages,
+);
 
 //router params
 router.param('productId', productById);

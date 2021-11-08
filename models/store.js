@@ -37,6 +37,7 @@ const storeSchema = new mongoose.Schema(
                     ref: 'User',
                 },
             ],
+            validate: [staffIdsLimit, 'The limit is 12 staffs'],
             default: [],
         },
         isActive: {
@@ -87,6 +88,10 @@ const storeSchema = new mongoose.Schema(
 //validators
 function featured_imagesLimit(val) {
     return val.length <= 6;
+}
+
+function staffIdsLimit(val) {
+    return val.length <= 12;
 }
 
 function nameAvailable(val) {
