@@ -85,7 +85,7 @@ exports.createStore = (req, res) => {
         try {
             fs.unlinkSync('public' + req.filepaths[0]);
             fs.unlinkSync('public' + req.filepaths[1]);
-        } catch { }
+        } catch {}
 
         return res.status(400).json({
             error: 'All fields are required',
@@ -105,7 +105,7 @@ exports.createStore = (req, res) => {
             try {
                 fs.unlinkSync('public' + req.filepaths[0]);
                 fs.unlinkSync('public' + req.filepaths[1]);
-            } catch { }
+            } catch {}
 
             return res.status(400).json({
                 error: errorHandler(error),
@@ -286,7 +286,7 @@ exports.updateAvatar = (req, res) => {
             if (!store) {
                 try {
                     fs.unlinkSync('public' + req.filepaths[0]);
-                } catch { }
+                } catch {}
 
                 return res.status(500).json({
                     error: 'Store not found',
@@ -296,7 +296,7 @@ exports.updateAvatar = (req, res) => {
             if (oldpath != '/uploads/default.jpg') {
                 try {
                     fs.unlinkSync('public' + oldpath);
-                } catch { }
+                } catch {}
             }
 
             store.ownerId = cleanUser(store.ownerId);
@@ -312,7 +312,7 @@ exports.updateAvatar = (req, res) => {
         .catch((error) => {
             try {
                 fs.unlinkSync('public' + req.filepaths[0]);
-            } catch { }
+            } catch {}
 
             return res.status(500).json({
                 error: errorHandler(error),
@@ -336,7 +336,7 @@ exports.updateCover = (req, res) => {
             if (!store) {
                 try {
                     fs.unlinkSync('public' + req.filepaths[0]);
-                } catch { }
+                } catch {}
 
                 return res.status(500).json({
                     error: 'Store not found',
@@ -346,7 +346,7 @@ exports.updateCover = (req, res) => {
             if (oldpath != '/uploads/default.jpg') {
                 try {
                     fs.unlinkSync('public' + oldpath);
-                } catch { }
+                } catch {}
             }
 
             store.ownerId = cleanUser(store.ownerId);
@@ -362,7 +362,7 @@ exports.updateCover = (req, res) => {
         .catch((error) => {
             try {
                 fs.unlinkSync('public' + req.filepaths[0]);
-            } catch { }
+            } catch {}
 
             return res.status(500).json({
                 error: errorHandler(error),
@@ -388,7 +388,7 @@ exports.addFeatureImage = (req, res) => {
     if (index >= 6) {
         try {
             fs.unlinkSync('public' + req.filepaths[0]);
-        } catch { }
+        } catch {}
 
         return res.status(400).json({
             error: 'The limit is 6 images',
@@ -408,7 +408,7 @@ exports.addFeatureImage = (req, res) => {
             if (!store) {
                 try {
                     fs.unlinkSync('public' + req.filepaths[0]);
-                } catch { }
+                } catch {}
 
                 return res.status(500).json({
                     error: 'Store not found',
@@ -427,7 +427,7 @@ exports.addFeatureImage = (req, res) => {
         .catch((error) => {
             try {
                 fs.unlinkSync('public' + req.filepaths[0]);
-            } catch { }
+            } catch {}
 
             return res.status(500).json({
                 error: errorHandler(error),
@@ -448,7 +448,7 @@ exports.updateFeatureImage = (req, res) => {
     if (index >= featured_images.length) {
         try {
             fs.unlinkSync('public' + image);
-        } catch { }
+        } catch {}
 
         return res.status(404).json({
             error: 'Feature image not found',
@@ -470,7 +470,7 @@ exports.updateFeatureImage = (req, res) => {
             if (!store) {
                 try {
                     fs.unlinkSync('public' + image);
-                } catch { }
+                } catch {}
 
                 return res.status(500).json({
                     error: 'Store not found',
@@ -480,7 +480,7 @@ exports.updateFeatureImage = (req, res) => {
             if (oldpath != '/uploads/default.jpg') {
                 try {
                     fs.unlinkSync('public' + oldpath);
-                } catch { }
+                } catch {}
             }
 
             store.ownerId = cleanUser(store.ownerId);
@@ -495,7 +495,7 @@ exports.updateFeatureImage = (req, res) => {
         .catch((error) => {
             try {
                 fs.unlinkSync('public' + image);
-            } catch { }
+            } catch {}
 
             return res.status(400).json({
                 error: errorHandler(error),
@@ -519,7 +519,7 @@ exports.removeFeaturedImage = (req, res) => {
 
     try {
         fs.unlinkSync('public' + featured_images[index]);
-    } catch (e) { }
+    } catch (e) {}
 
     //update db
     featured_images.splice(index, 1);
@@ -614,7 +614,6 @@ exports.addStaffs = (req, res) => {
                     error: 'Users is invalid',
                 });
             }
-
 
             for (let i = 0; i < staffs.length; i++) {
                 let flag = false;
@@ -778,7 +777,7 @@ exports.listStores = (req, res) => {
     const sortMoreBy = req.query.sortMoreBy ? req.query.sortMoreBy : '_id';
     const order =
         req.query.order &&
-            (req.query.order == 'asc' || req.query.order == 'desc')
+        (req.query.order == 'asc' || req.query.order == 'desc')
             ? req.query.order
             : 'asc';
 
@@ -804,8 +803,8 @@ exports.listStores = (req, res) => {
 
     const filterArgs = {
         $or: [
-            { name: { $regex: regex, $options: 'i' }, },
-            { bio: { $regex: regex, $options: 'i' }, }
+            { name: { $regex: regex, $options: 'i' } },
+            { bio: { $regex: regex, $options: 'i' } },
         ],
         isActive: true,
         commissionId: { $in: commissionId },
@@ -882,7 +881,7 @@ exports.listStoresByUser = (req, res) => {
     const sortMoreBy = req.query.sortMoreBy ? req.query.sortMoreBy : '_id';
     const order =
         req.query.order &&
-            (req.query.order == 'asc' || req.query.order == 'desc')
+        (req.query.order == 'asc' || req.query.order == 'desc')
             ? req.query.order
             : 'asc';
 
@@ -909,8 +908,8 @@ exports.listStoresByUser = (req, res) => {
 
     const filterArgs = {
         $or: [
-            { name: { $regex: regex, $options: 'i' }, },
-            { bio: { $regex: regex, $options: 'i' }, }
+            { name: { $regex: regex, $options: 'i' } },
+            { bio: { $regex: regex, $options: 'i' } },
         ],
         isActive: { $in: isActive },
         commissionId: { $in: commissionId },
@@ -988,7 +987,7 @@ exports.listStoresForAdmin = (req, res) => {
     const sortMoreBy = req.query.sortMoreBy ? req.query.sortMoreBy : '_id';
     const order =
         req.query.order &&
-            (req.query.order == 'asc' || req.query.order == 'desc')
+        (req.query.order == 'asc' || req.query.order == 'desc')
             ? req.query.order
             : 'asc';
 
@@ -1015,8 +1014,8 @@ exports.listStoresForAdmin = (req, res) => {
 
     const filterArgs = {
         $or: [
-            { name: { $regex: regex, $options: 'i' }, },
-            { bio: { $regex: regex, $options: 'i' }, }
+            { name: { $regex: regex, $options: 'i' } },
+            { bio: { $regex: regex, $options: 'i' } },
         ],
         isActive: { $in: isActive },
         commissionId: { $in: commissionId },

@@ -92,7 +92,7 @@ exports.createProduct = (req, res) => {
             listImages.forEach((image) => {
                 fs.unlinkSync('public' + image);
             });
-        } catch { }
+        } catch {}
 
         return res.status(400).json({
             error: 'All fields are required',
@@ -123,7 +123,7 @@ exports.createProduct = (req, res) => {
                 listImages.forEach((image) => {
                     fs.unlinkSync('public' + image);
                 });
-            } catch { }
+            } catch {}
 
             return res.status(400).json({
                 error: errorHandler(error),
@@ -331,7 +331,7 @@ exports.addToListImages = (req, res) => {
     if (index >= 6) {
         try {
             fs.unlinkSync('public' + req.filepaths[0]);
-        } catch { }
+        } catch {}
 
         return res.status(400).json({
             error: 'The limit is 6 images',
@@ -360,7 +360,7 @@ exports.addToListImages = (req, res) => {
             if (!product) {
                 try {
                     fs.unlinkSync('public' + req.filepaths[0]);
-                } catch { }
+                } catch {}
 
                 return res.status(500).json({
                     error: 'product not found',
@@ -375,7 +375,7 @@ exports.addToListImages = (req, res) => {
         .catch((error) => {
             try {
                 fs.unlinkSync('public' + req.filepaths[0]);
-            } catch { }
+            } catch {}
 
             return res.status(500).json({
                 error: errorHandler(error),
@@ -396,7 +396,7 @@ exports.updateListImages = (req, res) => {
     if (index >= listImages.length) {
         try {
             fs.unlinkSync('public' + image);
-        } catch { }
+        } catch {}
 
         return res.status(404).json({
             error: 'Image not found',
@@ -428,7 +428,7 @@ exports.updateListImages = (req, res) => {
             if (!product) {
                 try {
                     fs.unlinkSync('public' + image);
-                } catch { }
+                } catch {}
 
                 return res.status(500).json({
                     error: 'Product not found',
@@ -438,7 +438,7 @@ exports.updateListImages = (req, res) => {
             if (oldpath != '/uploads/default.jpg') {
                 try {
                     fs.unlinkSync('public' + oldpath);
-                } catch { }
+                } catch {}
             }
 
             return res.json({
@@ -449,7 +449,7 @@ exports.updateListImages = (req, res) => {
         .catch((error) => {
             try {
                 fs.unlinkSync('public' + image);
-            } catch { }
+            } catch {}
 
             return res.status(400).json({
                 error: errorHandler(error),
@@ -480,7 +480,7 @@ exports.removefromListImages = (req, res) => {
 
     try {
         fs.unlinkSync('public' + listImages[index]);
-    } catch (e) { }
+    } catch (e) {}
 
     //update db
     listImages.splice(index, 1);
@@ -540,39 +540,45 @@ exports.listProductCategories = (req, res, next) => {
             console.log(categoryId, categories);
 
             if (categoryId) {
-                const filterCategories = categories.filter(category => category.equals(categoryId));
+                const filterCategories = categories.filter((category) =>
+                    category.equals(categoryId),
+                );
 
                 if (filterCategories.length > 0) {
                     req.loadedCategories = filterCategories;
                     next();
-                }
-                else {
+                } else {
                     Category.find({ _id: { $in: categories } })
                         .populate({
                             path: 'categoryId',
                             populate: { path: 'categoryId' },
                         })
                         .exec()
-                        .then(newCategories => {
+                        .then((newCategories) => {
                             const filterCategories = newCategories
-                                .filter(category =>
-                                    (category.categoryId && category.categoryId._id == categoryId) ||
-                                    (category.categoryId && category.categoryId.categoryId &&
-                                        category.categoryId.categoryId._id == categoryId))
-                                .map(category => category._id);
+                                .filter(
+                                    (category) =>
+                                        (category.categoryId &&
+                                            category.categoryId._id ==
+                                                categoryId) ||
+                                        (category.categoryId &&
+                                            category.categoryId.categoryId &&
+                                            category.categoryId.categoryId
+                                                ._id == categoryId),
+                                )
+                                .map((category) => category._id);
 
                             console.log(filterCategories);
 
                             req.loadedCategories = filterCategories;
                             next();
                         })
-                        .catch(error => {
+                        .catch((error) => {
                             req.loadedCategories = [];
                             next();
                         });
                 }
-            }
-            else {
+            } else {
                 req.loadedCategories = categories;
                 next();
             }
@@ -607,7 +613,7 @@ exports.listProducts = (req, res) => {
     const sortBy = req.query.sortBy ? req.query.sortBy : '_id';
     const order =
         req.query.order &&
-            (req.query.order == 'asc' || req.query.order == 'desc')
+        (req.query.order == 'asc' || req.query.order == 'desc')
             ? req.query.order
             : 'asc';
 
@@ -646,8 +652,8 @@ exports.listProducts = (req, res) => {
 
     const filterArgs = {
         $or: [
-            { name: { $regex: regex, $options: 'i' }, },
-            { description: { $regex: regex, $options: 'i' }, }
+            { name: { $regex: regex, $options: 'i' } },
+            { description: { $regex: regex, $options: 'i' } },
         ],
         categoryId: { $in: categoryId },
         isActive: true,
@@ -726,7 +732,7 @@ exports.listProductsByStore = (req, res) => {
     const sortBy = req.query.sortBy ? req.query.sortBy : '_id';
     const order =
         req.query.order &&
-            (req.query.order == 'asc' || req.query.order == 'desc')
+        (req.query.order == 'asc' || req.query.order == 'desc')
             ? req.query.order
             : 'asc';
 
@@ -768,8 +774,8 @@ exports.listProductsByStore = (req, res) => {
 
     const filterArgs = {
         $or: [
-            { name: { $regex: regex, $options: 'i' }, },
-            { description: { $regex: regex, $options: 'i' }, }
+            { name: { $regex: regex, $options: 'i' } },
+            { description: { $regex: regex, $options: 'i' } },
         ],
         categoryId: { $in: categoryId },
         isSelling: true,
@@ -850,7 +856,7 @@ exports.listProductsByStoreForManager = (req, res) => {
     const sortBy = req.query.sortBy ? req.query.sortBy : '_id';
     const order =
         req.query.order &&
-            (req.query.order == 'asc' || req.query.order == 'desc')
+        (req.query.order == 'asc' || req.query.order == 'desc')
             ? req.query.order
             : 'asc';
 
@@ -876,8 +882,8 @@ exports.listProductsByStoreForManager = (req, res) => {
 
     const filterArgs = {
         $or: [
-            { name: { $regex: regex, $options: 'i' }, },
-            { description: { $regex: regex, $options: 'i' }, }
+            { name: { $regex: regex, $options: 'i' } },
+            { description: { $regex: regex, $options: 'i' } },
         ],
         isSelling: { $in: isSelling },
         storeId: req.store._id,
@@ -951,7 +957,7 @@ exports.listProductsForAdmin = (req, res) => {
     const sortBy = req.query.sortBy ? req.query.sortBy : '_id';
     const order =
         req.query.order &&
-            (req.query.order == 'asc' || req.query.order == 'desc')
+        (req.query.order == 'asc' || req.query.order == 'desc')
             ? req.query.order
             : 'asc';
 

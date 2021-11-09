@@ -29,7 +29,7 @@ exports.checkCategory = (req, res, next) => {
                 ) {
                     try {
                         fs.unlinkSync('public' + req.filepaths[0]);
-                    } catch {}
+                    } catch { }
 
                     return res.status(400).json({
                         error: 'categoryId invalid',
@@ -39,7 +39,7 @@ exports.checkCategory = (req, res, next) => {
             .catch((error) => {
                 try {
                     fs.unlinkSync('public' + req.filepaths[0]);
-                } catch {}
+                } catch { }
 
                 return res.status(400).json({
                     error: 'categoryId invalid',
@@ -53,7 +53,7 @@ exports.checkCategoryChild = (req, res, next) => {
 
     try {
         if (!categoryId) categoryId = req.fields.categoryId;
-    } catch {}
+    } catch { }
 
     Category.findOne({ categoryId })
         .exec()
@@ -64,7 +64,7 @@ exports.checkCategoryChild = (req, res, next) => {
                     req.filepaths.forEach((path) => {
                         fs.unlinkSync('public' + path);
                     });
-                } catch (err) {}
+                } catch (err) { }
 
                 return res.status(400).json({
                     error: 'categoryId invalid',
@@ -92,11 +92,10 @@ exports.checkListCategoriesChild = (req, res, next) => {
 exports.createCategory = (req, res) => {
     const { name, categoryId } = req.fields;
     const image = req.filepaths[0];
-
     if (!name || !image) {
         try {
             fs.unlinkSync('public' + req.filepaths[0]);
-        } catch {}
+        } catch { }
 
         return res.status(400).json({
             error: 'All fields are required',
@@ -113,7 +112,7 @@ exports.createCategory = (req, res) => {
         if (error || !category) {
             try {
                 fs.unlinkSync('public' + req.filepaths[0]);
-            } catch {}
+            } catch { }
 
             return res.status(400).json({
                 error: errorHandler(error),
@@ -134,7 +133,7 @@ exports.updateCategory = (req, res) => {
     if (!name || !image) {
         try {
             fs.unlinkSync('public' + req.filepaths[0]);
-        } catch {}
+        } catch { }
 
         return res.status(400).json({
             error: 'All fields are required',
@@ -155,7 +154,7 @@ exports.updateCategory = (req, res) => {
             if (!category) {
                 try {
                     fs.unlinkSync('public' + req.filepaths[0]);
-                } catch {}
+                } catch { }
 
                 return res.status(400).json({
                     error: errorHandler(error),
@@ -170,7 +169,7 @@ exports.updateCategory = (req, res) => {
         .catch((error) => {
             try {
                 fs.unlinkSync('public' + req.filepaths[0]);
-            } catch {}
+            } catch { }
 
             return res.status(500).json({
                 error: errorHandler(error),
@@ -246,7 +245,7 @@ exports.listActiveCategories = (req, res) => {
     const sortBy = req.query.sortBy ? req.query.sortBy : '_id';
     const order =
         req.query.order &&
-        (req.query.order == 'asc' || req.query.order == 'desc')
+            (req.query.order == 'asc' || req.query.order == 'desc')
             ? req.query.order
             : 'asc';
 
@@ -332,7 +331,7 @@ exports.listCategories = (req, res) => {
     const sortBy = req.query.sortBy ? req.query.sortBy : '_id';
     const order =
         req.query.order &&
-        (req.query.order == 'asc' || req.query.order == 'desc')
+            (req.query.order == 'asc' || req.query.order == 'desc')
             ? req.query.order
             : 'asc';
 
@@ -341,8 +340,6 @@ exports.listCategories = (req, res) => {
     const page =
         req.query.page && req.query.page > 0 ? parseInt(req.query.page) : 1;
     let skip = limit * (page - 1);
-
-    // const categoryId = req.query.categoryId || null;
 
     const filter = {
         search,
@@ -355,6 +352,11 @@ exports.listCategories = (req, res) => {
     const filterArgs = {
         name: { $regex: regex, $options: 'i' },
     };
+
+    if (req.query.categoryId) {
+        filter.categoryId = req.query.categoryId;
+        filterArgs.categoryId = req.query.categoryId === 'null' ? null : req.query.categoryId;
+    }
 
     Category.countDocuments(filterArgs, (error, count) => {
         if (error) {

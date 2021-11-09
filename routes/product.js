@@ -40,12 +40,7 @@ router.get(
     listProductCategoriesByStore,
     listProductsByStoreForManager,
 );
-router.get(
-    '/products/:userId',
-    isAuth,
-    isAdmin,
-    listProductsForAdmin,
-);
+router.get('/products/:userId', isAuth, isAdmin, listProductsForAdmin);
 router.post(
     '/product/create/:storeId/:userId',
     isAuth,

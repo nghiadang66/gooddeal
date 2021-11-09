@@ -257,7 +257,7 @@ exports.updateAvatar = (req, res) => {
             if (!user) {
                 try {
                     fs.unlinkSync('public' + req.filepaths[0]);
-                } catch { }
+                } catch {}
 
                 return res.status(500).json({
                     error: 'User not found',
@@ -267,7 +267,7 @@ exports.updateAvatar = (req, res) => {
             if (oldpath != '/uploads/default.jpg') {
                 try {
                     fs.unlinkSync('public' + oldpath);
-                } catch { }
+                } catch {}
             }
 
             return res.json({
@@ -278,7 +278,7 @@ exports.updateAvatar = (req, res) => {
         .catch((error) => {
             try {
                 fs.unlinkSync('public' + req.filepaths[0]);
-            } catch { }
+            } catch {}
 
             return res.status(400).json({
                 error: errorHandler(error),
@@ -302,7 +302,7 @@ exports.updateCover = (req, res) => {
             if (!user) {
                 try {
                     fs.unlinkSync('public' + req.filepaths[0]);
-                } catch { }
+                } catch {}
 
                 return res.status(500).json({
                     error: 'User not found',
@@ -312,7 +312,7 @@ exports.updateCover = (req, res) => {
             if (oldpath != '/uploads/default.jpg') {
                 try {
                     fs.unlinkSync('public' + oldpath);
-                } catch { }
+                } catch {}
             }
 
             return res.json({
@@ -323,7 +323,7 @@ exports.updateCover = (req, res) => {
         .catch((error) => {
             try {
                 fs.unlinkSync('public' + req.filepaths[0]);
-            } catch { }
+            } catch {}
 
             return res.status(400).json({
                 error: errorHandler(error),
@@ -344,7 +344,7 @@ exports.listUser = (req, res) => {
     const sortBy = req.query.sortBy ? req.query.sortBy : '_id';
     const order =
         req.query.order &&
-            (req.query.order == 'asc' || req.query.order == 'desc')
+        (req.query.order == 'asc' || req.query.order == 'desc')
             ? req.query.order
             : 'asc'; //desc
 
@@ -430,7 +430,7 @@ exports.listUserForAdmin = (req, res) => {
 
     const order =
         req.query.order &&
-            (req.query.order == 'asc' || req.query.order == 'desc')
+        (req.query.order == 'asc' || req.query.order == 'desc')
             ? req.query.order
             : 'asc'; //desc
     const limit =
