@@ -8,6 +8,7 @@ const { storeById } = require('../controllers/store');
 const { upload } = require('../controllers/upload');
 const {
     categoryById,
+    getCategory,
     checkCategory,
     createCategory,
     updateCategory,
@@ -20,6 +21,7 @@ const {
 const { listProductCategoriesByStore } = require('../controllers/product');
 
 //routes
+router.get('/category/by/id/:categoryId/:userId', isAuth, isAdmin, getCategory);
 router.get('/active/categories', listActiveCategories);
 router.get(
     '/categories/by/store/:storeId',
@@ -40,6 +42,7 @@ router.put(
     isAuth,
     isAdmin,
     upload,
+    checkCategory,
     updateCategory,
 );
 router.delete('/category/:categoryId/:userId', isAuth, isAdmin, removeCategory);
