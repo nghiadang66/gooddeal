@@ -179,6 +179,8 @@ exports.listActiveStyleValuesByStyle = (req, res) => {
 
 exports.listStyleValuesByStyle = (req, res) => {
     StyleValue.find({ styleId: req.style._id })
+        .populate('styleId')
+        .sort({ name: '1' })
         .exec()
         .then((values) => {
             return res.json({

@@ -242,11 +242,8 @@ exports.listStyles = (req, res) => {
         req.query.page && req.query.page > 0 ? parseInt(req.query.page) : 1;
     let skip = limit * (page - 1);
 
-    const categoryId = req.query.categoryId ? req.query.categoryId : null;
-
     const filter = {
         search,
-        categoryId,
         sortBy,
         order,
         limit,
@@ -255,8 +252,12 @@ exports.listStyles = (req, res) => {
 
     const filterArgs = {
         name: { $regex: regex, $options: 'i' },
-        categoryIds: categoryId,
     };
+
+    if (req.query.categoryId) {
+        filter.categoryId = req.query.categoryId;
+        filterArgs.categoryIds = req.query.categoryId;
+    }
 
     Style.countDocuments(filterArgs, (error, count) => {
         if (error) {
@@ -284,6 +285,13 @@ exports.listStyles = (req, res) => {
 
         Style.find(filterArgs)
             .sort({ [sortBy]: order, _id: 1 })
+            .populate({
+                path: 'categoryIds',
+                populate: {
+                    path: 'categoryId',
+                    populate: { path: 'categoryId' },
+                },
+            })
             .skip(skip)
             .limit(limit)
             .exec()
