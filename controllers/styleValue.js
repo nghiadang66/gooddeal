@@ -163,11 +163,14 @@ exports.restoreAllStyleValue = (req, res) => {
 
 exports.listActiveStyleValuesByStyle = (req, res) => {
     StyleValue.find({ styleId: req.style._id, isDeleted: false })
+        .populate('styleId')
+        .sort({ name: '1', _id: 1 })
         .exec()
         .then((values) => {
             return res.json({
                 success: 'Load list values of style successfully',
                 styleValues: values,
+                style: req.style,
             });
         })
         .catch((error) => {
@@ -180,12 +183,13 @@ exports.listActiveStyleValuesByStyle = (req, res) => {
 exports.listStyleValuesByStyle = (req, res) => {
     StyleValue.find({ styleId: req.style._id })
         .populate('styleId')
-        .sort({ name: '1' })
+        .sort({ name: '1', _id: 1 })
         .exec()
         .then((values) => {
             return res.json({
                 success: 'Load list values of style successfully',
                 styleValues: values,
+                style: req.style,
             });
         })
         .catch((error) => {

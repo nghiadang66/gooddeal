@@ -26,7 +26,7 @@ router.get(
     isAdmin,
     listStyleValuesByStyle,
 );
-router.post('/style/value/create/:userId', isAuth, isAdmin, createStyleValue);
+router.post('/style/value/create/:userId', isAuth, createStyleValue);
 router.put(
     '/style/value/:styleValueId/:userId',
     isAuth,
