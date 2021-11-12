@@ -7,6 +7,7 @@ const { userById } = require('../controllers/user');
 const { checkListCategoriesChild } = require('../controllers/category');
 const {
     styleById,
+    getStyle,
     checkStyle,
     createStyle,
     updateStyle,
@@ -21,6 +22,7 @@ const {
 } = require('../controllers/styleValue');
 
 //routes
+router.get('/style/by/id/:styleId/:userId', isAuth, isAdmin, getStyle);
 router.get('/active/styles', listActiveStyles);
 router.get('/styles/:userId', isAuth, isAdmin, listStyles);
 router.post(

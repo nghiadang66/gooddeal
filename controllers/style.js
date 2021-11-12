@@ -14,6 +14,36 @@ exports.styleById = (req, res, next, id) => {
     });
 };
 
+exports.getStyle = (req, res) => {
+    Style.findOne({ _id: req.style._id })
+        .populate({
+            path: 'categoryIds',
+            populate: {
+                path: 'categoryId',
+                populate: {
+                    path: 'categoryId',
+                },
+            },
+        })
+        .exec()
+        .then((style) => {
+            if (!style)
+                return res.status(500).json({
+                    error: 'Load style failed',
+                });
+
+            return res.json({
+                success: 'Load style successfully',
+                style: style,
+            });
+        })
+        .catch((error) => {
+            return res.status(500).json({
+                error: 'Load style failed',
+            });
+        });
+};
+
 exports.checkStyle = (req, res, next) => {
     const { name, categoryIds } = req.body;
     const styleId = req.style ? req.style._id : null;
