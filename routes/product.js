@@ -23,10 +23,17 @@ const {
     listProductsByStore,
     listProductsByStoreForManager,
     listProductsForAdmin,
+    getProductForManager,
 } = require('../controllers/product');
 
 //routes
 router.get('/product/:productId', getProduct);
+router.get(
+    '/product/for/manager/:productId/:storeId/:userId',
+    isAuth,
+    isManager,
+    getProductForManager,
+);
 router.get('/active/products', listProductCategories, listProducts);
 router.get(
     '/selling/products/by/store/:storeId',

@@ -16,6 +16,40 @@ exports.productById = (req, res, next, id) => {
     });
 };
 
+exports.getProductForManager = (req, res) => {
+    Product.findOne({ _id: req.product._id, storeId: req.store._id })
+        .populate({
+            path: 'categoryId',
+            populate: {
+                path: 'categoryId',
+                populate: { path: 'categoryId' },
+            },
+        })
+        .populate({
+            path: 'styleValueIds',
+            populate: { path: 'styleId' },
+        })
+        .populate('storeId', '_id name avatar isActive isOpen')
+        .exec()
+        .then((product) => {
+            if (!product) {
+                return res.status(500).json({
+                    error: 'Product not found',
+                });
+            }
+
+            return res.json({
+                success: 'Get product successfully',
+                product,
+            });
+        })
+        .catch((error) => {
+            return res.status(500).json({
+                error: 'Product not found',
+            });
+        });
+};
+
 exports.getProduct = (req, res) => {
     if (!req.product.isActive || !req.product.isSelling)
         return res.status(404).json({
