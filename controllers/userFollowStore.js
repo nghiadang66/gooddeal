@@ -131,55 +131,69 @@ exports.listFollowingStoresByUser = (req, res) => {
         pageCurrent: page,
     };
 
-    UserFollowStore.countDocuments({ userId }, (error, count) => {
-        if (error) {
-            return res.status(404).json({
-                error: 'Following stores not found',
+    UserFollowStore.find({ userId })
+        .exec()
+        .then((follows) => {
+            const storeIds = follows.map((follow) => follow.storeId);
+
+            Store.countDocuments(
+                { _id: { $in: storeIds }, isActive: true },
+                (error, count) => {
+                    if (error) {
+                        return res.status(404).json({
+                            error: 'Following stores not found',
+                        });
+                    }
+
+                    const size = count;
+                    const pageCount = Math.ceil(size / limit);
+                    filter.pageCount = pageCount;
+
+                    if (page > pageCount) {
+                        skip = (pageCount - 1) * limit;
+                    }
+
+                    if (count <= 0) {
+                        return res.json({
+                            success: 'Load list following stores successfully',
+                            filter,
+                            size,
+                            stores: [],
+                        });
+                    }
+
+                    Store.find({ _id: { $in: storeIds }, isActive: true })
+                        .select('-e_wallet')
+                        .sort({ name: 1 })
+                        .skip(skip)
+                        .limit(limit)
+                        .populate('ownerId')
+                        .populate('staffIds')
+                        .populate('commissionId', '_id name cost')
+                        .exec()
+                        .then((stores) => {
+                            const cleanStores = stores.map((store) =>
+                                cleanStore(store),
+                            );
+                            return res.json({
+                                success:
+                                    'Load list following stores successfully',
+                                filter,
+                                size,
+                                stores: cleanStores,
+                            });
+                        })
+                        .catch((error) => {
+                            return res.status(500).json({
+                                error: 'Load list followings stores failed',
+                            });
+                        });
+                },
+            );
+        })
+        .catch((error) => {
+            return res.status(500).json({
+                error: 'Load list followings stores failed',
             });
-        }
-
-        const size = count;
-        const pageCount = Math.ceil(size / limit);
-        filter.pageCount = pageCount;
-
-        if (page > pageCount) {
-            skip = (pageCount - 1) * limit;
-        }
-
-        if (count <= 0) {
-            return res.json({
-                success: 'Load list following stores successfully',
-                filter,
-                size,
-                stores: [],
-            });
-        }
-
-        UserFollowStore.find({ userId })
-            .skip(skip)
-            .limit(limit)
-            .populate({
-                path: 'storeId',
-                populate: { path: 'commissionId' },
-            })
-            .exec()
-            .then((userFollowStores) => {
-                const stores = userFollowStores.map(
-                    (userFollowStore) => userFollowStore.storeId,
-                );
-                const cleanStores = stores.map((store) => cleanStore(store));
-
-                return res.json({
-                    success: 'Load list following stores successfully',
-                    filter,
-                    size,
-                    stores: cleanStores,
-                });
-            })
-            .catch((error) => {
-                return res.status(500).json({
-                    error: 'Load list followings users failed',
-                });
-            });
-    });
+        });
 };

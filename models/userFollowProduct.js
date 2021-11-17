@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const { ObjectId } = mongoose.Schema;
 
-const userFollowStoreSchema = new mongoose.Schema(
+const userFollowProductSchema = new mongoose.Schema(
     {
         userId: {
             type: ObjectId,
@@ -15,6 +15,6 @@ const userFollowStoreSchema = new mongoose.Schema(
     { timestamps: true },
 );
 
-userFollowStoreSchema.index({ userId: 1, productId: 1 }, { unique: true });
+userFollowProductSchema.index({ userId: 1, productId: 1 }, { unique: true });
 
-module.exports = mongoose.model('UserFollowStore', userFollowStoreSchema);
+module.exports = mongoose.model('UserFollowProduct', userFollowProductSchema);

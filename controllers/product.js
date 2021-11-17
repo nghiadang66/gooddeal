@@ -817,9 +817,10 @@ exports.listProductsByStore = (req, res) => {
         isActive: true,
         storeId: req.store._id,
         promotionalPrice: { $gte: 0 },
+        rating: { $gte: 0 },
     };
 
-    if (rating !== -1) filterArgs.rating = rating;
+    if (rating !== -1) filterArgs.rating.$gte = rating;
     if (minPrice !== -1) filterArgs.promotionalPrice.$gte = minPrice;
     if (maxPrice !== -1) filterArgs.promotionalPrice.$lte = maxPrice;
 
