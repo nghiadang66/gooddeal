@@ -1,15 +1,15 @@
 const mongoose = require('mongoose');
 const { ObjectId } = mongoose.Schema;
 
-const userFollowProductSchema = new mongoose.Schema(
+const cartSchema = new mongoose.Schema(
     {
         userId: {
             type: ObjectId,
             ref: 'User',
         },
-        productId: {
+        storeId: {
             type: ObjectId,
-            ref: 'Product',
+            ref: 'Store',
         },
         isDeleted: {
             type: Boolean,
@@ -18,6 +18,6 @@ const userFollowProductSchema = new mongoose.Schema(
     { timestamps: true },
 );
 
-userFollowProductSchema.index({ userId: 1, productId: 1 }, { unique: true });
+cartSchema.index({ userId: 1, storeId: 1 }, { unique: true });
 
-module.exports = mongoose.model('UserFollowProduct', userFollowProductSchema);
+module.exports = mongoose.model('Cart', cartSchema);

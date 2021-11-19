@@ -89,6 +89,7 @@ exports.createToken = (req, res) => {
             accessToken,
             refreshToken,
             _id: user._id,
+            role: user.role,
         });
     });
 };

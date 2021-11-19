@@ -5,74 +5,81 @@ const { cleanStore } = require('../helpers/storeHandler');
 exports.followStore = (req, res) => {
     const userId = req.user._id;
     const storeId = req.store._id;
-    const follow = new UserFollowStore({ userId, storeId });
-    follow.save((error, follow) => {
-        if (error || !follow) {
-            return res.status(400).json({
-                error: 'Follow is already exists',
-            });
-        } else {
-            Store.findOne({ _id: storeId })
-                .populate('commissionId')
-                .exec()
-                .then((store) => {
-                    if (!store) {
-                        return res.status(404).json({
-                            error: 'Store not found',
-                        });
-                    }
 
-                    return res.json({
-                        success: 'Follow store successfully',
-                        store: cleanStore(store),
-                    });
-                })
-                .catch((error) => {
-                    return res.status(500).json({
-                        error: 'Follow store failed',
-                    });
+    UserFollowStore.findOneAndUpdate(
+        { userId, storeId },
+        { isDeleted: false },
+        { upsert: true, new: true },
+    )
+        .exec()
+        .then((follow) => {
+            if (!follow)
+                return res.status(400).json({
+                    error: 'Follow is already exists',
                 });
-        }
-    });
+            else
+                Store.findOne({ _id: storeId })
+                    .select('-e_wallet')
+                    .populate('ownerId')
+                    .populate('staffIds')
+                    .populate('commissionId', '_id name cost')
+                    .exec()
+                    .then((store) => {
+                        if (!store)
+                            return res.status(404).json({
+                                error: 'Store not found',
+                            });
+                        else
+                            return res.json({
+                                success: 'Follow store successfully',
+                                store: cleanStore(store),
+                            });
+                    });
+        })
+        .catch((error) => {
+            return res.status(500).json({
+                error: 'Follow store failed',
+            });
+        });
 };
 
 exports.unfollowStore = (req, res) => {
     const userId = req.user._id;
     const storeId = req.store._id;
 
-    UserFollowStore.findOneAndDelete({ userId, storeId })
+    UserFollowStore.findOneAndUpdate(
+        { userId, storeId },
+        { isDeleted: true },
+        { new: true },
+    )
         .exec()
         .then((follow) => {
-            if (!follow) {
+            if (!follow)
                 return res.status(400).json({
-                    error: 'Follow is already exists',
+                    error: 'Unfollow is already exists',
                 });
-            } else {
+            else
                 Store.findOne({ _id: storeId })
-                    .populate('commissionId')
+                    .select('-e_wallet')
+                    .populate('ownerId')
+                    .populate('staffIds')
+                    .populate('commissionId', '_id name cost')
                     .exec()
                     .then((store) => {
-                        if (!store) {
+                        if (!store)
                             return res.status(404).json({
                                 error: 'Store not found',
                             });
-                        }
-
-                        return res.json({
-                            success: 'UnFollow store successfully',
-                            store: cleanStore(store),
-                        });
-                    })
-                    .catch((error) => {
-                        return res.status(500).json({
-                            error: 'UnFollow store failed',
-                        });
+                        else
+                            return res.json({
+                                success: 'Unfollow store successfully',
+                                store: cleanStore(store),
+                            });
                     });
-            }
         })
         .catch((error) => {
-            return res.status(404).json({
-                error: 'not follow yet',
+            return res.status(500).json({
+                error: 'Unfollow store failed',
             });
         });
 };
@@ -81,7 +88,7 @@ exports.checkFollowingStore = (req, res) => {
     const userId = req.user._id;
     const storeId = req.store._id;
 
-    UserFollowStore.findOne({ userId: userId, storeId: storeId })
+    UserFollowStore.findOne({ userId, storeId, isDeleted: false })
         .exec()
         .then((follow) => {
             if (!follow) {
@@ -103,18 +110,21 @@ exports.checkFollowingStore = (req, res) => {
 
 exports.getNumberOfFollowers = (req, res) => {
     const storeId = req.store._id;
-    UserFollowStore.countDocuments({ storeId: storeId }, (error, count) => {
-        if (error) {
-            return res.status(404).json({
-                error: 'Following stores not found',
-            });
-        }
+    UserFollowStore.countDocuments(
+        { storeId, isDeleted: false },
+        (error, count) => {
+            if (error) {
+                return res.status(404).json({
+                    error: 'Following stores not found',
+                });
+            }
 
-        return res.json({
-            success: 'get store number of followers successfully',
-            count,
-        });
-    });
+            return res.json({
+                success: 'get store number of followers successfully',
+                count,
+            });
+        },
+    );
 };
 
 //?limit=...&page=...
@@ -131,7 +141,7 @@ exports.listFollowingStoresByUser = (req, res) => {
         pageCurrent: page,
     };
 
-    UserFollowStore.find({ userId })
+    UserFollowStore.find({ userId, isDeleted: false })
         .exec()
         .then((follows) => {
             const storeIds = follows.map((follow) => follow.storeId);
@@ -164,7 +174,7 @@ exports.listFollowingStoresByUser = (req, res) => {
 
                     Store.find({ _id: { $in: storeIds }, isActive: true })
                         .select('-e_wallet')
-                        .sort({ name: 1 })
+                        .sort({ name: 1, _id: 1 })
                         .skip(skip)
                         .limit(limit)
                         .populate('ownerId')

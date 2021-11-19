@@ -11,6 +11,9 @@ const userFollowStoreSchema = new mongoose.Schema(
             type: ObjectId,
             ref: 'Store',
         },
+        isDeleted: {
+            type: Boolean,
+        },
     },
     { timestamps: true },
 );

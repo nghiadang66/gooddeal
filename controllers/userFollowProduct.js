@@ -5,61 +5,18 @@ exports.followProduct = (req, res) => {
     const userId = req.user._id;
     const productId = req.product._id;
 
-    const follow = new UserFollowProduct({ userId, productId });
-
-    follow.save((error, follow) => {
-        if (error || !follow) {
-            return res.status(400).json({
-                error: 'Follow is already exists',
-            });
-        } else {
-            Product.findOne({ _id: productId })
-                .populate({
-                    path: 'categoryId',
-                    populate: {
-                        path: 'categoryId',
-                        populate: { path: 'categoryId' },
-                    },
-                })
-                .populate({
-                    path: 'styleValueIds',
-                    populate: { path: 'styleId' },
-                })
-                .populate('storeId', '_id name avatar isActive isOpen')
-                .exec()
-                .then((product) => {
-                    if (!product) {
-                        return res.status(404).json({
-                            error: 'product not found',
-                        });
-                    }
-
-                    return res.json({
-                        success: 'Follow product successfully',
-                        product,
-                    });
-                })
-                .catch((error) => {
-                    return res.status(500).json({
-                        error: 'Follow product failed',
-                    });
-                });
-        }
-    });
-};
-
-exports.unfollowProduct = (req, res) => {
-    const userId = req.user._id;
-    const productId = req.product._id;
-
-    UserFollowProduct.findOneAndDelete({ userId, productId })
+    UserFollowProduct.findOneAndUpdate(
+        { userId, productId },
+        { isDeleted: false },
+        { upsert: true, new: true },
+    )
         .exec()
         .then((follow) => {
-            if (!follow) {
+            if (!follow)
                 return res.status(400).json({
                     error: 'Follow is already exists',
                 });
-            } else {
+            else
                 Product.findOne({ _id: productId })
                     .populate({
                         path: 'categoryId',
@@ -82,20 +39,64 @@ exports.unfollowProduct = (req, res) => {
                         }
 
                         return res.json({
-                            success: 'unfollow product successfully',
+                            success: 'Follow product successfully',
                             product,
                         });
-                    })
-                    .catch((error) => {
-                        return res.status(500).json({
-                            error: 'unfollow product failed',
-                        });
                     });
-            }
         })
         .catch((error) => {
-            return res.status(404).json({
-                error: 'not follow yet',
+            return res.status(500).json({
+                error: 'Follow product failed',
+            });
+        });
+};
+
+exports.unfollowProduct = (req, res) => {
+    const userId = req.user._id;
+    const productId = req.product._id;
+
+    UserFollowProduct.findOneAndUpdate(
+        { userId, productId },
+        { isDeleted: true },
+        { upsert: true, new: true },
+    )
+        .exec()
+        .then((follow) => {
+            if (!follow)
+                return res.status(400).json({
+                    error: 'Follow is already exists',
+                });
+            else
+                Product.findOne({ _id: productId })
+                    .populate({
+                        path: 'categoryId',
+                        populate: {
+                            path: 'categoryId',
+                            populate: { path: 'categoryId' },
+                        },
+                    })
+                    .populate({
+                        path: 'styleValueIds',
+                        populate: { path: 'styleId' },
+                    })
+                    .populate('storeId', '_id name avatar isActive isOpen')
+                    .exec()
+                    .then((product) => {
+                        if (!product) {
+                            return res.status(404).json({
+                                error: 'product not found',
+                            });
+                        }
+
+                        return res.json({
+                            success: 'Follow product successfully',
+                            product,
+                        });
+                    });
+        })
+        .catch((error) => {
+            return res.status(500).json({
+                error: 'Follow product failed',
             });
         });
 };
@@ -104,7 +105,7 @@ exports.checkFollowingProduct = (req, res) => {
     const userId = req.user._id;
     const productId = req.product._id;
 
-    UserFollowProduct.findOne({ userId, productId })
+    UserFollowProduct.findOne({ userId, productId, isDeleted: false })
         .exec()
         .then((follow) => {
             if (!follow) {
@@ -126,18 +127,21 @@ exports.checkFollowingProduct = (req, res) => {
 
 exports.getNumberOfFollowersForProduct = (req, res) => {
     const productId = req.product._id;
-    UserFollowProduct.countDocuments({ productId }, (error, count) => {
-        if (error) {
-            return res.status(404).json({
-                error: 'Following product not found',
-            });
-        }
+    UserFollowProduct.countDocuments(
+        { productId, isDeleted: false },
+        (error, count) => {
+            if (error) {
+                return res.status(404).json({
+                    error: 'Following product not found',
+                });
+            }
 
-        return res.json({
-            success: 'get product number of followers successfully',
-            count,
-        });
-    });
+            return res.json({
+                success: 'get product number of followers successfully',
+                count,
+            });
+        },
+    );
 };
 
 //?limit=...&page=...
@@ -154,7 +158,7 @@ exports.listFollowingProductsByUser = (req, res) => {
         pageCurrent: page,
     };
 
-    UserFollowProduct.find({ userId })
+    UserFollowProduct.find({ userId, isDeleted: false })
         .exec()
         .then((follows) => {
             const productIds = follows.map((follow) => follow.productId);
@@ -190,7 +194,7 @@ exports.listFollowingProductsByUser = (req, res) => {
                         isActive: true,
                         isSelling: true,
                     })
-                        .sort({ name: 1 })
+                        .sort({ name: 1, _id: 1 })
                         .skip(skip)
                         .limit(limit)
                         .populate({
@@ -213,11 +217,6 @@ exports.listFollowingProductsByUser = (req, res) => {
                                 filter,
                                 size,
                                 products,
-                            });
-                        })
-                        .catch((error) => {
-                            return res.status(500).json({
-                                error: 'Load list followings products failed',
                             });
                         });
                 },
