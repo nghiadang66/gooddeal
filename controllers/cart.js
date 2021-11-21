@@ -1,5 +1,6 @@
 const Cart = require('../models/cart');
 const CartItem = require('../models/cartItem');
+const Product = require('../models/product');
 const { errorHandler } = require('../helpers/errorHandler');
 const { cleanUserLess } = require('../helpers/userHandler');
 
@@ -61,13 +62,23 @@ exports.createCart = (req, res, next) => {
         });
 };
 
-exports.createCartItem = (req, res) => {
+exports.createCartItem = (req, res, next) => {
     const { productId, styleValueIds, count } = req.body;
 
-    if (!productId || !count)
-        return res.status(400).json({
-            error: 'All fields are required',
+    if (!productId || !count) {
+        const cartId = req.cartItem.cartId;
+        CartItem.countDocuments({ cartId }, (error, count) => {
+            if (count <= 0) {
+                //remove cart
+                req.cartId = cartId;
+                next();
+            } else {
+                return res.status(400).json({
+                    error: 'All fields are required',
+                });
+            }
         });
+    }
 
     let styleValueIdsArray = [];
     if (styleValueIds) {
@@ -274,8 +285,9 @@ exports.removeCartItem = (req, res, next) => {
                     req.cartId = cartId;
                     next();
                 } else {
-                    return res.status(500).json({
-                        error: 'Remove cart item successfully',
+                    return res.json({
+                        success: 'Remove cart item successfully',
+                        user: cleanUserLess(req.user),
                     });
                 }
             });
@@ -302,6 +314,7 @@ exports.removeCart = (req, res) => {
             return res.json({
                 success: 'Remove cart successfully',
                 cart,
+                user: cleanUserLess(req.user),
             });
         })
         .catch((error) => {

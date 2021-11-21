@@ -21,7 +21,13 @@ const {
 router.get('/cart/count/:userId', isAuth, countCartItems);
 router.get('/carts/:userId', isAuth, listCarts);
 router.get('/cart/items/:cartId/:userId', isAuth, listItemByCard);
-router.post('/cart/add/:userId', isAuth, createCart, createCartItem);
+router.post(
+    '/cart/add/:userId',
+    isAuth,
+    createCart,
+    createCartItem,
+    removeCart,
+);
 router.put('/cart/update/:cartItemId/:userId', isAuth, updateCartItem);
 router.delete(
     '/cart/remove/:cartItemId/:userId',
