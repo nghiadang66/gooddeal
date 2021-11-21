@@ -14,9 +14,11 @@ const {
     updateCartItem,
     removeCartItem,
     removeCart,
+    countCartItems,
 } = require('../controllers/cart');
 
 //routes
+router.get('/cart/count/:userId', isAuth, countCartItems);
 router.get('/carts/:userId', isAuth, listCarts);
 router.get('/cart/items/:cartId/:userId', isAuth, listItemByCard);
 router.post('/cart/add/:userId', isAuth, createCart, createCartItem);

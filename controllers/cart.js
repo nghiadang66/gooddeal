@@ -1,6 +1,7 @@
 const Cart = require('../models/cart');
 const CartItem = require('../models/cartItem');
 const { errorHandler } = require('../helpers/errorHandler');
+const { cleanUserLess } = require('../helpers/userHandler');
 
 exports.cartById = (req, res, next, id) => {
     Cart.findById(id, (error, cart) => {
@@ -112,6 +113,7 @@ exports.createCartItem = (req, res) => {
                 return res.json({
                     success: 'Add to cart successfully',
                     item,
+                    user: cleanUserLess(req.user),
                 });
         });
 };
@@ -307,4 +309,45 @@ exports.removeCart = (req, res) => {
                 error: 'Remove cart failed',
             });
         });
+};
+
+exports.countCartItems = (req, res) => {
+    CartItem.aggregate(
+        [
+            {
+                $lookup: {
+                    from: 'carts',
+                    localField: 'cartId',
+                    foreignField: '_id',
+                    as: 'carts',
+                },
+            },
+            {
+                $group: {
+                    _id: '$carts.userId',
+                    count: {
+                        $sum: '$count',
+                    },
+                },
+            },
+        ],
+        (error, result) => {
+            if (error)
+                return res.status(500).json({
+                    error: 'Count cart items failed',
+                });
+
+            const findedResult = result.find((r) =>
+                r._id[0].equals(req.user._id),
+            );
+            const count = findedResult ? findedResult.count : 0;
+
+            // console.log(result, findedResult);
+
+            return res.status(200).json({
+                success: 'Count cart items successfully',
+                count,
+            });
+        },
+    );
 };
