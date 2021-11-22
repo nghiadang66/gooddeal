@@ -20,6 +20,7 @@ const styleRoutes = require('./routes/style');
 const styleValueRoutes = require('./routes/styleValue');
 const productRoutes = require('./routes/product');
 const cartRoutes = require('./routes/cart');
+const deliveryRoutes = require('./routes/delivery');
 
 //app
 const app = express();
@@ -63,6 +64,7 @@ app.use('/api', styleRoutes);
 app.use('/api', styleValueRoutes);
 app.use('/api', productRoutes);
 app.use('/api', cartRoutes);
+app.use('/api', deliveryRoutes);
 
 //port
 const port = process.env.PORT || 8000;
