@@ -265,6 +265,7 @@ exports.updateCartItem = (req, res) => {
             return res.json({
                 success: 'Update cart item successfully',
                 item,
+                user: cleanUserLess(req.user),
             });
         })
         .catch((error) => {
