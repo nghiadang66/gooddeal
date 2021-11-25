@@ -1,11 +1,11 @@
 const mongoose = require('mongoose');
 const { ObjectId } = mongoose.Schema;
 
-const cartItemSchema = new mongoose.Schema(
+const orderItemSchema = new mongoose.Schema(
     {
-        cartId: {
+        orderId: {
             type: ObjectId,
-            ref: 'Cart',
+            ref: 'Order',
         },
         productId: {
             type: ObjectId,
@@ -23,7 +23,6 @@ const cartItemSchema = new mongoose.Schema(
         count: {
             type: Number,
             min: 1,
-            default: 1,
             required: true,
         },
         isDeleted: {
@@ -34,4 +33,4 @@ const cartItemSchema = new mongoose.Schema(
     { timestamps: true },
 );
 
-module.exports = mongoose.model('CartItem', cartItemSchema);
+module.exports = mongoose.model('OrderItem', orderItemSchema);

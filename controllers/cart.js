@@ -1,7 +1,5 @@
 const Cart = require('../models/cart');
 const CartItem = require('../models/cartItem');
-const Product = require('../models/product');
-const { errorHandler } = require('../helpers/errorHandler');
 const { cleanUserLess } = require('../helpers/userHandler');
 
 exports.cartById = (req, res, next, id) => {
@@ -233,7 +231,7 @@ exports.updateCartItem = (req, res) => {
 
     CartItem.findOneAndUpdate(
         { _id: req.cartItem._id },
-        { $set: { count } },
+        { $inc: { count: +count } },
         { new: true },
     )
         .populate({
