@@ -6,18 +6,22 @@ const orderSchema = new mongoose.Schema(
         userId: {
             type: ObjectId,
             ref: 'User',
+            required: true,
         },
         storeId: {
             type: ObjectId,
             ref: 'Store',
+            required: true,
         },
         deliveryId: {
             type: ObjectId,
             ref: 'Delivery',
+            required: true,
         },
         commissionId: {
             type: ObjectId,
             ref: 'Commission',
+            required: true,
         },
         status: {
             type: String,

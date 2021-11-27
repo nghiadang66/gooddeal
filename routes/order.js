@@ -20,6 +20,7 @@ const {
     updateStatusForUser,
     updateStatusForStore,
     updateStatusForAdmin,
+    updateEWallet,
     updateQuantitySoldProduct,
 } = require('../controllers/order');
 
@@ -61,30 +62,32 @@ router.post(
     removeAllCartItems,
 );
 router.put(
-    '/order/update/by/user/:cartId/:userId',
+    '/order/update/by/user/:orderId/:userId',
     isAuth,
     checkOrderAuth,
     updateStatusForUser,
 );
 router.put(
-    '/order/update/by/store/:cartId/:storeId/:userId',
+    '/order/update/by/store/:orderId/:storeId/:userId',
     isAuth,
     isManager,
     checkOrderAuth,
     updateStatusForStore,
 );
 router.put(
-    '/order/update/for/admin/:cartId/:userId',
+    '/order/update/for/admin/:orderId/:userId',
     isAuth,
     isAdmin,
     checkOrderAuth,
     updateStatusForAdmin,
+    updateEWallet,
     updateQuantitySoldProduct,
 );
 
 //params
 router.param('orderId', orderById);
 router.param('cartId', cartById);
+router.param('storeId', storeById);
 router.param('userId', userById);
 
 module.exports = router;

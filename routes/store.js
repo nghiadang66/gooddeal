@@ -32,6 +32,7 @@ const {
     listStores,
     listStoresByUser,
     listStoresForAdmin,
+    getCommission,
 } = require('../controllers/store');
 const { activeAllProduct } = require('../controllers/product');
 
@@ -77,6 +78,7 @@ router.put(
     activeAllProduct,
 );
 
+router.get('/store/commission/:storeId', getCommission);
 router.put(
     '/store/commission/:storeId/:userId',
     isAuth,

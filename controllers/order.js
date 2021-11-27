@@ -3,6 +3,7 @@ const OrderItem = require('../models/orderItem');
 const Cart = require('../models/cart');
 const CartItem = require('../models/cartItem');
 const Product = require('../models/product');
+const Store = require('../models/store');
 const { cleanUserLess } = require('../helpers/userHandler');
 const { errorHandler } = require('../helpers/errorHandler');
 
@@ -36,12 +37,6 @@ exports.orderItemById = (req, res, next, id) => {
 exports.listOrderByUser = (req, res) => {
     const userId = req.user._id;
 
-    const search = req.query.search ? req.query.search : '';
-    const regex = search
-        .split(' ')
-        .filter((w) => w)
-        .join('|');
-
     const sortBy = req.query.sortBy ? req.query.sortBy : 'createdAt';
     const order =
         req.query.order &&
@@ -56,7 +51,6 @@ exports.listOrderByUser = (req, res) => {
     let skip = limit * (page - 1);
 
     const filter = {
-        search,
         sortBy,
         order,
         limit,
@@ -64,7 +58,6 @@ exports.listOrderByUser = (req, res) => {
     };
 
     const filterArgs = {
-        _id: { $regex: regex, $options: 'i' },
         userId,
     };
 
@@ -127,12 +120,6 @@ exports.listOrderByUser = (req, res) => {
 exports.listOrderByStore = (req, res) => {
     const storeId = req.store._id;
 
-    const search = req.query.search ? req.query.search : '';
-    const regex = search
-        .split(' ')
-        .filter((w) => w)
-        .join('|');
-
     const sortBy = req.query.sortBy ? req.query.sortBy : 'createdAt';
     const order =
         req.query.order &&
@@ -147,7 +134,6 @@ exports.listOrderByStore = (req, res) => {
     let skip = limit * (page - 1);
 
     const filter = {
-        search,
         sortBy,
         order,
         limit,
@@ -155,7 +141,6 @@ exports.listOrderByStore = (req, res) => {
     };
 
     const filterArgs = {
-        _id: { $regex: regex, $options: 'i' },
         storeId,
     };
 
@@ -339,7 +324,7 @@ exports.createOrder = (req, res, next) => {
             error: 'The system does not have online payment yet!',
         });
 
-    if (userId != req.user._id)
+    if (!userId.equals(req.user._id))
         return res.status(400).json({
             error: 'This is not right cart!',
         });
@@ -362,20 +347,20 @@ exports.createOrder = (req, res, next) => {
             return res.status(400).json({
                 error: errorHandler(error),
             });
+        } else {
+            //creat order items
+            req.order = order;
+            next();
         }
-
-        //creat order items
-        req.order = order;
-        next();
     });
 };
 
-exports.createOrderItems = (req, res) => {
+exports.createOrderItems = (req, res, next) => {
     CartItem.find({ cartId: req.cart._id })
         .exec()
         .then((items) => {
             console.log('before', items);
-            items.map((item) => {
+            const newItems = items.map((item) => {
                 return {
                     orderId: req.order._id,
                     productId: item.productId,
@@ -384,16 +369,17 @@ exports.createOrderItems = (req, res) => {
                     isDeleted: item.isDeleted,
                 };
             });
-            console.log('after', items);
+            console.log('after', newItems);
 
-            OrderItem.insertMany(items, (error, items) => {
+            OrderItem.insertMany(newItems, (error, items) => {
                 if (error)
                     return res.status(500).json({
                         error: errorHandler(error),
                     });
-
-                //remove cart
-                next();
+                else {
+                    //remove cart
+                    next();
+                }
             });
         })
         .catch((error) => {
@@ -415,9 +401,8 @@ exports.removeCart = (req, res, next) => {
                 return res.status(400).json({
                     error: 'Remove cart failed',
                 });
-
             //remove all cart items
-            next();
+            else next();
         })
         .catch((error) => {
             return res.status(400).json({
@@ -432,25 +417,26 @@ exports.removeAllCartItems = (req, res) => {
             return res.status(400).json({
                 error: 'Remove all cart items failed',
             });
-
-        return res.json({
-            success: 'Create order successfully',
-            order: req.order,
-            user: cleanUserLess(req.user),
-        });
+        else
+            return res.json({
+                success: 'Create order successfully',
+                order: req.order,
+                user: cleanUserLess(req.user),
+            });
     });
 };
 
 exports.checkOrderAuth = (req, res, next) => {
     if (req.user.role === 'admin') next();
-    if (
-        req.user._id === req.order.userId ||
-        req.store._id === req.order.storeId
+    else if (
+        req.user._id.equals(req.order.userId) ||
+        (req.store && req.store._id.equals(req.order.storeId))
     )
         next();
-    return res.status(401).json({
-        error: 'That is not right order!',
-    });
+    else
+        return res.status(401).json({
+            error: 'That is not right order!',
+        });
 };
 
 exports.readOrder = (req, res) => {
@@ -481,6 +467,7 @@ exports.readOrder = (req, res) => {
 // 'Not processed' --> 'Cancelled' (in 1h)
 exports.updateStatusForUser = (req, res) => {
     const currentStatus = req.order.status;
+    console.log(currentStatus);
     if (currentStatus !== 'Not processed')
         return res.status(401).json({
             error: 'This order is already processed!',
@@ -489,8 +476,7 @@ exports.updateStatusForUser = (req, res) => {
     const time = new Date().getTime() - new Date(req.order.createdAt).getTime();
     const hours = Math.floor(time / 1000) / 3600;
     console.log(hours);
-
-    if (hours > 1) {
+    if (hours >= 1) {
         return res.status(401).json({
             error: 'This order is not within the time allowed!',
         });
@@ -541,13 +527,14 @@ exports.updateStatusForStore = (req, res) => {
         });
 
     const { status } = req.body;
+    console.log(status);
     if (
         status !== 'Not processed' &&
         status !== 'Processing' &&
         status !== 'Shipped' &&
         status !== 'Cancelled'
     )
-        return res.status(401).json({
+        return res.status(400).json({
             error: 'This status value is invalid!',
         });
 
@@ -614,7 +601,7 @@ exports.updateStatusForAdmin = (req, res, next) => {
                 });
 
             if (status === 'Delivered')
-                //update product quantity, sold
+                //update store e_wallet, product quantity, sold
                 next();
             else
                 return res.json({
@@ -625,6 +612,27 @@ exports.updateStatusForAdmin = (req, res, next) => {
         .catch((error) => {
             return res.status(500).json({
                 error: 'update order failed',
+            });
+        });
+};
+
+exports.updateEWallet = (req, res, next) => {
+    Store.findOneAndUpdate(
+        { _id: req.order.storeId },
+        { $inc: { e_wallet: +amountToStore } },
+        { new: true },
+    )
+        .exec()
+        .then((store) => {
+            if (!store)
+                return res.status(500).json({
+                    error: 'update store e_wallet failed',
+                });
+            else next();
+        })
+        .catch((err) => {
+            return res.status(500).json({
+                error: 'update store e_wallet failed',
             });
         });
 };
@@ -644,7 +652,7 @@ exports.updateQuantitySoldProduct = (req, res) => {
                 }
             });
 
-            console.log(list);
+            console.log(items, list);
 
             let bulkOps = list.map((element) => {
                 return {
@@ -653,7 +661,7 @@ exports.updateQuantitySoldProduct = (req, res) => {
                         update: {
                             $inc: {
                                 quantity: -element.count,
-                                sold: +item.count,
+                                sold: +element.count,
                             },
                         },
                     },
@@ -666,7 +674,11 @@ exports.updateQuantitySoldProduct = (req, res) => {
                         error: 'Could not update product',
                     });
                 }
-                // else
+
+                return res.json({
+                    success: 'Order successfully, update product successfully',
+                    order: req.order,
+                });
             });
         })
         .catch((error) => {

@@ -158,7 +158,7 @@ exports.updateStore = (req, res) => {
 /*------
   ACTIVE
   ------*/
-exports.activeStore = (req, res) => {
+exports.activeStore = (req, res, next) => {
     const { isActive } = req.body;
 
     Store.findOneAndUpdate(
@@ -196,6 +196,28 @@ exports.activeStore = (req, res) => {
 /*------
   COMMISSION
   ------*/
+exports.getCommission = (req, res) => {
+    Store.findOne({ _id: req.store._id })
+        .populate('commissionId')
+        .exec()
+        .then((store) => {
+            if (!store)
+                return res.status(500).json({
+                    error: 'Store not found',
+                });
+            else
+                return res.json({
+                    error: 'Get commission successfully',
+                    commission: store.commissionId,
+                });
+        })
+        .catch((error) => {
+            return res.status(500).json({
+                error: 'Store not found',
+            });
+        });
+};
+
 exports.updateCommission = (req, res) => {
     const { commissionId } = req.body;
 

@@ -85,7 +85,7 @@ exports.createCartItem = (req, res, next) => {
 
     CartItem.findOneAndUpdate(
         { productId, styleValueIds: styleValueIdsArray, cartId: req.cart._id },
-        { $set: { count } },
+        { $inc: { count: +count } },
         { upsert: true, new: true },
     )
         .populate({
@@ -231,7 +231,7 @@ exports.updateCartItem = (req, res) => {
 
     CartItem.findOneAndUpdate(
         { _id: req.cartItem._id },
-        { $inc: { count: +count } },
+        { $set: { count } },
         { new: true },
     )
         .populate({
