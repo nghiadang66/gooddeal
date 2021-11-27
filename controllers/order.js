@@ -201,12 +201,6 @@ exports.listOrderByStore = (req, res) => {
 };
 
 exports.listOrderForAdmin = (req, res) => {
-    const search = req.query.search ? req.query.search : '';
-    const regex = search
-        .split(' ')
-        .filter((w) => w)
-        .join('|');
-
     const sortBy = req.query.sortBy ? req.query.sortBy : 'createdAt';
     const order =
         req.query.order &&
@@ -221,16 +215,13 @@ exports.listOrderForAdmin = (req, res) => {
     let skip = limit * (page - 1);
 
     const filter = {
-        search,
         sortBy,
         order,
         limit,
         pageCurrent: page,
     };
 
-    const filterArgs = {
-        _id: { $regex: regex, $options: 'i' },
-    };
+    const filterArgs = {};
 
     if (req.query.status) {
         filter.status = req.query.status.split('|');
@@ -619,7 +610,7 @@ exports.updateStatusForAdmin = (req, res, next) => {
 exports.updateEWallet = (req, res, next) => {
     Store.findOneAndUpdate(
         { _id: req.order.storeId },
-        { $inc: { e_wallet: +amountToStore } },
+        { $inc: { e_wallet: +req.order.amountToStore } },
         { new: true },
     )
         .exec()
@@ -686,4 +677,28 @@ exports.updateQuantitySoldProduct = (req, res) => {
                 error: 'Could not update product quantity, sold',
             });
         });
+};
+
+exports.countOrders = (req, res) => {
+    const filterArgs = {};
+    if (req.query.status)
+        filterArgs.status = {
+            $in: req.query.status.split('|'),
+        };
+    if (req.query.userId) filterArgs.userId = req.query.userId;
+    if (req.query.storeId) filterArgs.storeId = req.query.storeId;
+
+    Order.countDocuments(filterArgs, (error, count) => {
+        if (error) {
+            return res.json({
+                success: 'Count order successfully',
+                count: 0,
+            });
+        }
+
+        return res.json({
+            success: 'Count order successfully',
+            count,
+        });
+    });
 };

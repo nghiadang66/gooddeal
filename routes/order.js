@@ -22,9 +22,11 @@ const {
     updateStatusForAdmin,
     updateEWallet,
     updateQuantitySoldProduct,
+    countOrders,
 } = require('../controllers/order');
 
 //routes
+router.get('/orders/count', countOrders);
 router.get(
     '/order/by/user/:orderId/:userId',
     isAuth,
