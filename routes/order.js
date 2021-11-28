@@ -27,6 +27,7 @@ const {
     updateQuantitySoldProduct,
     countOrders,
     listOrderItems,
+    updatePoint,
 } = require('../controllers/order');
 
 //routes
@@ -92,6 +93,7 @@ router.put(
     isAuth,
     checkOrderAuth,
     updateStatusForUser,
+    updatePoint,
 );
 router.put(
     '/order/update/by/store/:orderId/:storeId/:userId',
@@ -99,6 +101,7 @@ router.put(
     isManager,
     checkOrderAuth,
     updateStatusForStore,
+    updatePoint,
 );
 router.put(
     '/order/update/for/admin/:orderId/:userId',
@@ -109,6 +112,7 @@ router.put(
     updateEWallet,
     createTransaction,
     updateQuantitySoldProduct,
+    updatePoint,
 );
 
 //params

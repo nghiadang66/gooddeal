@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const { errorHandler } = require('../helpers/errorHandler');
 
 const transport = nodemailer.createTransport({
-    service: 'Gmail',
+    service: 'gmail',
     auth: {
         user: process.env.ADMIN_EMAIL,
         pass: process.env.ADMIN_EMAIL_PASSWORD,

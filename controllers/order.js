@@ -4,6 +4,7 @@ const Cart = require('../models/cart');
 const CartItem = require('../models/cartItem');
 const Product = require('../models/product');
 const Store = require('../models/store');
+const User = require('../models/user');
 const { cleanUserLess } = require('../helpers/userHandler');
 const { errorHandler } = require('../helpers/errorHandler');
 
@@ -496,9 +497,8 @@ exports.readOrder = (req, res) => {
 };
 
 // 'Not processed' --> 'Cancelled' (in 1h)
-exports.updateStatusForUser = (req, res) => {
+exports.updateStatusForUser = (req, res, next) => {
     const currentStatus = req.order.status;
-    console.log(currentStatus);
     if (currentStatus !== 'Not processed')
         return res.status(401).json({
             error: 'This order is already processed!',
@@ -506,7 +506,6 @@ exports.updateStatusForUser = (req, res) => {
 
     const time = new Date().getTime() - new Date(req.order.createdAt).getTime();
     const hours = Math.floor(time / 1000) / 3600;
-    console.log(hours);
     if (hours >= 1) {
         return res.status(401).json({
             error: 'This order is not within the time allowed!',
@@ -535,6 +534,15 @@ exports.updateStatusForUser = (req, res) => {
                     error: 'Not found!',
                 });
 
+            if (order.status === 'Cancelled') {
+                req.updatePoint = {
+                    userId: req.order.userId,
+                    storeId: req.order.storeId,
+                    point: -1,
+                };
+                next();
+            }
+
             return res.json({
                 success: 'update order successfully',
                 order,
@@ -550,7 +558,7 @@ exports.updateStatusForUser = (req, res) => {
 
 //'Not processed' <--> 'Processing' --> 'Shipped'
 //'Not processed' <--> 'Processing' --> 'Cancelled'
-exports.updateStatusForStore = (req, res) => {
+exports.updateStatusForStore = (req, res, next) => {
     const currentStatus = req.order.status;
     if (currentStatus !== 'Not processed' && currentStatus !== 'Processing')
         return res.status(401).json({
@@ -584,6 +592,15 @@ exports.updateStatusForStore = (req, res) => {
                 return res.status(500).json({
                     error: 'Not found!',
                 });
+
+            if (order.status === 'Cancelled') {
+                req.updatePoint = {
+                    userId: req.order.userId,
+                    storeId: req.order.storeId,
+                    point: -1,
+                };
+                next();
+            }
 
             return res.json({
                 success: 'update order successfully',
@@ -638,6 +655,12 @@ exports.updateStatusForAdmin = (req, res, next) => {
                     isUp: true,
                     amount: order.amountToStore,
                 };
+
+                req.updatePoint = {
+                    userId: req.order.userId,
+                    storeId: req.order.storeId,
+                    point: 1,
+                };
                 next();
             } else
                 return res.json({
@@ -652,7 +675,7 @@ exports.updateStatusForAdmin = (req, res, next) => {
         });
 };
 
-exports.updateQuantitySoldProduct = (req, res) => {
+exports.updateQuantitySoldProduct = (req, res, next) => {
     OrderItem.find({ orderId: req.order._id })
         .exec()
         .then((items) => {
@@ -701,6 +724,8 @@ exports.updateQuantitySoldProduct = (req, res) => {
                 error: 'Could not update product quantity, sold',
             });
         });
+
+    next();
 };
 
 exports.countOrders = (req, res) => {
@@ -725,4 +750,22 @@ exports.countOrders = (req, res) => {
             count,
         });
     });
+};
+
+exports.updatePoint = async (req, res) => {
+    try {
+        const { userId, storeId, point } = req.updatePoint;
+        await User.findOneAndUpdate(
+            { _id: userId },
+            { $inc: { point: +point } },
+        );
+        await Store.findOneAndUpdate(
+            { _id: storeId },
+            { $inc: { point: +point } },
+        );
+
+        console.log('---UPDATE POINT SUCCESSFULLY---');
+    } catch {
+        console.log('---UPDATE POINT FAILED---');
+    }
 };
