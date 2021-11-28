@@ -7,6 +7,10 @@ const { userById } = require('../controllers/user');
 const { storeById } = require('../controllers/store');
 const { cartById } = require('../controllers/cart');
 const {
+    updateEWallet,
+    createTransaction,
+} = require('../controllers/transaction');
+const {
     orderById,
     createOrder,
     createOrderItems,
@@ -20,13 +24,33 @@ const {
     updateStatusForUser,
     updateStatusForStore,
     updateStatusForAdmin,
-    updateEWallet,
     updateQuantitySoldProduct,
     countOrders,
+    listOrderItems,
 } = require('../controllers/order');
 
 //routes
 router.get('/orders/count', countOrders);
+router.get(
+    '/order/items/by/user/:orderId/:userId',
+    isAuth,
+    checkOrderAuth,
+    listOrderItems,
+);
+router.get(
+    '/order/items/by/store/:orderId/:storeId/:userId',
+    isAuth,
+    isManager,
+    checkOrderAuth,
+    listOrderItems,
+);
+router.get(
+    '/order/items/for/admin/:orderId/:userId',
+    isAuth,
+    isAdmin,
+    checkOrderAuth,
+    listOrderItems,
+);
 router.get(
     '/order/by/user/:orderId/:userId',
     isAuth,
@@ -83,6 +107,7 @@ router.put(
     checkOrderAuth,
     updateStatusForAdmin,
     updateEWallet,
+    createTransaction,
     updateQuantitySoldProduct,
 );
 

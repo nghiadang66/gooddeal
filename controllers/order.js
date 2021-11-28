@@ -34,6 +34,46 @@ exports.orderItemById = (req, res, next, id) => {
 };
 
 //list
+exports.listOrderItems = (req, res) => {
+    OrderItem.find({ orderId: req.order._id })
+        .populate({
+            path: 'productId',
+            populate: {
+                path: 'categoryId',
+                populate: {
+                    path: 'categoryId',
+                    populate: { path: 'categoryId' },
+                },
+            },
+            populate: {
+                path: 'storeId',
+                select: {
+                    _id: 1,
+                    name: 1,
+                    avatar: 1,
+                    isActive: 1,
+                    isOpen: 1,
+                },
+            },
+        })
+        .populate({
+            path: 'styleValueIds',
+            populate: { path: 'styleId' },
+        })
+        .exec()
+        .then((items) => {
+            return res.json({
+                success: 'Load list order items successfully',
+                items,
+            });
+        })
+        .catch((error) => {
+            return res.status(500).json({
+                error: 'Load list order items failed',
+            });
+        });
+};
+
 exports.listOrderByUser = (req, res) => {
     const userId = req.user._id;
 
@@ -96,7 +136,7 @@ exports.listOrderByUser = (req, res) => {
             .sort({ [sortBy]: order, _id: 1 })
             .skip(skip)
             .limit(limit)
-            .populate('userId', '_id name avatar')
+            .populate('userId', '_id firstname lastname avatar')
             .populate('storeId', '_id name avatar isActive isOpen')
             .populate('deliveryId')
             .populate('commissionId')
@@ -179,7 +219,7 @@ exports.listOrderByStore = (req, res) => {
             .sort({ [sortBy]: order, _id: 1 })
             .skip(skip)
             .limit(limit)
-            .populate('userId', '_id name avatar')
+            .populate('userId', '_id firstname lastname avatar')
             .populate('storeId', '_id name avatar isActive isOpen')
             .populate('deliveryId')
             .populate('commissionId')
@@ -258,7 +298,7 @@ exports.listOrderForAdmin = (req, res) => {
             .sort({ [sortBy]: order, _id: 1 })
             .skip(skip)
             .limit(limit)
-            .populate('userId', '_id name avatar')
+            .populate('userId', '_id firstname lastname avatar')
             .populate('storeId', '_id name avatar isActive isOpen')
             .populate('deliveryId')
             .populate('commissionId')
@@ -431,8 +471,8 @@ exports.checkOrderAuth = (req, res, next) => {
 };
 
 exports.readOrder = (req, res) => {
-    Order.findOne({ _id: req.order._id, userId: req.user._id })
-        .populate('userId', '_id name avatar')
+    Order.findOne({ _id: req.order._id })
+        .populate('userId', '_id firstname lastname avatar')
         .populate('storeId', '_id name avatar isActive isOpen')
         .populate('deliveryId')
         .populate('commissionId')
@@ -484,7 +524,7 @@ exports.updateStatusForUser = (req, res) => {
         { $set: { status } },
         { new: true },
     )
-        .populate('userId', '_id name avatar')
+        .populate('userId', '_id firstname lastname avatar')
         .populate('storeId', '_id name avatar isActive isOpen')
         .populate('deliveryId')
         .populate('commissionId')
@@ -534,7 +574,7 @@ exports.updateStatusForStore = (req, res) => {
         { $set: { status } },
         { new: true },
     )
-        .populate('userId', '_id name avatar')
+        .populate('userId', '_id firstname lastname avatar')
         .populate('storeId', '_id name avatar isActive isOpen')
         .populate('deliveryId')
         .populate('commissionId')
@@ -580,7 +620,7 @@ exports.updateStatusForAdmin = (req, res, next) => {
         { $set: { status } },
         { new: true },
     )
-        .populate('userId', '_id name avatar')
+        .populate('userId', '_id firstname lastname avatar')
         .populate('storeId', '_id name avatar isActive isOpen')
         .populate('deliveryId')
         .populate('commissionId')
@@ -591,10 +631,15 @@ exports.updateStatusForAdmin = (req, res, next) => {
                     error: 'Not found!',
                 });
 
-            if (status === 'Delivered')
+            if (status === 'Delivered') {
                 //update store e_wallet, product quantity, sold
+                req.createTransaction = {
+                    storeId: order.storeId,
+                    isUp: true,
+                    amount: order.amountToStore,
+                };
                 next();
-            else
+            } else
                 return res.json({
                     success: 'update order successfully',
                     order,
@@ -603,27 +648,6 @@ exports.updateStatusForAdmin = (req, res, next) => {
         .catch((error) => {
             return res.status(500).json({
                 error: 'update order failed',
-            });
-        });
-};
-
-exports.updateEWallet = (req, res, next) => {
-    Store.findOneAndUpdate(
-        { _id: req.order.storeId },
-        { $inc: { e_wallet: +req.order.amountToStore } },
-        { new: true },
-    )
-        .exec()
-        .then((store) => {
-            if (!store)
-                return res.status(500).json({
-                    error: 'update store e_wallet failed',
-                });
-            else next();
-        })
-        .catch((err) => {
-            return res.status(500).json({
-                error: 'update store e_wallet failed',
             });
         });
 };
