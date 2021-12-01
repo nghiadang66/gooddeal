@@ -11,7 +11,7 @@ const storeSchema = new mongoose.Schema(
             trim: true,
             required: true,
             unique: true,
-            maxLength: 100,
+            maxLength: 300,
             validate: [nameAvailable, 'Store name is invalid'],
         },
         slug: {

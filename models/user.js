@@ -110,7 +110,10 @@ const userSchema = new mongoose.Schema(
             unique: true,
             sparse: true,
         },
-        //cart
+        isActive: {
+            type: Boolean,
+            default: true,
+        },
     },
     { timestamps: true },
 );

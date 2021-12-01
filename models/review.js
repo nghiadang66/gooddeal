@@ -1,15 +1,22 @@
 const mongoose = require('mongoose');
 const { ObjectId } = mongoose.Schema;
 
-const userReviewProductSchema = new mongoose.Schema(
+const reviewSchema = new mongoose.Schema(
     {
         userId: {
             type: ObjectId,
             ref: 'User',
+            required: true,
         },
         productId: {
             type: ObjectId,
             ref: 'Product',
+            required: true,
+        },
+        storeId: {
+            type: ObjectId,
+            ref: 'Store',
+            required: true,
         },
         content: {
             type: String,
@@ -27,6 +34,4 @@ const userReviewProductSchema = new mongoose.Schema(
     { timestamps: true },
 );
 
-userReviewProductSchema.index({ userId: 1, productId: 1 }, { unique: true });
-
-module.exports = mongoose.model('UserReviewProduct', userReviewProductSchema);
+module.exports = mongoose.model('Review', reviewSchema);

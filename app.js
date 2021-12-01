@@ -23,6 +23,7 @@ const cartRoutes = require('./routes/cart');
 const deliveryRoutes = require('./routes/delivery');
 const orderRoutes = require('./routes/order');
 const transactionRoutes = require('./routes/transaction');
+const reviewRoutes = require('./routes/review');
 
 //app
 const app = express();
@@ -69,6 +70,7 @@ app.use('/api', cartRoutes);
 app.use('/api', deliveryRoutes);
 app.use('/api', orderRoutes);
 app.use('/api', transactionRoutes);
+app.use('/api', reviewRoutes);
 
 //port
 const port = process.env.PORT || 8000;
