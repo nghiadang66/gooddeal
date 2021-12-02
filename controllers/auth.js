@@ -380,9 +380,7 @@ exports.verifyPassword = (req, res, next) => {
             return res.status(401).json({
                 error: "Current password doesn't match",
             });
-        }
-
-        next();
+        } else next();
     });
 };
 
@@ -435,8 +433,7 @@ exports.isOwner = (req, res, next) => {
             error: 'Store Owner resource! Access denied',
             isOwner: false,
         });
-    }
-    next();
+    } else next();
 };
 
 exports.isAdmin = (req, res, next) => {

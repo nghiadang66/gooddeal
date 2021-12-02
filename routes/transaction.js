@@ -32,16 +32,16 @@ router.get(
     isAdmin,
     listTransactions,
 );
-router.post(
-    '/transaction/by/user/:userId',
+router.put(
+    '/transaction/create/by/user/:userId',
     isAuth,
     verifyPassword,
     requestTransaction,
     updateEWallet,
     createTransaction,
 );
-router.post(
-    '/transaction/by/store/:storeId/:userId',
+router.put(
+    '/transaction/create/by/store/:storeId/:userId',
     isAuth,
     verifyPassword,
     isOwner,
@@ -49,8 +49,8 @@ router.post(
     updateEWallet,
     createTransaction,
 );
-router.post(
-    '/transaction/for/admin/:userId',
+router.put(
+    '/transaction/create/for/admin/:userId',
     isAuth,
     verifyPassword,
     isAdmin,
