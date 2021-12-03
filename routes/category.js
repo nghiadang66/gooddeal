@@ -21,7 +21,7 @@ const {
 const { listProductCategoriesByStore } = require('../controllers/product');
 
 //routes
-router.get('/category/by/id/:categoryId/:userId', isAuth, isAdmin, getCategory);
+router.get('/category/by/id/:categoryId', getCategory);
 router.get('/active/categories', listActiveCategories);
 router.get(
     '/categories/by/store/:storeId',

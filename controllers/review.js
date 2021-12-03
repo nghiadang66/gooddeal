@@ -256,7 +256,7 @@ exports.listReviews = (req, res) => {
             .skip(skip)
             .limit(limit)
             .populate('userId', '_id firstname lastname avatar')
-            .populate('productId', '_id name avatar isActive isSelling')
+            .populate('productId', '_id name listImages isActive isSelling')
             .populate('storeId', '_id name avatar isActive isOpen')
             .exec()
             .then((reviews) => {
