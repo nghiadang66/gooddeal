@@ -22,22 +22,23 @@ exports.checkReview = (req, res) => {
     console.log(orderId, productId);
     Review.findOne({ userId: req.user._id, orderId, productId })
         .exec()
-        .then(review => {
-            if (!review) return res.status(404).json({
-                error: 'Review not found',
-            });
+        .then((review) => {
+            if (!review)
+                return res.status(404).json({
+                    error: 'Review not found',
+                });
 
             return res.json({
                 success: 'Reviewed',
                 review,
             });
         })
-        .catch(err => {
+        .catch((err) => {
             return res.status(404).json({
                 error: 'Review not found',
             });
-        })
-}
+        });
+};
 
 exports.createReview = (req, res, next) => {
     const { content, rating, storeId, productId, orderId } = req.body;
@@ -47,7 +48,14 @@ exports.createReview = (req, res, next) => {
             error: 'All fields are required',
         });
 
-    const review = new Review({ content, rating, userId: req.user._id, storeId, productId, orderId });
+    const review = new Review({
+        content,
+        rating,
+        userId: req.user._id,
+        storeId,
+        productId,
+        orderId,
+    });
     review.save((error, review) => {
         if (error || !review)
             return res.status(400).json({
@@ -138,8 +146,8 @@ exports.updateRating = (req, res) => {
                 const temp = result.filter((r) => r._id.equals(productId))[0];
                 const rating = temp
                     ? (
-                        parseFloat(temp.rating) / parseFloat(temp.count)
-                    ).toFixed()
+                          parseFloat(temp.rating) / parseFloat(temp.count)
+                      ).toFixed()
                     : 3;
                 Product.findOneAndUpdate(
                     { _id: productId },
@@ -180,8 +188,8 @@ exports.updateRating = (req, res) => {
                 const temp = result.filter((r) => r._id.equals(storeId))[0];
                 const rating = temp
                     ? (
-                        parseFloat(temp.rating) / parseFloat(temp.count)
-                    ).toFixed()
+                          parseFloat(temp.rating) / parseFloat(temp.count)
+                      ).toFixed()
                     : 3;
                 Store.findOneAndUpdate({ _id: storeId }, { $set: { rating } })
                     .exec()
@@ -206,7 +214,7 @@ exports.listReviews = (req, res) => {
     const sortBy = req.query.sortBy ? req.query.sortBy : 'createdAt';
     const order =
         req.query.order &&
-            (req.query.order == 'asc' || req.query.order == 'desc')
+        (req.query.order == 'asc' || req.query.order == 'desc')
             ? req.query.order
             : 'desc';
 
