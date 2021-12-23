@@ -40,25 +40,31 @@ exports.readTransaction = (req, res) => {
 };
 
 exports.requestTransaction = (req, res, next) => {
+    console.log('Requesting transaction');
     const { isUp, code, amount } = req.body;
-    if ((!req.store && !req.user) || typeof isUp !== 'boolean' || !amount)
+
+    if (
+        (!req.store && !req.user) ||
+        (isUp !== 'true' && isUp !== 'false') ||
+        !amount
+    )
         return res.status(400).json({
             error: 'All fields are required',
         });
     else {
         req.createTransaction = {
-            isUp,
+            isUp: isUp === 'true' ? true : false,
             code,
             amount,
         };
         if (!req.store && req.user) req.createTransaction.userId = req.user._id;
         else req.createTransaction.storeId = req.store._id;
-
         next();
     }
 };
 
 exports.updateEWallet = (req, res, next) => {
+    console.log('updateEWallet');
     const { userId, storeId, isUp, code, amount } = req.createTransaction;
     if ((!userId && !storeId) || typeof isUp !== 'boolean' || !amount)
         return res.status(400).json({
@@ -102,6 +108,7 @@ exports.updateEWallet = (req, res, next) => {
 };
 
 exports.createTransaction = (req, res, next) => {
+    console.log('createTransaction');
     const { userId, storeId, isUp, code, amount } = req.createTransaction;
 
     if ((!userId && !storeId) || typeof isUp !== 'boolean' || !amount)
@@ -122,44 +129,7 @@ exports.createTransaction = (req, res, next) => {
             return res.status(500).json({
                 error: errorHandler(error),
             });
-        if (next) next();
-        else {
-            if (storeId)
-                Store.findOne({
-                    _id: storeId,
-                })
-                    .populate('ownerId')
-                    .populate('staffIds')
-                    .populate('commissionId', '_id name cost')
-                    .exec()
-                    .then((store) => {
-                        if (!store) {
-                            return res.status(500).json({
-                                error: 'Create transaction successfully, but Stores not found',
-                            });
-                        }
-
-                        store.ownerId = cleanUser(store.ownerId);
-                        store.staffIds.forEach((staff) => {
-                            staff = cleanUser(staff);
-                        });
-
-                        return res.json({
-                            success: 'Create transaction successfully',
-                            store,
-                        });
-                    })
-                    .catch((error) => {
-                        return res.status(500).json({
-                            error: 'Create transaction successfully, but Store not found',
-                        });
-                    });
-            else
-                return res.json({
-                    success: 'Create transaction successfully',
-                    user: cleanUserLess(req.user),
-                });
-        }
+        else next();
     });
 };
 
