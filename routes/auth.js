@@ -20,7 +20,7 @@ const {
 } = require('../controllers/auth');
 const { userById } = require('../controllers/user');
 const {
-    sendNotificationEmail,
+    sendChangePasswordEmail,
     sendConfirmationEmail,
     verifyEmail,
 } = require('../controllers/email');
@@ -54,7 +54,7 @@ router.post(
     authValidator.forgotPassword(),
     validateHandler,
     forgotPassword,
-    sendNotificationEmail,
+    sendChangePasswordEmail,
     sendNotificationSMS,
 );
 router.put(

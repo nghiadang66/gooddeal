@@ -11,13 +11,20 @@ const transport = nodemailer.createTransport({
     },
 });
 
-// Change tag a for front-end
-const sendEmail = (email, name, title, text, code = null) => {
-    return transport.sendMail({
-        from: process.env.ADMIN_EMAIL,
-        to: email,
-        subject: `GoodDeal Ecommerce - ${title}`,
-        html: `<div>
+exports.sendChangePasswordEmail = (req, res, next) => {
+    console.log('---SEND CHANGE PASSWORD EMAIL---');
+    const { email, phone, name, title, text, code } = req.msg;
+    if (!email && phone) {
+        next();
+    } else if (!email && !phone) {
+        console.log('---NO EMAIL PROVIDED---');
+    } else {
+        transport
+            .sendMail({
+                from: process.env.ADMIN_EMAIL,
+                to: email,
+                subject: `GoodDeal Ecommerce - ${title}`,
+                html: `<div>
                     <h2>GOODDEAL!</h2>
                     <h1>${title}</h1>
                     <p>Hi ${name},</p>
@@ -28,39 +35,28 @@ const sendEmail = (email, name, title, text, code = null) => {
                             ? `<button style="background-color:#0d6efd; border:none; border-radius:4px; padding:0;">
                             <a 
                                 style="color:#fff; text-decoration:none; font-size:16px; padding: 16px 32px; display: inline-block;"
-                                href='http://localhost:${process.env.CLIENT_PORT_2}/verify/email/${code}'
+                                href='http://localhost:${process.env.CLIENT_PORT_2}/change/password/${code}'
                             >
-                            Verify now!
+                            Change password!
                             </a>
                         </button>
                         `
                             : ''
                     }
                 </div>`,
-    });
-};
-
-exports.sendNotificationEmail = (req, res, next) => {
-    console.log('---SEND EMAIL---');
-    const { email, phone, name, title, text, code } = req.msg;
-    if (!email && phone) {
-        next();
-    } else if (!email && !phone) {
-        console.log('---NO EMAIL PROVIDED---');
-    } else {
-        sendEmail(email, name, title, text, code)
+            })
             .then(() => {
                 console.log('---SEND EMAIL SUCCESSFULLY---');
             })
             .catch((error) => {
-                console.log('---SEND EMAIL FAILED---');
+                console.log('---SEND EMAIL FAILED---', error);
             });
     }
 };
 
 // Allow less secure apps to access account
 exports.sendConfirmationEmail = (req, res) => {
-    console.log('---SEND EMAIL---');
+    console.log('---SEND CONFIRMED EMAIL---');
     if (req.user.email) {
         if (req.user.isEmailActive) {
             return res.status(400).json({
@@ -89,8 +85,29 @@ exports.sendConfirmationEmail = (req, res) => {
                     const text =
                         'To get access to your account please verify your email address by clicking the link below.';
                     const name = user.firstname + ' ' + user.lastname;
+                    const email = req.user.email;
 
-                    sendEmail(user.email, name, title, text, user.email_code)
+                    transport
+                        .sendMail({
+                            from: process.env.ADMIN_EMAIL,
+                            to: email,
+                            subject: `GoodDeal Ecommerce - ${title}`,
+                            html: `<div>
+                    <h2>GOODDEAL!</h2>
+                    <h1>${title}</h1>
+                    <p>Hi ${name},</p>
+                    <p>Thank you for choosing GoodDeal.</p>
+                    <p>${text}</p>
+                    <button style="background-color:#0d6efd; border:none; border-radius:4px; padding:0;">
+                        <a 
+                            style="color:#fff; text-decoration:none; font-size:16px; padding: 16px 32px; display: inline-block;"
+                            href='http://localhost:${process.env.CLIENT_PORT_2}/verify/email/${email_code}'
+                        >
+                        Verify now!
+                        </a>
+                    </button>
+                    </div>`,
+                        })
                         .then(() => {
                             console.log('---SEND EMAIL SUCCESSFULLY---');
                             return res.json({
@@ -106,7 +123,7 @@ exports.sendConfirmationEmail = (req, res) => {
                 }
             })
             .catch((error) => {
-                console.log('---SEND EMAIL FAILED---');
+                console.log('---SEND EMAIL FAILED---', error);
                 return res.status(500).json({
                     error: 'Send email failed',
                 });
