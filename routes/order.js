@@ -93,6 +93,8 @@ router.put(
     isAuth,
     checkOrderAuth,
     updateStatusForUser,
+    updateEWallet,
+    createTransaction,
     updatePoint,
 );
 router.put(
@@ -101,6 +103,8 @@ router.put(
     isManager,
     checkOrderAuth,
     updateStatusForStore,
+    updateEWallet,
+    createTransaction,
     updatePoint,
 );
 router.put(

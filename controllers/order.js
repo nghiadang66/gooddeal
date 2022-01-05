@@ -351,11 +351,6 @@ exports.createOrder = (req, res, next) => {
             error: 'All fields are required',
         });
 
-    if (isPaidBefore === true)
-        return res.status(400).json({
-            error: 'The system does not have online payment yet!',
-        });
-
     if (!userId.equals(req.user._id))
         return res.status(400).json({
             error: 'This is not right cart!',
@@ -372,6 +367,7 @@ exports.createOrder = (req, res, next) => {
         amountFromStore,
         amountToStore,
         amountToGD,
+        isPaidBefore,
     });
 
     order.save((error, order) => {
@@ -391,7 +387,7 @@ exports.createOrderItems = (req, res, next) => {
     CartItem.find({ cartId: req.cart._id })
         .exec()
         .then((items) => {
-            console.log('before', items);
+            // console.log('before', items);
             const newItems = items.map((item) => {
                 return {
                     orderId: req.order._id,
@@ -401,7 +397,7 @@ exports.createOrderItems = (req, res, next) => {
                     isDeleted: item.isDeleted,
                 };
             });
-            console.log('after', newItems);
+            // console.log('after', newItems);
 
             OrderItem.insertMany(newItems, (error, items) => {
                 if (error)
@@ -540,6 +536,14 @@ exports.updateStatusForUser = (req, res, next) => {
                     storeId: req.order.storeId,
                     point: -1,
                 };
+
+                if (order.isPaidBefore === true)
+                    req.createTransaction = {
+                        userId: order.userId,
+                        isUp: true,
+                        amount: order.amountFromUser,
+                    };
+
                 next();
             }
 
@@ -599,6 +603,14 @@ exports.updateStatusForStore = (req, res, next) => {
                     storeId: req.order.storeId,
                     point: -1,
                 };
+
+                if (order.isPaidBefore === true)
+                    req.createTransaction = {
+                        userId: order.userId,
+                        isUp: true,
+                        amount: order.amountFromUser,
+                    };
+
                 next();
             }
 
@@ -690,7 +702,7 @@ exports.updateQuantitySoldProduct = (req, res, next) => {
                 }
             });
 
-            console.log(items, list);
+            // console.log(items, list);
 
             let bulkOps = list.map((element) => {
                 return {

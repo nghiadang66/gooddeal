@@ -9,7 +9,7 @@ const {
     isOwner,
     verifyPassword,
 } = require('../controllers/auth');
-const { userById } = require('../controllers/user');
+const { userById, getUserProfile } = require('../controllers/user');
 const { storeById, getStoreProfile } = require('../controllers/store');
 const {
     requestTransaction,
@@ -39,6 +39,7 @@ router.post(
     requestTransaction,
     updateEWallet,
     createTransaction,
+    getUserProfile,
 );
 router.post(
     '/transaction/create/by/store/:storeId/:userId',
@@ -50,15 +51,15 @@ router.post(
     createTransaction,
     getStoreProfile,
 );
-router.post(
-    '/transaction/create/for/admin/:userId',
-    isAuth,
-    verifyPassword,
-    isAdmin,
-    requestTransaction,
-    updateEWallet,
-    createTransaction,
-);
+// router.post(
+//     '/transaction/create/for/admin/:userId',
+//     isAuth,
+//     verifyPassword,
+//     isAdmin,
+//     requestTransaction,
+//     updateEWallet,
+//     createTransaction,
+// );
 
 //params
 router.param('storeId', storeById);

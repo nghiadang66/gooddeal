@@ -27,10 +27,24 @@ exports.getUser = (req, res) => {
 };
 
 exports.getUserProfile = (req, res) => {
-    return res.json({
-        success: 'Get user profile successfully',
-        user: cleanUserLess(req.user),
-    });
+    User.findOne({ _id: req.user._id })
+        .then((user) => {
+            if (!user) {
+                return res.status(404).json({
+                    error: 'User not found',
+                });
+            }
+
+            return res.json({
+                success: 'Get user profile successfully',
+                user: cleanUserLess(req.user),
+            });
+        })
+        .catch((error) => {
+            return res.status(404).json({
+                error: 'User not found',
+            });
+        });
 };
 
 exports.updateProfile = (req, res) => {

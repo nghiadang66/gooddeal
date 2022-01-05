@@ -108,7 +108,7 @@ exports.updateEWallet = (req, res, next) => {
 };
 
 exports.createTransaction = (req, res, next) => {
-    console.log('createTransaction');
+    console.log('---CREATE TRANSACTION ---');
     const { userId, storeId, isUp, code, amount } = req.createTransaction;
 
     if ((!userId && !storeId) || typeof isUp !== 'boolean' || !amount)
