@@ -28,6 +28,7 @@ exports.getUser = (req, res) => {
 
 exports.getUserProfile = (req, res) => {
     User.findOne({ _id: req.user._id })
+        .exec()
         .then((user) => {
             if (!user) {
                 return res.status(404).json({
@@ -37,7 +38,7 @@ exports.getUserProfile = (req, res) => {
 
             return res.json({
                 success: 'Get user profile successfully',
-                user: cleanUserLess(req.user),
+                user: cleanUserLess(user),
             });
         })
         .catch((error) => {
