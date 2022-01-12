@@ -137,7 +137,7 @@ exports.listTransactions = (req, res) => {
     const sortBy = req.query.sortBy ? req.query.sortBy : 'createdAt';
     const order =
         req.query.order &&
-        (req.query.order == 'asc' || req.query.order == 'desc')
+            (req.query.order == 'asc' || req.query.order == 'desc')
             ? req.query.order
             : 'desc';
 
@@ -192,7 +192,7 @@ exports.listTransactions = (req, res) => {
             .sort({ [sortBy]: order, _id: 1 })
             .skip(skip)
             .limit(limit)
-            .populate('userId', '_id name avatar')
+            .populate('userId', '_id firstname lastname avatar')
             .populate('storeId', '_id name avatar isActive isOpen')
             .exec()
             .then((transactions) => {
