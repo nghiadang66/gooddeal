@@ -101,16 +101,16 @@ exports.createProduct = (req, res) => {
     } = req.fields;
     const listImages = req.filepaths;
 
-    console.log(
-        name,
-        description,
-        price,
-        promotionalPrice,
-        quantity,
-        categoryId,
-        styleValueIds,
-        listImages,
-    );
+    // console.log(
+    //     name,
+    //     description,
+    //     price,
+    //     promotionalPrice,
+    //     quantity,
+    //     categoryId,
+    //     styleValueIds,
+    //     listImages,
+    // );
 
     if (
         !name ||

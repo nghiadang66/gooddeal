@@ -930,12 +930,13 @@ exports.listStoresByUser = (req, res) => {
 
     const filterArgs = {
         $or: [
-            { name: { $regex: regex, $options: 'i' } },
-            { bio: { $regex: regex, $options: 'i' } },
+            { name: { $regex: regex, $options: 'i' }, ownerId: req.user._id },
+            { name: { $regex: regex, $options: 'i' }, staffIds: req.user._id },
+            { bio: { $regex: regex, $options: 'i' }, ownerId: req.user._id },
+            { bio: { $regex: regex, $options: 'i' }, staffIds: req.user._id },
         ],
         isActive: { $in: isActive },
         commissionId: { $in: commissionId },
-        $or: [{ ownerId: req.user._id }, { staffIds: req.user._id }],
     };
 
     Store.countDocuments(filterArgs, (error, count) => {

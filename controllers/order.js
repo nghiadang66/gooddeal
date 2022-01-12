@@ -78,6 +78,9 @@ exports.listOrderItems = (req, res) => {
 exports.listOrderByUser = (req, res) => {
     const userId = req.user._id;
 
+    const search = req.query.search ? req.query.search : '';
+    const regex = '.*' + search + '.*';
+
     const sortBy = req.query.sortBy ? req.query.sortBy : 'createdAt';
     const order =
         req.query.order &&
@@ -92,6 +95,7 @@ exports.listOrderByUser = (req, res) => {
     let skip = limit * (page - 1);
 
     const filter = {
+        search,
         sortBy,
         order,
         limit,
@@ -100,6 +104,7 @@ exports.listOrderByUser = (req, res) => {
 
     const filterArgs = {
         userId,
+        tempId: { $regex: regex, $options: 'i' },
     };
 
     if (req.query.status) {
@@ -109,57 +114,80 @@ exports.listOrderByUser = (req, res) => {
         };
     }
 
-    Order.countDocuments(filterArgs, (error, count) => {
-        if (error) {
-            return res.status(404).json({
-                error: 'List orders by user not found',
-            });
-        }
+    Order.aggregate(
+        [
+            {
+                $addFields: {
+                    tempId: { $toString: '$_id' },
+                },
+            },
+            {
+                $match: filterArgs,
+            },
+            {
+                $group: {
+                    _id: '$_id',
+                    count: { $sum: 1 },
+                },
+            },
+        ],
+        (error, result) => {
+            if (error) {
+                return res.status(404).json({
+                    error: 'List orders by user not found',
+                });
+            }
 
-        const size = count;
-        const pageCount = Math.ceil(size / limit);
-        filter.pageCount = pageCount;
+            // console.log(result, result.reduce((p, c) => p + c.count, 0), result.map(r => r._id));
 
-        if (page > pageCount) {
-            skip = (pageCount - 1) * limit;
-        }
+            const size = result.reduce((p, c) => p + c.count, 0);
+            const pageCount = Math.ceil(size / limit);
+            filter.pageCount = pageCount;
 
-        if (count <= 0) {
-            return res.json({
-                success: 'Load list orders by user successfully',
-                filter,
-                size,
-                orders: [],
-            });
-        }
+            if (page > pageCount) {
+                skip = (pageCount - 1) * limit;
+            }
 
-        Order.find(filterArgs)
-            .sort({ [sortBy]: order, _id: 1 })
-            .skip(skip)
-            .limit(limit)
-            .populate('userId', '_id firstname lastname avatar')
-            .populate('storeId', '_id name avatar isActive isOpen')
-            .populate('deliveryId')
-            .populate('commissionId')
-            .exec()
-            .then((orders) => {
+            if (size <= 0) {
                 return res.json({
                     success: 'Load list orders by user successfully',
                     filter,
                     size,
-                    orders,
+                    orders: [],
                 });
-            })
-            .catch((error) => {
-                return res.status(500).json({
-                    error: 'Load list orders by user failed',
+            }
+
+            Order.find({ _id: { $in: result.map((r) => r._id) } })
+                .sort({ [sortBy]: order, _id: 1 })
+                .skip(skip)
+                .limit(limit)
+                .populate('userId', '_id firstname lastname avatar')
+                .populate('storeId', '_id name avatar isActive isOpen')
+                .populate('deliveryId')
+                .populate('commissionId')
+                .exec()
+                .then((orders) => {
+                    return res.json({
+                        success: 'Load list orders by user successfully',
+                        filter,
+                        size,
+                        orders,
+                    });
+                })
+                .catch((error) => {
+                    return res.status(500).json({
+                        error: 'Load list orders by user failed',
+                    });
                 });
-            });
-    });
+        },
+    );
 };
 
 exports.listOrderByStore = (req, res) => {
     const storeId = req.store._id;
+
+    const search = req.query.search ? req.query.search : '';
+    const regex = '.*' + search + '.*';
 
     const sortBy = req.query.sortBy ? req.query.sortBy : 'createdAt';
     const order =
@@ -183,6 +211,7 @@ exports.listOrderByStore = (req, res) => {
 
     const filterArgs = {
         storeId,
+        tempId: { $regex: regex, $options: 'i' },
     };
 
     if (req.query.status) {
@@ -192,56 +221,77 @@ exports.listOrderByStore = (req, res) => {
         };
     }
 
-    Order.countDocuments(filterArgs, (error, count) => {
-        if (error) {
-            return res.status(404).json({
-                error: 'List orders by store not found',
-            });
-        }
+    Order.aggregate(
+        [
+            {
+                $addFields: {
+                    tempId: { $toString: '$_id' },
+                },
+            },
+            {
+                $match: filterArgs,
+            },
+            {
+                $group: {
+                    _id: '$_id',
+                    count: { $sum: 1 },
+                },
+            },
+        ],
+        (error, result) => {
+            if (error) {
+                return res.status(404).json({
+                    error: 'List orders by store not found',
+                });
+            }
 
-        const size = count;
-        const pageCount = Math.ceil(size / limit);
-        filter.pageCount = pageCount;
+            const size = result.reduce((p, c) => p + c.count, 0);
+            const pageCount = Math.ceil(size / limit);
+            filter.pageCount = pageCount;
 
-        if (page > pageCount) {
-            skip = (pageCount - 1) * limit;
-        }
+            if (page > pageCount) {
+                skip = (pageCount - 1) * limit;
+            }
 
-        if (count <= 0) {
-            return res.json({
-                success: 'Load list orders by store successfully',
-                filter,
-                size,
-                orders: [],
-            });
-        }
-
-        Order.find(filterArgs)
-            .sort({ [sortBy]: order, _id: 1 })
-            .skip(skip)
-            .limit(limit)
-            .populate('userId', '_id firstname lastname avatar')
-            .populate('storeId', '_id name avatar isActive isOpen')
-            .populate('deliveryId')
-            .populate('commissionId')
-            .exec()
-            .then((orders) => {
+            if (size <= 0) {
                 return res.json({
                     success: 'Load list orders by store successfully',
                     filter,
                     size,
-                    orders,
+                    orders: [],
                 });
-            })
-            .catch((error) => {
-                return res.status(500).json({
-                    error: 'Load list orders by store failed',
+            }
+
+            Order.find({ _id: { $in: result.map((r) => r._id) } })
+                .sort({ [sortBy]: order, _id: 1 })
+                .skip(skip)
+                .limit(limit)
+                .populate('userId', '_id firstname lastname avatar')
+                .populate('storeId', '_id name avatar isActive isOpen')
+                .populate('deliveryId')
+                .populate('commissionId')
+                .exec()
+                .then((orders) => {
+                    return res.json({
+                        success: 'Load list orders by store successfully',
+                        filter,
+                        size,
+                        orders,
+                    });
+                })
+                .catch((error) => {
+                    return res.status(500).json({
+                        error: 'Load list orders by store failed',
+                    });
                 });
-            });
-    });
+        },
+    );
 };
 
 exports.listOrderForAdmin = (req, res) => {
+    const search = req.query.search ? req.query.search : '';
+    const regex = '.*' + search + '.*';
+
     const sortBy = req.query.sortBy ? req.query.sortBy : 'createdAt';
     const order =
         req.query.order &&
@@ -262,7 +312,9 @@ exports.listOrderForAdmin = (req, res) => {
         pageCurrent: page,
     };
 
-    const filterArgs = {};
+    const filterArgs = {
+        tempId: { $regex: regex, $options: 'i' },
+    };
 
     if (req.query.status) {
         filter.status = req.query.status.split('|');
@@ -271,53 +323,71 @@ exports.listOrderForAdmin = (req, res) => {
         };
     }
 
-    Order.countDocuments(filterArgs, (error, count) => {
-        if (error) {
-            return res.status(404).json({
-                error: 'List orders not found',
-            });
-        }
+    Order.aggregate(
+        [
+            {
+                $addFields: {
+                    tempId: { $toString: '$_id' },
+                },
+            },
+            {
+                $match: filterArgs,
+            },
+            {
+                $group: {
+                    _id: '$_id',
+                    count: { $sum: 1 },
+                },
+            },
+        ],
+        (error, result) => {
+            if (error) {
+                return res.status(404).json({
+                    error: 'List orders not found',
+                });
+            }
 
-        const size = count;
-        const pageCount = Math.ceil(size / limit);
-        filter.pageCount = pageCount;
+            const size = result.reduce((p, c) => p + c.count, 0);
+            const pageCount = Math.ceil(size / limit);
+            filter.pageCount = pageCount;
 
-        if (page > pageCount) {
-            skip = (pageCount - 1) * limit;
-        }
+            if (page > pageCount) {
+                skip = (pageCount - 1) * limit;
+            }
 
-        if (count <= 0) {
-            return res.json({
-                success: 'Load list orders successfully',
-                filter,
-                size,
-                orders: [],
-            });
-        }
-
-        Order.find(filterArgs)
-            .sort({ [sortBy]: order, _id: 1 })
-            .skip(skip)
-            .limit(limit)
-            .populate('userId', '_id firstname lastname avatar')
-            .populate('storeId', '_id name avatar isActive isOpen')
-            .populate('deliveryId')
-            .populate('commissionId')
-            .exec()
-            .then((orders) => {
+            if (size <= 0) {
                 return res.json({
                     success: 'Load list orders successfully',
                     filter,
                     size,
-                    orders,
+                    orders: [],
                 });
-            })
-            .catch((error) => {
-                return res.status(500).json({
-                    error: 'Load list orders failed',
+            }
+
+            Order.find({ _id: { $in: result.map((r) => r._id) } })
+                .sort({ [sortBy]: order, _id: 1 })
+                .skip(skip)
+                .limit(limit)
+                .populate('userId', '_id firstname lastname avatar')
+                .populate('storeId', '_id name avatar isActive isOpen')
+                .populate('deliveryId')
+                .populate('commissionId')
+                .exec()
+                .then((orders) => {
+                    return res.json({
+                        success: 'Load list orders successfully',
+                        filter,
+                        size,
+                        orders,
+                    });
+                })
+                .catch((error) => {
+                    return res.status(500).json({
+                        error: 'Load list orders failed',
+                    });
                 });
-            });
-    });
+        },
+    );
 };
 
 //CRUD
@@ -570,7 +640,7 @@ exports.updateStatusForStore = (req, res, next) => {
         });
 
     const { status } = req.body;
-    console.log(status);
+    // console.log(status);
     if (
         status !== 'Not processed' &&
         status !== 'Processing' &&
