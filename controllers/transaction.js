@@ -137,7 +137,7 @@ exports.listTransactions = (req, res) => {
     const sortBy = req.query.sortBy ? req.query.sortBy : 'createdAt';
     const order =
         req.query.order &&
-            (req.query.order == 'asc' || req.query.order == 'desc')
+        (req.query.order == 'asc' || req.query.order == 'desc')
             ? req.query.order
             : 'desc';
 
