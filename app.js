@@ -47,6 +47,7 @@ app.use(
         origin: [
             `http://localhost:${process.env.CLIENT_PORT_1}`,
             `http://localhost:${process.env.CLIENT_PORT_2}`,
+            `http://localhost:${process.env.CLIENT_PORT_3}`,
         ],
         methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
         credentials: true,
