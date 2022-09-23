@@ -1,6 +1,7 @@
-# MERN STACK ECOMMERCE WEB | Hệ Thống Thương Mại Điện Tử Sử Dụng MERN Stack | Tương Tự Shopee, Tiki
+# MERN STACK ECOMMERCE WEB
 
-## Mô tả dự án: Xây dựng hệ thống sàn thương mại điện tử, tương tự Shopee, Tiki
+## Mô tả dự án:
+Xây dựng hệ thống sàn thương mại điện tử, tương tự Shopee, Tiki
 
 ## Công nghệ sử dụng: 
 - React,
