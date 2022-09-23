@@ -1,4 +1,4 @@
-# MERN STACK ECOMMERCE WEB
+# MERN STACK ECOMMERCE WEB (SERVER)
 
 ## Mô tả dự án:
 Xây dựng hệ thống sàn thương mại điện tử, tương tự Shopee, Tiki
