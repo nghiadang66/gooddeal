@@ -15,7 +15,10 @@
 [Client](https://github.com/langde666/gooddeal_front)
 
 ## Doc:
-https://drive.google.com/drive/folders/116zdlRDduq4NhTKdxk4soLIXoRWTy92R
+[Drive](https://drive.google.com/drive/folders/116zdlRDduq4NhTKdxk4soLIXoRWTy92R)
+
+## Demo:
+[Youtube](https://www.youtube.com/watch?v=g10YjESD9j8&list=PLMRUYp6BdUWFJJLmRJcxZQ_iavZdspohu&index=1)
 
 ## Member:
 1. Nghia Đặng:
